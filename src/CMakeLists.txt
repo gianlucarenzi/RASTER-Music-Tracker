@@ -49,7 +49,12 @@ if(RMT_BUILD_CORE_ONLY)
         DirectSoundAudio.cpp
         PortAudioBackend.cpp
         
-        # Test main for audio backends
+        # MIDI Backend (Phase 2) - cross-platform, no MFC
+        MidiBackend.cpp
+        WindowsMidiBackend.cpp
+        RtMidiBackend.cpp
+        
+        # Test main for audio/MIDI backends
         main-portaudio.cpp
     )
     
@@ -58,6 +63,11 @@ if(RMT_BUILD_CORE_ONLY)
         AudioBackend.h
         DirectSoundAudio.h
         PortAudioBackend.h
+        
+        # MIDI Backend (Phase 2)
+        MidiBackend.h
+        WindowsMidiBackend.h
+        RtMidiBackend.h
     )
 else()
     # Full build with UI
@@ -66,7 +76,12 @@ else()
         AudioBackend.cpp
         DirectSoundAudio.cpp
         PortAudioBackend.cpp
-        
+    
+        # C++ Sources - MIDI Backend (Phase 2)
+        MidiBackend.cpp
+        WindowsMidiBackend.cpp
+        RtMidiBackend.cpp
+    
         # C++ Sources
         AboutDialog.cpp
     ASMFileBuilder.cpp
@@ -146,6 +161,16 @@ else()
 )
 
 set(RMT_HEADERS
+    # Audio Backend (Phase 2)
+    AudioBackend.h
+    DirectSoundAudio.h
+    PortAudioBackend.h
+    
+    # MIDI Backend (Phase 2)
+    MidiBackend.h
+    WindowsMidiBackend.h
+    RtMidiBackend.h
+    
     AboutDialog.h
     ASMFileBuilder.h
     ASMFile.h
@@ -243,6 +268,30 @@ if(WIN32)
     )
 endif()
 
+# Search for optional libraries BEFORE creating executable
+# PortAudio cross-platform audio library
+if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+    find_package(PortAudio QUIET)
+    if(NOT PortAudio_FOUND)
+        find_library(PORTAUDIO_LIB portaudio QUIET)
+    endif()
+endif()
+
+# RtMidi cross-platform MIDI library
+if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+    # Try pkg-config first
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(RTMIDI QUIET rtmidi)
+    endif()
+    
+    # If pkg-config didn't find it, try manual search
+    if(NOT RTMIDI_FOUND)
+        find_library(RTMIDI_LIB rtmidi QUIET)
+        find_path(RTMIDI_INCLUDE rtmidi.h QUIET)
+    endif()
+endif()
+
 # Create executable
 add_executable(Rmt WIN32 ${RMT_SOURCES})
 
@@ -282,16 +331,34 @@ if(WIN32)
     endif()
 endif()
 
-# PortAudio cross-platform audio library
+# Link PortAudio library (search was done earlier)
 if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
-    # PortAudio is available/preferred
     if(PortAudio_FOUND)
         target_link_libraries(Rmt PRIVATE ${PortAudio_LIBRARIES})
         target_include_directories(Rmt PRIVATE ${PortAudio_INCLUDE_DIRS})
-    else()
-        # Try to find it manually
-        find_library(PORTAUDIO_LIB portaudio REQUIRED)
+    elseif(PORTAUDIO_LIB)
         target_link_libraries(Rmt PRIVATE ${PORTAUDIO_LIB})
+    else()
+        message(WARNING "PortAudio not found - audio functionality may be limited")
+    endif()
+endif()
+
+# Link RtMidi library (search was done earlier)
+if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+    if(RTMIDI_FOUND)
+        target_link_libraries(Rmt PRIVATE ${RTMIDI_LIBRARIES})
+        target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE_DIRS})
+        target_compile_definitions(Rmt PRIVATE RTMIDI_AVAILABLE=1)
+        target_compile_options(Rmt PRIVATE ${RTMIDI_CFLAGS})
+        message(STATUS "Found RtMidi via pkg-config: ${RTMIDI_LIBRARIES}")
+    elseif(RTMIDI_LIB AND RTMIDI_INCLUDE)
+        target_link_libraries(Rmt PRIVATE ${RTMIDI_LIB})
+        target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE})
+        target_compile_definitions(Rmt PRIVATE RTMIDI_AVAILABLE=1)
+        message(STATUS "Found RtMidi: ${RTMIDI_LIB}")
+    else()
+        message(WARNING "RtMidi not found - MIDI functionality will be disabled")
+        message(STATUS "To install: sudo apt install librtmidi-dev")
     endif()
 endif()
 
@@ -326,6 +393,62 @@ endif()
 message(STATUS "Rmt executable target configured")
 message(STATUS "  Sources: ${CMAKE_CURRENT_SOURCE_DIR}")
 message(STATUS "  Defines: ${RMT_DEFINES}")
+
+# Create separate MIDI test executable (core-only builds)
+if(RMT_BUILD_CORE_ONLY)
+    add_executable(RmtMidiTest WIN32
+        main-midi.cpp
+        # Audio Backend
+        AudioBackend.cpp
+        DirectSoundAudio.cpp
+        PortAudioBackend.cpp
+        # MIDI Backend
+        MidiBackend.cpp
+        WindowsMidiBackend.cpp
+        RtMidiBackend.cpp
+    )
+    
+    # Apply same configuration as main Rmt executable
+    set_target_properties(RmtMidiTest PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        OUTPUT_NAME "RmtMidiTest.exe"
+    )
+    
+    target_compile_definitions(RmtMidiTest PRIVATE ${RMT_DEFINES})
+    target_include_directories(RmtMidiTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    
+    # Link audio libraries
+    if(PortAudio_FOUND)
+        target_link_libraries(RmtMidiTest PRIVATE ${PortAudio_LIBRARIES})
+        target_include_directories(RmtMidiTest PRIVATE ${PortAudio_INCLUDE_DIRS})
+    elseif(PORTAUDIO_LIB)
+        target_link_libraries(RmtMidiTest PRIVATE ${PORTAUDIO_LIB})
+    endif()
+    
+    # Link MIDI libraries
+    if(RTMIDI_FOUND)
+        target_link_libraries(RmtMidiTest PRIVATE ${RTMIDI_LIBRARIES})
+        target_include_directories(RmtMidiTest PRIVATE ${RTMIDI_INCLUDE_DIRS})
+        target_compile_definitions(RmtMidiTest PRIVATE RTMIDI_AVAILABLE=1)
+        target_compile_options(RmtMidiTest PRIVATE ${RTMIDI_CFLAGS})
+    elseif(RTMIDI_LIB AND RTMIDI_INCLUDE)
+        target_link_libraries(RmtMidiTest PRIVATE ${RTMIDI_LIB})
+        target_include_directories(RmtMidiTest PRIVATE ${RTMIDI_INCLUDE})
+        target_compile_definitions(RmtMidiTest PRIVATE RTMIDI_AVAILABLE=1)
+    endif()
+    
+    # Compiler flags
+    if(MSVC)
+        set_property(TARGET RmtMidiTest PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
+        target_compile_options(RmtMidiTest PRIVATE /permissive-)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(RmtMidiTest PRIVATE
+            -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-parameter
+        )
+    endif()
+    
+    message(STATUS "RmtMidiTest executable configured (MIDI backend test)")
+endif()
 
 # Build status
 message(STATUS "")
