@@ -42,11 +42,33 @@ endif()
 option(RMT_BUILD_CORE_ONLY "Build only core components without UI (for testing)" OFF)
 if(RMT_BUILD_CORE_ONLY)
     message(STATUS "Building core components only (no UI)")
-endif()
-
-set(RMT_SOURCES
-    # C++ Sources
-    AboutDialog.cpp
+    
+    set(RMT_SOURCES
+        # Audio Backend (Phase 2) - cross-platform, no MFC
+        AudioBackend.cpp
+        DirectSoundAudio.cpp
+        PortAudioBackend.cpp
+        
+        # Test main for audio backends
+        main-portaudio.cpp
+    )
+    
+    set(RMT_HEADERS
+        # Audio Backend (Phase 2)
+        AudioBackend.h
+        DirectSoundAudio.h
+        PortAudioBackend.h
+    )
+else()
+    # Full build with UI
+    set(RMT_SOURCES
+        # C++ Sources - Audio Backend (Phase 2)
+        AudioBackend.cpp
+        DirectSoundAudio.cpp
+        PortAudioBackend.cpp
+        
+        # C++ Sources
+        AboutDialog.cpp
     ASMFileBuilder.cpp
     ASMFile.cpp
     ASMFileExporter.cpp
@@ -204,6 +226,7 @@ set(RMT_HEADERS
     info_dlg.h
     wasap.h
 )
+endif()
 
 # Platform-specific preprocessor definitions
 set(RMT_DEFINES
@@ -256,6 +279,19 @@ if(WIN32)
         if(NOT WINMM_LIB)
             target_link_libraries(Rmt PRIVATE winmm)
         endif()
+    endif()
+endif()
+
+# PortAudio cross-platform audio library
+if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+    # PortAudio is available/preferred
+    if(PortAudio_FOUND)
+        target_link_libraries(Rmt PRIVATE ${PortAudio_LIBRARIES})
+        target_include_directories(Rmt PRIVATE ${PortAudio_INCLUDE_DIRS})
+    else()
+        # Try to find it manually
+        find_library(PORTAUDIO_LIB portaudio REQUIRED)
+        target_link_libraries(Rmt PRIVATE ${PORTAUDIO_LIB})
     endif()
 endif()
 

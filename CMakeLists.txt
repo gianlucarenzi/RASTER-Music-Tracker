@@ -18,15 +18,22 @@ else()
     set(WINDOWS_PLATFORM FALSE)
 endif()
 
+# Core-only build option (for Phase 2 development on non-Windows)
+option(RMT_BUILD_CORE_ONLY "Build only core components without UI (for testing audio/MIDI backends)" OFF)
+if(RMT_BUILD_CORE_ONLY)
+    message(STATUS "Building core components only (no UI) - for Phase 2 development")
+endif()
+
 # Check if MFC is available
-if(NOT WINDOWS_PLATFORM AND NOT CMAKE_CROSSCOMPILING)
+if(NOT WINDOWS_PLATFORM AND NOT CMAKE_CROSSCOMPILING AND NOT RMT_BUILD_CORE_ONLY)
     message(FATAL_ERROR 
-        "RASTER Music Tracker v1.35 currently requires Windows/MFC.\n"
+        "RASTER Music Tracker v1.35 currently requires Windows/MFC for full builds.\n"
         "This is Phase 1 of the cross-platform migration.\n"
         "\n"
         "To build on this system:\n"
         "  - Use MinGW cross-compile from Linux: cmake -DCMAKE_TOOLCHAIN_FILE=mingw-toolchain.cmake\n"
         "  - Or use Windows with MSVC/MinGW native\n"
+        "  - Or build core only: cmake -DRMT_BUILD_CORE_ONLY=ON (for testing)\n"
         "\n"
         "Phase 2 will add native Linux/macOS support (wxWidgets, PortAudio, RtMidi)."
     )
