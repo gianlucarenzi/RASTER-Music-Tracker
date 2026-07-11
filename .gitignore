@@ -4,3 +4,37 @@ others/
 out/
 others/
 rmt/docs/*.*
+# CMake build directories
+/build*/
+/out/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Generated files
+*.obj
+*.exe
+*.a
+*.lib
+*.dll
+
+# IDE/Editor files
+.vs/
+.vscode/
+*.sln.user
+*.vcxproj.user
+
+# Build artifacts
+*.o
+*.so
+*.dylib
+*.a
+
+# macOS
+.DS_Store
+
+# Linux
+*.swp
+*.swo
+*~
