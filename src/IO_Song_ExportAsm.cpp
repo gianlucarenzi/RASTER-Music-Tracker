@@ -1,7 +1,7 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Song.h"
 #include "AtariIO.h"
-#include "ExportDlgs.h"
+#include "exportdlgs.h"
 
 
 extern AssemblerFormat g_AsmFormat;

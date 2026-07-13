@@ -2,7 +2,7 @@
 // Experimental changes and additions by VinsCool, 2021-2023
 // FIXME: Use a better backend (DirectSound is outdated...)
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "PokeyRederer.h"
 #include "AtariTrackerDriver.h"
 #include "ChannelControl.h" // For IsChannelOn

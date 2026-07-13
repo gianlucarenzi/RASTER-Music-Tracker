@@ -1,11 +1,11 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "Song.h"
 #include "Memory.h"
 
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 
-#include "ImportDlgs.h"
+#include "importdlgs.h"
 
 #include "AtariTrackerDriver.h"
 #include "AtariIO.h"

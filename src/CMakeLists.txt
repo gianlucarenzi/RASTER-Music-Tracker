@@ -11,7 +11,7 @@ else()
     # MFC is Windows/MSVC only
     if(CMAKE_CROSSCOMPILING AND NOT MSVC)
         message(WARNING "Cross-compiling to Windows without MSVC - MFC will not be available")
-        message(STATUS "For production builds, use MSVC on Windows or implement Phase 2 (wxWidgets)")
+        message(STATUS "For production builds, use MSVC on Windows or build the Qt5 frontend (-DRMT_USE_QT=ON)")
     elseif(WIN32)
         message(WARNING "Building on Windows without MSVC - MFC may not be available")
     else()
@@ -70,95 +70,132 @@ if(RMT_BUILD_CORE_ONLY)
         RtMidiBackend.h
     )
 else()
-    # Full build with UI
-    set(RMT_SOURCES
-        # C++ Sources - Audio Backend (Phase 2)
+    # Full build with UI.
+    #
+    # Sources are split by role (Fase 1 of the MFC -> Qt migration plan):
+    #   - RMT_CORE_SOURCES:       the engine, no GUI dependency at all.
+    #   - RMT_GUI_SHARED_SOURCES: "quasi-decoupled" rendering code that draws
+    #                             on g_mem_dc/g_gfx_dc (CDC* under MFC,
+    #                             CompatDC* under Qt once Fase 2 lands) -
+    #                             compiled into BOTH the MFC and the Qt build.
+    #   - RMT_GUI_MFC_SOURCES:    genuine CWinApp/CFrameWnd/CDocument/CView/
+    #                             CDialog MFC code, plus RmtMidi.cpp (legacy
+    #                             Win32 MIDI, not yet merged into MidiBackend -
+    #                             see Fase 9) and the WASAP cluster used only
+    #                             by RmtTest.cpp. Windows/MFC only.
+    #   - RMT_GUI_QT_SOURCES:     the new Qt5 frontend. Empty until Fase 3+.
+    set(RMT_CORE_SOURCES
+        # Audio Backend (Phase 2) - cross-platform, no MFC
         AudioBackend.cpp
         DirectSoundAudio.cpp
         PortAudioBackend.cpp
-    
-        # C++ Sources - MIDI Backend (Phase 2)
+
+        # MIDI Backend (Phase 2) - cross-platform, no MFC
         MidiBackend.cpp
         WindowsMidiBackend.cpp
         RtMidiBackend.cpp
-    
-        # C++ Sources
+
+        # Engine
+        ASMFileBuilder.cpp
+        ASMFile.cpp
+        ASMFileExporter.cpp
+        AssemblerTypes.cpp
+        AtariBinaries.cpp
+        Atari.cpp
+        AtariIO.cpp
+        AtariTrackerDriver.cpp
+        C6502.cpp
+        Clipboard.cpp
+        Fraction.cpp
+        import.cpp
+        Instruments.cpp
+        IOHelpers.cpp
+        IO_Importer.cpp
+        IO_Instruments.cpp
+        IO_Song.cpp
+        IO_Song_ExportAsm.cpp
+        IO_Tracks.cpp
+        Keyboard2NoteMapping.cpp
+        LZSSFile.cpp
+        lzss_sap.cpp
+        Midi_Song.cpp
+        Notes.cpp
+        Pokey.cpp
+        PokeyRederer.cpp
+        PokeyStream.cpp
+        RuntimeException.cpp
+        SAPFile.cpp
+        SAPFileExporter.cpp
+        Shell.cpp
+        SongContainer.cpp
+        Song.cpp
+        Song_DumpSong.cpp
+        SongExport.cpp
+        SongExporter.cpp
+        SongExporterTest.cpp
+        SongTimer.cpp
+        Tracks.cpp
+        Tuning.cpp
+        TuningTypes.cpp
+        Undo.cpp
+        VUPlayer.cpp
+        WaveFile.cpp
+        WaveFileExporter.cpp
+    )
+
+    set(RMT_GUI_SHARED_SOURCES
+        ChannelControl.cpp
+        GuiHelpers.cpp
+        GUI_Instruments.cpp
+        GUI_Song.cpp
+        TracksControl.cpp
+        Global.cpp
+    )
+
+    set(RMT_GUI_MFC_SOURCES
         AboutDialog.cpp
-    ASMFileBuilder.cpp
-    ASMFile.cpp
-    ASMFileExporter.cpp
-    AssemblerTypes.cpp
-    AtariBinaries.cpp
-    Atari.cpp
-    AtariIO.cpp
-    AtariTrackerDriver.cpp
-    C6502.cpp
-    ChannelControl.cpp
-    Clipboard.cpp
-    ConfigDlg.cpp
-    effectsdlg.cpp
-    exportdlgs.cpp
-    filenewdlg.cpp
-    FilePathDlg.cpp
-    Fraction.cpp
-    Global.cpp
-    GuiHelpers.cpp
-    GUI_Instruments.cpp
-    GUI_Song.cpp
-    import.cpp
-    importdlgs.cpp
-    Instruments.cpp
-    IOHelpers.cpp
-    IO_Importer.cpp
-    IO_Instruments.cpp
-    IO_Song.cpp
-    IO_Song_ExportAsm.cpp
-    IO_Tracks.cpp
-    Keyboard2NoteMapping.cpp
-    LZSSFile.cpp
-    lzss_sap.cpp
-    MainFrm.cpp
-    Midi_Song.cpp
-    Notes.cpp
-    Pokey.cpp
-    PokeyRederer.cpp
-    PokeyStream.cpp
-    RmtCommandLineInfo.cpp
-    Rmt.cpp
-    RmtDoc.cpp
-    RmtMidi.cpp
-    RmtTest.cpp
-    RmtView.cpp
-    RuntimeException.cpp
-    SAPFile.cpp
-    SAPFileExportDialog.cpp
-    SAPFileExporter.cpp
-    Shell.cpp
-    SongContainer.cpp
-    Song.cpp
-    Song_DumpSong.cpp
-    SongExport.cpp
-    SongExporter.cpp
-    SongExporterTest.cpp
-    SongTimer.cpp
-    StdAfx.cpp
-    TracksControl.cpp
-    Tracks.cpp
-    Tuning.cpp
-    TuningDlg.cpp
-    TuningTypes.cpp
-    Undo.cpp
-    VUPlayer.cpp
-    WaveFile.cpp
-    WaveFileExporter.cpp
-    
-    # C Sources (embedded emulator/utilities)
-    asap.c
-    asap-patch.cpp
-    astil.c
-    info_dlg.c
-    wasap.c
-)
+        ConfigDlg.cpp
+        effectsdlg.cpp
+        exportdlgs.cpp
+        filenewdlg.cpp
+        FilePathDlg.cpp
+        importdlgs.cpp
+        MainFrm.cpp
+        RmtCommandLineInfo.cpp
+        Rmt.cpp
+        RmtDoc.cpp
+        RmtMidi.cpp
+        RmtTest.cpp
+        RmtView.cpp
+        SAPFileExportDialog.cpp
+        StdAfx.cpp
+        TuningDlg.cpp
+
+        # WASAP cluster: used only by RmtTest.cpp (raw WndProc/CreateDialog,
+        # not just MFC types), no other engine file references it.
+        asap.c
+        asap-patch.cpp
+        astil.c
+        info_dlg.c
+        wasap.c
+    )
+
+    set(RMT_GUI_QT_SOURCES
+        # Populated by later phases of the MFC -> Qt migration (Fase 3+).
+    )
+
+    if(RMT_USE_QT)
+        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES})
+        if(NOT MFC_AVAILABLE)
+            # Non-MFC type shim (Fase 0). SongExporterTest.cpp is excluded
+            # for the same pre-existing, unrelated reason documented on the
+            # RmtCoreTest target below (int vs std::ios_base::openmode).
+            list(REMOVE_ITEM RMT_SOURCES SongExporterTest.cpp)
+            list(APPEND RMT_SOURCES MfcTypes.cpp MfcDialogStubs.cpp)
+        endif()
+    else()
+        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES})
+    endif()
 
 set(RMT_HEADERS
     # Audio Backend (Phase 2)
@@ -284,12 +321,17 @@ if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
     if(PkgConfig_FOUND)
         pkg_check_modules(RTMIDI QUIET rtmidi)
     endif()
-    
+
     # If pkg-config didn't find it, try manual search
     if(NOT RTMIDI_FOUND)
         find_library(RTMIDI_LIB rtmidi QUIET)
         find_path(RTMIDI_INCLUDE rtmidi.h QUIET)
     endif()
+endif()
+
+# Qt5 native GUI frontend (Fase 1+ of the MFC -> Qt migration)
+if(RMT_USE_QT)
+    find_package(Qt5 5.12 REQUIRED COMPONENTS Core Widgets)
 endif()
 
 # Create executable
@@ -303,11 +345,24 @@ set_target_properties(Rmt PROPERTIES
 
 # Preprocessor definitions
 target_compile_definitions(Rmt PRIVATE ${RMT_DEFINES})
+if(MFC_AVAILABLE)
+    # Tells PlatformTypes.h (included by the engine + GUI-shared sources) to
+    # resolve to real <afxwin.h> instead of the non-MFC MfcTypes.h shim.
+    # Without this, the MSVC/MFC build would silently take the wrong branch.
+    target_compile_definitions(Rmt PRIVATE RMT_HAS_MFC)
+endif()
 
 # Include directories
 target_include_directories(Rmt PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
+# Qt5 native GUI frontend
+if(RMT_USE_QT)
+    set_target_properties(Rmt PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC OFF)
+    target_link_libraries(Rmt PRIVATE Qt5::Core Qt5::Widgets)
+    target_compile_definitions(Rmt PRIVATE RMT_QT_GUI=1)
+endif()
 
 # Windows-specific libraries
 if(WIN32)
@@ -450,6 +505,135 @@ if(RMT_BUILD_CORE_ONLY)
     message(STATUS "RmtMidiTest executable configured (MIDI backend test)")
 endif()
 
+# ---------------------------------------------------------------------------
+# RmtCoreTest (Fase 0 of the MFC -> Qt migration plan)
+#
+# Compiles the *real* RMT engine (Song/Tracks/Instruments/C6502/Pokey/IO_*/
+# ASM*/SAPFile*/...) plus the "GUI-shared" rendering files (GUI_Song.cpp,
+# GUI_Instruments.cpp, GuiHelpers.cpp, TracksControl.cpp, ChannelControl.cpp,
+# Global.cpp) outside of MFC, on plain GCC/Linux - something that has never
+# been done before (previously RMT_BUILD_CORE_ONLY only compiled the new
+# audio/MIDI backends, not the engine itself). It intentionally excludes the
+# genuine MFC GUI files (Rmt.cpp, MainFrm.cpp, RmtDoc.cpp, RmtView.cpp,
+# RmtCommandLineInfo.cpp, RmtMidi.cpp, StdAfx.cpp) and every real CDialog
+# implementation (AboutDialog.cpp, ConfigDlg.cpp, effectsdlg.cpp,
+# exportdlgs.cpp, filenewdlg.cpp, FilePathDlg.cpp, importdlgs.cpp,
+# SAPFileExportDialog.cpp, TuningDlg.cpp) - those stay MFC-only, unmodified.
+#
+# Usage:
+#   cmake -B build-core-linux -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
+#   cmake --build build-core-linux
+option(RMT_CORE_TEST "Build RmtCoreTest: compile the RMT engine + GUI-shared sources without MFC (Fase 0 smoke test)" OFF)
+if(RMT_CORE_TEST)
+    message(STATUS "Building RmtCoreTest (engine + GUI-shared sources, no MFC, no Qt yet)")
+
+    set(RMT_ENGINE_SOURCES
+        # ---- engine (no GUI) ----
+        AssemblerTypes.cpp
+        AtariBinaries.cpp
+        Atari.cpp
+        AtariIO.cpp
+        AtariTrackerDriver.cpp
+        C6502.cpp
+        Clipboard.cpp
+        Fraction.cpp
+        Instruments.cpp
+        IOHelpers.cpp
+        IO_Importer.cpp
+        IO_Instruments.cpp
+        IO_Song.cpp
+        IO_Song_ExportAsm.cpp
+        IO_Tracks.cpp
+        Keyboard2NoteMapping.cpp
+        LZSSFile.cpp
+        lzss_sap.cpp
+        Midi_Song.cpp
+        Notes.cpp
+        Pokey.cpp
+        PokeyRederer.cpp
+        PokeyStream.cpp
+        RuntimeException.cpp
+        SAPFile.cpp
+        SAPFileExporter.cpp
+        Shell.cpp
+        SongContainer.cpp
+        Song.cpp
+        Song_DumpSong.cpp
+        SongExport.cpp
+        SongExporter.cpp
+        # NOTE: SongExporterTest.cpp is intentionally NOT included here.
+        # OpenOutputStream() in that file declares its 3rd parameter as a
+        # plain 'int' and passes it straight to std::ofstream::open(), which
+        # expects a std::ios_base::openmode. This happens to compile under
+        # MSVC's STL (where openmode is effectively an int) but not under
+        # libstdc++ (GCC), which uses a distinct bitmask type with no
+        # implicit int conversion. This is a pre-existing bug unrelated to
+        # MFC/Windows types (Fase 0 scope) - flagged as a follow-up for the
+        # maintainer rather than silently patched here.
+        SongTimer.cpp
+        Tracks.cpp
+        Tuning.cpp
+        TuningTypes.cpp
+        Undo.cpp
+        VUPlayer.cpp
+        WaveFile.cpp
+        WaveFileExporter.cpp
+        ASMFileBuilder.cpp
+        ASMFile.cpp
+        ASMFileExporter.cpp
+        import.cpp
+
+        # ---- "GUI-shared" rendering files (draw on g_mem_dc/g_gfx_dc) ----
+        ChannelControl.cpp
+        GuiHelpers.cpp
+        GUI_Instruments.cpp
+        GUI_Song.cpp
+        TracksControl.cpp
+        Global.cpp
+    )
+
+    if(NOT MFC_AVAILABLE)
+        # MfcTypes.h/MfcTypes.cpp/MfcDialogStubs.cpp are the non-MFC type
+        # shim (Fase 0): only meaningful - and only safe to compile - when
+        # NOT building against real MFC (they define e.g. CString::LoadString()
+        # and CEffectsDlg::CEffectsDlg(), which would clash with the real MFC
+        # implementations otherwise).
+        list(APPEND RMT_ENGINE_SOURCES
+            MfcTypes.cpp
+            MfcDialogStubs.cpp
+        )
+    endif()
+
+    add_executable(RmtCoreTest ${RMT_ENGINE_SOURCES} main-coretest.cpp)
+
+    target_compile_definitions(RmtCoreTest PRIVATE ${RMT_DEFINES})
+    if(MFC_AVAILABLE)
+        target_compile_definitions(RmtCoreTest PRIVATE RMT_HAS_MFC)
+    endif()
+
+    target_include_directories(RmtCoreTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+    if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+        if(PortAudio_FOUND)
+            target_link_libraries(RmtCoreTest PRIVATE ${PortAudio_LIBRARIES})
+            target_include_directories(RmtCoreTest PRIVATE ${PortAudio_INCLUDE_DIRS})
+        elseif(PORTAUDIO_LIB)
+            target_link_libraries(RmtCoreTest PRIVATE ${PORTAUDIO_LIB})
+        endif()
+    endif()
+
+    if(MSVC)
+        set_property(TARGET RmtCoreTest PROPERTY MSVC_RUNTIME_LIBRARY MultiThreadedDLL)
+        target_compile_options(RmtCoreTest PRIVATE /permissive-)
+    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(RmtCoreTest PRIVATE
+            -Wall -Wextra -Wno-unknown-pragmas -Wno-unused-parameter
+        )
+    endif()
+
+    message(STATUS "RmtCoreTest executable configured (engine + GUI-shared, Fase 0 smoke test)")
+endif()
+
 # Build status
 message(STATUS "")
 if(MFC_AVAILABLE)
@@ -459,7 +643,7 @@ else()
     if(CMAKE_CROSSCOMPILING)
         message(STATUS "  This is expected during cross-compilation (Phase 1)")
         message(STATUS "  Full builds require Windows+MSVC")
-        message(STATUS "  Phase 2 will use wxWidgets for cross-platform support")
+        message(STATUS "  Or build the Qt5 frontend: cmake -DRMT_USE_QT=ON")
     endif()
 endif()
 

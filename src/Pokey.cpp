@@ -2,7 +2,7 @@
 
 // TODO: Replace the plugin interface with a permanent emulation core
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Pokey.h"
 #include "Atari.h"
 

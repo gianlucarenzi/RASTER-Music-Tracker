@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "WaveFileExporter.h"
 #include "WaveFile.h"
 #include "GuiHelpers.h"

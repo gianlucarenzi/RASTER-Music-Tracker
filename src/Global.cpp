@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Global.h"
 #include "PokeyRederer.h"
 #include "RmtMidi.h"

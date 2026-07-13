@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "Song.h"
 

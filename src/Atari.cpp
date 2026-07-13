@@ -5,7 +5,7 @@
     Reworked by VinsCool, 2021-2022
 */
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "Atari.h"
 

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Song.h"
 #include "AtariTrackerDriver.h"
 #include "PokeyRederer.h"

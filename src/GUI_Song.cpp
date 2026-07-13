@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "GuiHelpers.h"
 
 // MFC interface code
@@ -22,8 +22,13 @@
 #include "Keyboard2NoteMapping.h"
 #include "ChannelControl.h"
 
+#ifdef RMT_HAS_MFC
 #include "Rmt.h"
-
+#endif
+// Note: outside the real-MFC build, CRmtApp/g_app come from MfcTypes.h
+// (a tiny non-MFC stand-in with the same GetVersionAndBuild() method),
+// since Rmt.h is real-MFC-only (it hard-requires <afxwin.h> to already be
+// included).
 
 extern CRmtApp g_app;
 extern CSong g_Song;

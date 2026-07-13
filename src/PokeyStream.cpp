@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include <fstream>
 #include "PokeyStream.h"
 #include "LZSSFile.h"

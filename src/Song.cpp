@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include <fstream>
 
 #include "GuiHelpers.h"
@@ -6,7 +6,7 @@
 
 #include "Notes.h"
 
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 #include "EffectsDlg.h"
 #include "MainFrm.h"
 

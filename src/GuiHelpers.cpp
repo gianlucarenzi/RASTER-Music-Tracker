@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "General.h"
 
 #include "GuiHelpers.h"

@@ -8,6 +8,7 @@
 #include "Tuning.h"
 #include "Global.h"
 #include "Atari.h"
+#include <cmath>
 
 /// <summary> Generate the POKEY audio pitch using the given parameters </summary>
 /// <param name = "audc"> POKEY Distortion and Volume output mode </param>

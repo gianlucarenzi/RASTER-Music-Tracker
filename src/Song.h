@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "PlatformTypes.h"
 
 #include "General.h"
 

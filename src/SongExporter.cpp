@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "SongExporter.h"
 #include <iomanip>
 
@@ -7,7 +7,7 @@
 
 #include "GuiHelpers.h"
 
-#include "ExportDlgs.h"
+#include "exportdlgs.h"
 #include "SAPFileExportDialog.h"
 
 #include "lzss_sap.h"

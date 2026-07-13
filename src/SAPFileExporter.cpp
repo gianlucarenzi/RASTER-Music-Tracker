@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "SAPFileExporter.h"
 #include "Memory.h"
 #include "lzss_sap.h"

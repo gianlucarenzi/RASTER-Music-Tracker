@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "C6502.h"
 

@@ -1,11 +1,11 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "resource.h"
 
 #include "Undo.h"
 #include "Song.h"
 #include "Clipboard.h"
 
-#include "global.h"
+#include "Global.h"
 
 
 extern CSong g_Song;

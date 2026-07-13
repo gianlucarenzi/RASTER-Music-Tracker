@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include <ctime> 
 #include "SongExporterTest.h"
 
