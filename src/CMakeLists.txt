@@ -394,6 +394,7 @@ endif()
 # Include directories
 target_include_directories(Rmt PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_BINARY_DIR}
 )
 
 # Qt5 native GUI frontend
@@ -528,7 +529,7 @@ if(RMT_BUILD_CORE_ONLY)
     if(WIN32)
         target_link_libraries(RmtMidiTest PRIVATE winmm dsound)
     endif()
-    target_include_directories(RmtMidiTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(RmtMidiTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
     
     # Link audio libraries
     if(PortAudio_FOUND)
@@ -666,7 +667,7 @@ if(RMT_CORE_TEST)
         target_compile_definitions(RmtCoreTest PRIVATE RMT_HAS_MFC)
     endif()
 
-    target_include_directories(RmtCoreTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(RmtCoreTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
     if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
         if(PortAudio_FOUND)

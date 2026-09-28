@@ -5,6 +5,7 @@
 
 #include "PlatformTypes.h"
 #include "resource.h"
+#include "RmtVersion.h"
 
 // ---------------------------------------------------------------------------
 // CString::LoadString() - stand-in for the Windows .rc string table.
@@ -20,7 +21,7 @@
 BOOL CString::LoadString(UINT id) {
     switch (id) {
     case IDS_RMT_VERSION: // == IDS_RMTVERSION
-        m_data = "RASTER Music Tracker 1.35";
+        m_data = RMT_VERSION_STRING;
         return TRUE;
     case IDS_RMT_AUTHOR:
         m_data = "by Radek Sterba, (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)";
