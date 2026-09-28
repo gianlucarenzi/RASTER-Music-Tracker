@@ -46,7 +46,8 @@ int main(int argc, char** argv)
     window.resize(1280, 800);
     window.show();
     // test hook: RMT_QT_GRAB=file.png saves the window after 1 s and quits
-    // (with QT_QPA_PLATFORM=offscreen it runs without a display);
+    // (with QT_QPA_PLATFORM=offscreen it runs without a display; the delay is
+    // RMT_QT_GRAB_MS);
     // RMT_QT_KEYS="108,108,106" first presses those keys (Linux evdev codes)
     QString grab = qEnvironmentVariable("RMT_QT_GRAB");
     if (!grab.isEmpty()) {
@@ -60,7 +61,8 @@ int main(int argc, char** argv)
                 QCoreApplication::sendEvent(window.centralWidget(), &release);
             }
         });
-        QTimer::singleShot(1000, &window, [&window, grab] {
+        int grabMs = qEnvironmentVariableIsSet("RMT_QT_GRAB_MS") ? qEnvironmentVariableIntValue("RMT_QT_GRAB_MS") : 1000;
+        QTimer::singleShot(grabMs, &window, [&window, grab] {
             window.grab().save(grab);
             QCoreApplication::exit(0);
         });

@@ -130,17 +130,28 @@ Status:
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
-- ❌ sound output: the DirectSound device of `MfcTypes.h` is silent and the song
-  timer (`timeSetEvent`) does not run yet (next: PortAudio + a timer thread)
+- ✅ playback with sound: the song timer (`timeSetEvent`, a thread; a timer
+  re-created from its own tick keeps the deadline, so the tempo does not
+  drift) runs `CSong::TimerRoutine()`, and the DirectSound buffer the sound
+  code streams to is played by PortAudio with real cursors (`MfcAudio.cpp`,
+  `RMT_HAVE_PORTAUDIO`, `sudo apt install portaudio19-dev`)
 - ❌ MIDI input
 
-Test without a display: `RMT_QT_GRAB=shot.png` saves the window after 1 s and
-quits, `RMT_QT_KEYS=108,106` first presses keys (Linux evdev codes), message
-boxes are answered automatically:
+Test without a display: `RMT_QT_GRAB=shot.png` saves the window after 1 s
+(`RMT_QT_GRAB_MS`) and quits, `RMT_QT_KEYS=108,106` first presses keys (Linux
+evdev codes, 63 = F5 play), message boxes are answered automatically;
+`RMT_AUDIO_DUMP=out.wav` replaces the sound card with a thread that takes the
+sound buffer in real time and writes it to a WAV file:
 
 ```bash
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
+QT_QPA_PLATFORM=offscreen RMT_AUDIO_DUMP=play.wav RMT_QT_KEYS=63 RMT_QT_GRAB_MS=6000 \
+    RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
 ```
+
+Checked this way with gemx.rmt: after F5 the time counter shows 5.50 s at
+5.5 s, the sound correlates 0.985 (chroma) and 0.989 (loudness, 10 ms steps)
+with `rmtplay`, with the same delay at the start and at the end (no drift).
 
 `RmtCoreTest --screenshot out.ppm [song.rmt]` draws the main screen without Qt;
 `RmtCoreTest --play song.rmt frames regs.txt [out.wav]` plays a song with the

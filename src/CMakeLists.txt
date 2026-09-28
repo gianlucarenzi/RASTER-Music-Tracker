@@ -209,7 +209,7 @@ else()
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES})
         if(NOT MFC_AVAILABLE)
             # Non-MFC type shim (Fase 0)
-            list(APPEND RMT_SOURCES MfcTypes.cpp MfcDialogStubs.cpp ${RMT_EMBEDDED_RESOURCES})
+            list(APPEND RMT_SOURCES MfcTypes.cpp MfcAudio.cpp MfcDialogStubs.cpp ${RMT_EMBEDDED_RESOURCES})
         endif()
     else()
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES})
@@ -365,8 +365,12 @@ if(RMT_USE_QT)
     find_package(Qt5 5.12 REQUIRED COMPONENTS Core Widgets)
 endif()
 
+# std::thread (song timer of MfcAudio.cpp, backends)
+find_package(Threads REQUIRED)
+
 # Create executable
 add_executable(Rmt WIN32 ${RMT_SOURCES})
+target_link_libraries(Rmt PRIVATE Threads::Threads)
 
 # Set target properties
 # VERSION/SOVERSION on an executable only make a versioned file plus a
@@ -422,7 +426,8 @@ if(WIN32)
     endif()
 endif()
 
-# Link PortAudio library (search was done earlier)
+# Link PortAudio library (search was done earlier). Builds without MFC play
+# the DirectSound buffer of the sound code with it (MfcAudio.cpp)
 if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
     if(PortAudio_FOUND)
         target_link_libraries(Rmt PRIVATE ${PortAudio_LIBRARIES})
@@ -431,6 +436,9 @@ if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
         target_link_libraries(Rmt PRIVATE ${PORTAUDIO_LIB})
     else()
         message(WARNING "PortAudio not found - audio functionality may be limited")
+    endif()
+    if((PortAudio_FOUND OR PORTAUDIO_LIB) AND NOT MFC_AVAILABLE)
+        target_compile_definitions(Rmt PRIVATE RMT_HAVE_PORTAUDIO)
     endif()
 endif()
 
@@ -504,6 +512,7 @@ if(RMT_BUILD_CORE_ONLY)
         list(REMOVE_ITEM RMT_MIDITEST_SOURCES PortAudioBackend.cpp)
     endif()
     add_executable(RmtMidiTest WIN32 ${RMT_MIDITEST_SOURCES})
+    target_link_libraries(RmtMidiTest PRIVATE Threads::Threads)
 
     # Apply same configuration as main Rmt executable
     if(WIN32)
@@ -644,11 +653,13 @@ if(RMT_CORE_TEST)
         # implementations otherwise).
         list(APPEND RMT_ENGINE_SOURCES
             MfcTypes.cpp
+            MfcAudio.cpp
             MfcDialogStubs.cpp
         )
     endif()
 
     add_executable(RmtCoreTest ${RMT_ENGINE_SOURCES} main-coretest.cpp)
+    target_link_libraries(RmtCoreTest PRIVATE Threads::Threads)
 
     target_compile_definitions(RmtCoreTest PRIVATE ${RMT_DEFINES})
     if(MFC_AVAILABLE)

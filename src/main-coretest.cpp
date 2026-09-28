@@ -145,6 +145,7 @@ static int PlaySong(const char* song, int frames, const char* regsOut, const cha
 }
 
 int main(int argc, char** argv) {
+    g_rmtAudioOutput = false;       // deterministic: the sound buffer plays "instantly"
     // program folder = folder of the executable: resources/drivers is there
     {
         std::error_code ec;

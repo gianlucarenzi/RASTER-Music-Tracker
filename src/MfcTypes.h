@@ -35,6 +35,7 @@
 #include <fstream>
 #include <filesystem>
 #include <type_traits>
+#include <atomic>
 #include <algorithm>
 #include <ctime>
 #include <system_error>
@@ -1161,8 +1162,9 @@ private:
 typedef void (CALLBACK* LPTIMECALLBACK)(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR);
 #define TIME_PERIODIC 1
 #define TIME_ONESHOT  0
-inline UINT timeSetEvent(UINT, UINT, LPTIMECALLBACK, DWORD_PTR, UINT) { return 0; }
-inline UINT timeKillEvent(UINT) { return 0; }
+// multimedia timers on a thread (MfcAudio.cpp)
+UINT timeSetEvent(UINT delay, UINT resolution, LPTIMECALLBACK callback, DWORD_PTR user, UINT flags);
+UINT timeKillEvent(UINT id);
 
 // ---------------------------------------------------------------------------
 // Minimal DirectSound shim (legacy CXPokey/PokeyRederer.cpp renderer).
@@ -1205,13 +1207,19 @@ struct DSBCAPS {
 #define DSBLOCK_FROMWRITECURSOR 0x00000001
 #define DSBPLAY_LOOPING 0x00000001
 
-// A silent DirectSound device: buffers are plain memory that nobody plays.
-// It lets the sound code (PokeyRederer.cpp) initialise without Windows; the
-// real output outside Windows is the PortAudio backend (later phase).
+// DirectSound outside Windows (MfcAudio.cpp): a secondary buffer is a ring
+// that PortAudio plays (when available and g_rmtAudioOutput is true), with
+// real play/write cursors, so PokeyRederer.cpp streams to it exactly as to
+// DirectSound. Otherwise the buffer "plays" instantly: the cursors follow the
+// writes (RmtCoreTest, builds without PortAudio).
+extern bool g_rmtAudioOutput;
+
+struct RmtAudioStream;
 class IDirectSoundBuffer {
 public:
-    explicit IDirectSoundBuffer(DWORD bytes = 0) : m_data(bytes) {}
-    HRESULT SetFormat(const WAVEFORMATEX*) { return DS_OK; }
+    IDirectSoundBuffer(DWORD bytes, const WAVEFORMATEX* format);
+    ~IDirectSoundBuffer();
+    HRESULT SetFormat(const WAVEFORMATEX* format) { if (format) m_format = *format; return DS_OK; }
     HRESULT GetCaps(DSBCAPS* caps) { if (caps) caps->dwBufferBytes = (DWORD)m_data.size(); return DS_OK; }
     HRESULT Lock(DWORD offset, DWORD bytes, void** ppData1, DWORD* pSize1, void** ppData2, DWORD* pSize2, DWORD) {
         DWORD size = (DWORD)m_data.size();
@@ -1226,22 +1234,19 @@ public:
         if (bytes > first && ppData2 && pSize2) { *ppData2 = m_data.data(); *pSize2 = bytes - first; }
         return DS_OK;
     }
-    HRESULT Unlock(void* p1, DWORD s1, void*, DWORD s2) {
-        // plays instantly: the cursors follow what was written
-        if (p1 && !m_data.empty()) m_cursor = (DWORD)(((unsigned char*)p1 - m_data.data()) + s1 + s2) % (DWORD)m_data.size();
-        return DS_OK;
-    }
-    HRESULT Play(DWORD, DWORD, DWORD) { return DS_OK; }
-    HRESULT Stop() { return DS_OK; }
-    HRESULT GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor) {
-        if (playCursor) *playCursor = m_cursor;
-        if (writeCursor) *writeCursor = m_cursor;
-        return DS_OK;
-    }
+    HRESULT Unlock(void* p1, DWORD s1, void* p2, DWORD s2);
+    HRESULT Play(DWORD, DWORD, DWORD flags);
+    HRESULT Stop();
+    HRESULT GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor);
     HRESULT Release() { delete this; return DS_OK; }
-private:
+
+    // PortAudio side
     std::vector<unsigned char> m_data;
-    DWORD m_cursor = 0;
+    WAVEFORMATEX m_format;
+    std::atomic<DWORD> m_play{ 0 };         // byte offset the device reads next
+    DWORD m_cursor = 0;                     // instant mode: end of the last write
+private:
+    RmtAudioStream* m_stream = nullptr;
 };
 typedef IDirectSoundBuffer* LPDIRECTSOUNDBUFFER;
 
@@ -1250,7 +1255,7 @@ public:
     HRESULT SetCooperativeLevel(HWND, DWORD) { return DS_OK; }
     HRESULT CreateSoundBuffer(const DSBUFFERDESC* desc, LPDIRECTSOUNDBUFFER* buffer, void*) {
         if (!buffer) return DS_ERR_GENERIC;
-        *buffer = new IDirectSoundBuffer(desc ? desc->dwBufferBytes : 0);
+        *buffer = new IDirectSoundBuffer(desc ? desc->dwBufferBytes : 0, desc ? desc->lpwfxFormat : nullptr);
         return DS_OK;
     }
     HRESULT Release() { return DS_OK; }
