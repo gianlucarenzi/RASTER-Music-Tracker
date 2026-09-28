@@ -12,11 +12,14 @@
 #include "RmtQtFrontend.h"
 #include "RmtQtKeys.h"
 
+#include <QAction>
 #include <QCloseEvent>
 #include <QDesktopServices>
 #include <QGuiApplication>
 #include <QImage>
 #include <QKeyEvent>
+#include <QMenu>
+#include <QMenuBar>
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
@@ -27,6 +30,7 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 extern CStatusBar* g_statusBar;
 extern CSong g_Song;
@@ -67,6 +71,29 @@ public:
 };
 
 // ---------------------------------------------------------------------------
+// QtCCmdUI - bridges CCmdUI to QAction for ON_UPDATE_COMMAND_UI handlers
+// ---------------------------------------------------------------------------
+
+class QtCCmdUI : public CCmdUI {
+public:
+    QAction* m_action;
+    QtCCmdUI(UINT id, QAction* action) { m_nID = id; m_action = action; }
+    void Enable(BOOL on) override { m_action->setEnabled(on != FALSE); }
+    void SetCheck(int check) override {
+        m_action->setCheckable(true);
+        m_action->setChecked(check != 0);
+    }
+    void SetRadio(BOOL on) override {
+        m_action->setCheckable(true);
+        m_action->setChecked(on != FALSE);
+    }
+    void SetText(LPCTSTR text) override {
+        CCmdUI::SetText(text);
+        if (text) m_action->setText(text);
+    }
+};
+
+// ---------------------------------------------------------------------------
 // RmtQtBridge - IRmtHost for the MFC code, owner of the MFC objects
 // ---------------------------------------------------------------------------
 
@@ -83,6 +110,8 @@ public:
     CDC m_windowDC;
     std::map<UINT_PTR, QTimer*> m_timers;
     std::set<unsigned> m_keysDown;
+    // All (id → action) pairs registered in the menu bar, for update-UI polling
+    std::vector<std::pair<UINT, QAction*>> m_menuActions;
     bool m_started = false;
 
     void Attach(RmtViewWidget* widget) {
@@ -115,14 +144,207 @@ public:
         if (m_view.OnCmdMsg(id) || m_frame.OnCmdMsg(id)) return;
         switch (id) {
         case ID_APP_ABOUT:
-            QMessageBox::about(m_win, "About RMT",
-                QString("%1\n\nQt frontend (Linux/POSIX)").arg(g_app.GetVersionAndBuild().GetString()));
+        case ID_HELP_ABOUT_APP:
+            if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB"))
+                QMessageBox::about(m_win, "About RMT",
+                    QString("%1\n\nQt frontend (Linux/POSIX)").arg(g_app.GetVersionAndBuild().GetString()));
             break;
         case ID_APP_EXIT:
             m_win->close();
             break;
+        case ID_HELP_ONLINE_HELP:
+        case ID_HELP_HELP_TOPICS:
+            g_app.OpenOnlineHelp();
+            break;
         default:
             qDebug("RMT: command %u has no handler", id);
+        }
+    }
+
+    // Build the full menu bar from the MFC .rc menu structure.
+    // Each action dispatches via Dispatch(id); ON_UPDATE_COMMAND_UI is run
+    // on aboutToShow so enabled/checked states are kept in sync.
+    void BuildMenuBar(QMenuBar* bar) {
+        // Helper: add a single command item to a menu
+        auto addItem = [&](QMenu* menu, const char* text, UINT id,
+                           const char* shortcut = nullptr) -> QAction* {
+            QAction* act = menu->addAction(text);
+            act->setShortcutContext(Qt::ApplicationShortcut);
+            if (shortcut) act->setShortcut(QKeySequence(shortcut));
+            QObject::connect(act, &QAction::triggered, [this, id] { Dispatch(id); });
+            m_menuActions.emplace_back(id, act);
+            return act;
+        };
+
+        // Helper: connect a menu's aboutToShow to run ON_UPDATE_COMMAND_UI on
+        // all registered actions of that menu (recursively through submenus).
+        auto connectUpdate = [&](QMenu* menu, auto& self) -> void {
+            QObject::connect(menu, &QMenu::aboutToShow, [this, menu] {
+                if (!m_started) return;
+                std::function<void(QMenu*)> update = [&](QMenu* m) {
+                    for (QAction* act : m->actions()) {
+                        UINT id = act->data().toUInt();
+                        if (id) {
+                            QtCCmdUI ui(id, act);
+                            if (!m_view.OnUpdateCmdUI(&ui)) m_frame.OnUpdateCmdUI(&ui);
+                        }
+                        if (act->menu()) update(act->menu());
+                    }
+                };
+                update(menu);
+            });
+            for (QAction* act : menu->actions())
+                if (act->menu()) self(act->menu(), self);
+        };
+
+        // Store the ID in action data so aboutToShow can find it
+        auto addItemTagged = [&](QMenu* menu, const char* text, UINT id,
+                                 const char* shortcut = nullptr) -> QAction* {
+            QAction* act = addItem(menu, text, id, shortcut);
+            act->setData(id);
+            return act;
+        };
+
+        // ---- File ----
+        QMenu* mFile = bar->addMenu("&File");
+        addItemTagged(mFile, "Ne&w",             ID_FILE_NEW,     "Ctrl+W");
+        addItemTagged(mFile, "&Load...",          ID_FILE_OPEN,    "Ctrl+L");
+        addItemTagged(mFile, "&Reload",           ID_FILE_RELOAD,  "Ctrl+R");
+        mFile->addSeparator();
+        addItemTagged(mFile, "&Save",             ID_FILE_SAVE,    "Ctrl+S");
+        addItemTagged(mFile, "Save &As...",       ID_FILE_SAVE_AS);
+        mFile->addSeparator();
+        addItemTagged(mFile, "&Import...",        ID_FILE_IMPORT);
+        addItemTagged(mFile, "&Export As...",     ID_FILE_EXPORT_AS);
+        mFile->addSeparator();
+        addItemTagged(mFile, "E&xit",             ID_FILE_EXIT,    "Alt+F4");
+
+        // ---- Edit ----
+        QMenu* mEdit = bar->addMenu("&Edit");
+        addItemTagged(mEdit, "&Undo",             ID_UNDO_UNDO,    "Ctrl+Z");
+        addItemTagged(mEdit, "&Redo",             ID_UNDO_REDO,    "Ctrl+Y");
+        mEdit->addSeparator();
+        addItemTagged(mEdit, "&Clear Undo && Redo history", ID_UNDO_CLEARUNDOREDO);
+
+        // ---- Track ----
+        QMenu* mTrack = bar->addMenu("&Track");
+        addItemTagged(mTrack, "&Copy",            ID_TRACK_COPY);
+        addItemTagged(mTrack, "&Paste",           ID_TRACK_PASTE);
+        addItemTagged(mTrack, "Cu&t",             ID_TRACK_CUT);
+        addItemTagged(mTrack, "&Delete",          ID_TRACK_DELETE);
+        mTrack->addSeparator();
+        addItemTagged(mTrack, "&Info about current track...", ID_TRACK_INFOABOUTUSINGOFACTUALTRACK);
+        addItemTagged(mTrack, "Search and &build wise loop",  ID_TRACK_SEARCHANDBUILDLOOP);
+        addItemTagged(mTrack, "E&xpand loop",     ID_TRACK_EXPANDLOOP);
+        mTrack->addSeparator();
+        addItemTagged(mTrack, "Search and rebuild wise loops in all tracks...", ID_SONG_SEARCHANDBUILDLOOPSINALLTRACKS);
+        addItemTagged(mTrack, "Expand loops in all tracks",   ID_SONG_EXPANDLOOPSINALLTRACKS);
+        addItemTagged(mTrack, "Renumber all tracks...",       ID_TRACK_RENUMBERALLTRACKS);
+        mTrack->addSeparator();
+        addItemTagged(mTrack, "&Load track from file...",     ID_TRACK_LOAD);
+        addItemTagged(mTrack, "&Save track as...",            ID_TRACK_SAVE);
+        mTrack->addSeparator();
+        addItemTagged(mTrack, "Clear all duplicated tracks, adjust song...", ID_TRACK_CLEARALLDUPLICATEDTRACKS);
+        addItemTagged(mTrack, "Clear all tracks unused in song...",          ID_TRACK_CLEARALLTRACKSUNUSEDINSONG);
+        addItemTagged(mTrack, "All tracks cleanup...",        ID_TRACK_ALLTRACKSCLEANUP);
+
+        // ---- Block ----
+        QMenu* mBlock = bar->addMenu("&Block");
+        addItemTagged(mBlock, "Restore from &backup",  ID_BLOCK_BACKUP,  "Ctrl+B");
+        mBlock->addSeparator();
+        addItemTagged(mBlock, "&Copy",            ID_BLOCK_COPY,    "Ctrl+C");
+        addItemTagged(mBlock, "&Paste",           ID_BLOCK_PASTE,   "Ctrl+V");
+        {
+            QMenu* sub = mBlock->addMenu("Paste sp&ecial");
+            addItemTagged(sub, "&Merge with current content", ID_BLOCK_PASTESPECIAL_MERGEWITHCURRENTCONTENT, "Ctrl+M");
+            addItemTagged(sub, "&Volume values only",          ID_BLOCK_PASTESPECIAL_VOLUMEVALUESONLY);
+            addItemTagged(sub, "&Speed values only",           ID_BLOCK_PASTESPECIAL_SPEEDVALUESONLY);
+        }
+        addItemTagged(mBlock, "Cu&t",             ID_BLOCK_CUT,     "Ctrl+X");
+        addItemTagged(mBlock, "&Delete",          ID_BLOCK_DELETE,  "Del");
+        addItemTagged(mBlock, "Exchange block and Clipboard", ID_BLOCK_EXCHANGE, "Ctrl+E");
+        mBlock->addSeparator();
+        addItemTagged(mBlock, "E&ffects/tools...", ID_BLOCK_EFFECT,  "Ctrl+F");
+        mBlock->addSeparator();
+        addItemTagged(mBlock, "Select &all",      ID_BLOCK_SELECTALL, "Ctrl+A");
+
+        // ---- Instrument ----
+        QMenu* mInstr = bar->addMenu("&Instrument");
+        addItemTagged(mInstr, "&Copy",            ID_INSTR_COPY);
+        addItemTagged(mInstr, "&Paste",           ID_INSTR_PASTE);
+        {
+            QMenu* sub = mInstr->addMenu("Paste sp&ecial");
+            addItemTagged(sub, "&Volume envelopes only",        ID_INSTRUMENT_PASTESPECIAL_VOLUMELRENVELOPESONLY);
+            addItemTagged(sub, "&Envelope parameters only",     ID_INSTRUMENT_PASTESPECIAL_ENVELOPEPARAMETERSONLY);
+            addItemTagged(sub, "Volume envelopes and Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_VOLUMEENVANDENVELOPEPARSONLY);
+            addItemTagged(sub, "&Insert Volume envelopes and Envelope parameters to cursor position", ID_INSTRUMENT_PASTESPECIAL_INSERTVOLUMEENVSANDENVELOPEPARSTOCURSORPOSITION);
+            sub->addSeparator();
+            addItemTagged(sub, "Volume &L envelope only",       ID_INSTRUMENT_PASTESPECIAL_VOLUMELENVELOPEONLY);
+            addItemTagged(sub, "Volume &R envelope only",       ID_INSTRUMENT_PASTESPECIAL_VOLUMERENVELOPEONLY);
+            addItemTagged(sub, "Volume R to L envelope only",   ID_INSTRUMENT_PASTESPECIAL_VOLUMERTOLENVELOPEONLY);
+            addItemTagged(sub, "Volume L to R envelope only",   ID_INSTRUMENT_PASTESPECIAL_VOLUMELTORENVELOPEONLY);
+            sub->addSeparator();
+            addItemTagged(sub, "&Table only",                   ID_INSTRUMENT_PASTESPECIAL_TABLEONLY);
+        }
+        addItemTagged(mInstr, "Cu&t",             ID_INSTR_CUT);
+        addItemTagged(mInstr, "&Delete",          ID_INSTR_DELETE);
+        mInstr->addSeparator();
+        addItemTagged(mInstr, "&Info about current instrument...", ID_INSTRUMENT_INFO);
+        addItemTagged(mInstr, "Change all the instrument occurences...", ID_INSTRUMENT_CHANGE);
+        addItemTagged(mInstr, "Renumber all instruments...",  ID_INSTRUMENT_RENUMBERALLINSTRUMENTS);
+        mInstr->addSeparator();
+        addItemTagged(mInstr, "&Load instrument from file...", ID_INSTR_LOAD);
+        addItemTagged(mInstr, "&Save instrument as...",       ID_INSTR_SAVE);
+        mInstr->addSeparator();
+        addItemTagged(mInstr, "Clear all unused instruments...", ID_INSTRUMENT_CLEARALLUNUSEDINSTRUMENTS);
+        addItemTagged(mInstr, "All instruments cleanup...",   ID_INSTR_ALLINSTRUMENTSCLEANUP);
+
+        // ---- Song ----
+        QMenu* mSong = bar->addMenu("&Song");
+        addItemTagged(mSong, "&Copy line",        ID_SONG_COPYLINE);
+        addItemTagged(mSong, "&Paste line",       ID_SONG_PASTELINE);
+        addItemTagged(mSong, "Cl&ear line",       ID_SONG_CLEARLINE);
+        mSong->addSeparator();
+        addItemTagged(mSong, "Delete c&urrent line",            ID_SONG_DELETEACTUALLINE,             "Ctrl+U");
+        addItemTagged(mSong, "&Insert new empty line",          ID_SONG_INSERTNEWEMPTYLINE,           "Ctrl+I");
+        addItemTagged(mSong, "Insert new line with unused empty tracks", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS, "Ctrl+P");
+        addItemTagged(mSong, "Insert c&opy or clone of song line(s)...", ID_SONG_INSERTCOPYORCLONEOFSONGLINES, "Ctrl+O");
+        addItemTagged(mSong, "Insert &new empty unused track to current song position", ID_SONG_PUTNEWEMPTYUNUSEDTRACK, "Ctrl+N");
+        addItemTagged(mSong, "Make a track &duplicate to current song position", ID_SONG_MAKETRACKSDUPLICATE, "Ctrl+D");
+        mSong->addSeparator();
+        addItemTagged(mSong, "Switch song between 4 or 8 channels...", ID_SONG_SONGSWITCH4_8);
+        addItemTagged(mSong, "Song columns' order change/copy/clear...", ID_SONG_TRACKSORDERCHANGE);
+        addItemTagged(mSong, "Change maximal length of tracks...", ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS);
+        mSong->addSeparator();
+        addItemTagged(mSong, "All size optimizations...",       ID_SONG_SIZEOPTIMIZATION);
+
+        // ---- View ----
+        QMenu* mView = bar->addMenu("&View");
+        addItemTagged(mView, "&Configuration...", ID_VIEW_CONFIGURATION);
+        mView->addSeparator();
+        addItemTagged(mView, "&Tuning...",        ID_VIEW_TUNING);
+        mView->addSeparator();
+        addItemTagged(mView, "Main &toolbar",     ID_VIEW_TOOLBAR);
+        addItemTagged(mView, "&Block toolbar",    ID_VIEW_BLOCKTOOLBAR);
+        mView->addSeparator();
+        addItemTagged(mView, "&Status Bar",       ID_VIEW_STATUS_BAR);
+        mView->addSeparator();
+        addItemTagged(mView, "&Play time counter",  ID_VIEW_PLAYTIMECOUNTER);
+        addItemTagged(mView, "&Volume analyzer",    ID_VIEW_VOLUMEANALYZER);
+        addItemTagged(mView, "Pokey chip &registers", ID_VIEW_POKEYREGS);
+        mView->addSeparator();
+        addItemTagged(mView, "&Instrument active help", ID_VIEW_INSTRUMENTACTIVEHELP);
+
+        // ---- Help ----
+        QMenu* mHelp = bar->addMenu("&Help");
+        addItemTagged(mHelp, "&Help Topics",                    ID_HELP_HELP_TOPICS);
+        addItemTagged(mHelp, "&Online Help",                    ID_HELP_ONLINE_HELP, "Shift+F1");
+        addItemTagged(mHelp, "&About RASTER Music Tracker",     ID_HELP_ABOUT_APP);
+
+        // Wire up ON_UPDATE_COMMAND_UI for all top-level menus
+        for (QAction* act : bar->actions()) {
+            if (QMenu* m = act->menu())
+                connectUpdate(m, connectUpdate);
         }
     }
 
@@ -358,6 +580,7 @@ RmtMainWindow::RmtMainWindow() : m_bridge(new RmtQtBridge(this))
     m_bridge->Attach(view);
     g_rmtHost = m_bridge.get();
     statusBar();
+    m_bridge->BuildMenuBar(menuBar());
     setWindowTitle("RASTER Music Tracker");
 }
 

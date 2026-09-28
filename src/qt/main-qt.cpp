@@ -9,12 +9,14 @@
 #include "Atari.h"
 #include "AtariTrackerDriver.h"
 #include "Tuning.h"
+#include "resource.h"
 
 #include "RmtQtFrontend.h"
 
 #include <QApplication>
 #include <QDir>
 #include <QKeyEvent>
+#include <QMenuBar>
 #include <QTimer>
 
 extern CSong g_Song;
@@ -69,5 +71,61 @@ int main(int argc, char** argv)
     }
 
     window.Start(argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString());
+
+    // RMT_QT_MENU_TEST: trigger every menu action (except exit) and verify
+    // all have registered handlers (no "has no handler" debug warning).
+    // Use together with QT_QPA_PLATFORM=offscreen and RMT_QT_GRAB=<any>.
+    if (qEnvironmentVariableIsSet("RMT_QT_MENU_TEST")) {
+        static QStringList noHandlerMsgs;
+        qInstallMessageHandler([](QtMsgType, const QMessageLogContext&, const QString& msg) {
+            if (msg.contains("has no handler"))
+                noHandlerMsgs << msg;
+        });
+
+        // IDs that would close or exit the application - skip in tests
+        static const QSet<uint> skipIds = {
+            (uint)ID_FILE_EXIT, (uint)ID_WANTEXIT, (uint)ID_APP_EXIT,
+        };
+
+        QTimer::singleShot(300, &window, [&window] {
+            // Collect all leaf actions (not separators, not submenu headers)
+            std::function<QList<QAction*>(QMenu*)> collectLeafs = [&](QMenu* m) -> QList<QAction*> {
+                QList<QAction*> result;
+                for (QAction* a : m->actions()) {
+                    if (a->isSeparator()) continue;
+                    if (a->menu()) result += collectLeafs(a->menu());
+                    else           result << a;
+                }
+                return result;
+            };
+
+            QList<QAction*> actions;
+            for (QAction* top : window.menuBar()->actions())
+                if (top->menu()) actions += collectLeafs(top->menu());
+
+            int triggered = 0;
+            for (QAction* a : actions) {
+                uint id = a->data().toUInt();
+                if (!id || skipIds.contains(id)) continue;
+                a->trigger();
+                QCoreApplication::processEvents();
+                ++triggered;
+            }
+            fprintf(stdout, "RMT_QT_MENU_TEST: triggered %d menu actions\n", triggered);
+
+            QTimer::singleShot(100, [] {
+                if (noHandlerMsgs.isEmpty()) {
+                    fprintf(stdout, "RMT_QT_MENU_TEST: PASS\n");
+                    QCoreApplication::exit(0);
+                } else {
+                    fprintf(stdout, "RMT_QT_MENU_TEST: FAIL - missing handlers:\n");
+                    for (const QString& m : noHandlerMsgs)
+                        fprintf(stdout, "  %s\n", m.toLocal8Bit().constData());
+                    QCoreApplication::exit(1);
+                }
+            });
+        });
+    }
+
     return app.exec();
 }
