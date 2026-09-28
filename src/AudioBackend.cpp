@@ -4,7 +4,9 @@
 
 #include "AudioBackend.h"
 #include "DirectSoundAudio.h"
+#ifndef RMT_NO_PORTAUDIO
 #include "PortAudioBackend.h"
+#endif
 
 #ifdef _WIN32
     #define PREFER_DIRECTSOUND 1
@@ -30,7 +32,10 @@ std::unique_ptr<IAudioBackend> AudioBackendFactory::CreateDirectSound()
 
 std::unique_ptr<IAudioBackend> AudioBackendFactory::CreatePortAudio()
 {
-#ifdef _WIN32
+#if defined(RMT_NO_PORTAUDIO)
+    // Windows build without PortAudio (e.g. MinGW): DirectSound only
+    return CreateDirectSound();
+#elif defined(_WIN32)
     // Could fallback to DirectSound on Windows if PortAudio unavailable
     return std::make_unique<PortAudioBackend>();
 #else

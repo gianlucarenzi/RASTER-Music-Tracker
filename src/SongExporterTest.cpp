@@ -38,7 +38,7 @@ CString GetFileNameWithoutExtension(const CString& fileName) {
 
 static   time_t startTimestamp;
 
-bool OpenOutputStream(const CString filePath, const int mode, std::ofstream& os) {
+bool OpenOutputStream(const CString filePath, const std::ios_base::openmode mode, std::ofstream& os) {
     SendInfoMessage("Opening '" + filePath + "' for output.");
     os.open(filePath, mode);
     if (os.fail()) {

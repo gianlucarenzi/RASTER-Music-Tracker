@@ -187,10 +187,7 @@ else()
     if(RMT_USE_QT)
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES})
         if(NOT MFC_AVAILABLE)
-            # Non-MFC type shim (Fase 0). SongExporterTest.cpp is excluded
-            # for the same pre-existing, unrelated reason documented on the
-            # RmtCoreTest target below (int vs std::ios_base::openmode).
-            list(REMOVE_ITEM RMT_SOURCES SongExporterTest.cpp)
+            # Non-MFC type shim (Fase 0)
             list(APPEND RMT_SOURCES MfcTypes.cpp MfcDialogStubs.cpp)
         endif()
     else()
@@ -329,6 +326,19 @@ if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
     endif()
 endif()
 
+# Windows without PortAudio headers (e.g. MinGW cross-compile): drop the
+# PortAudio backend, AudioBackendFactory falls back to DirectSound
+set(RMT_NO_PORTAUDIO FALSE)
+if(WIN32 AND NOT PortAudio_FOUND AND NOT PORTAUDIO_LIB)
+    find_path(PORTAUDIO_INCLUDE portaudio.h)
+    if(NOT PORTAUDIO_INCLUDE)
+        set(RMT_NO_PORTAUDIO TRUE)
+        list(REMOVE_ITEM RMT_SOURCES PortAudioBackend.cpp)
+        list(APPEND RMT_DEFINES RMT_NO_PORTAUDIO)
+        message(STATUS "PortAudio not found: Windows build uses DirectSound only")
+    endif()
+endif()
+
 # Qt5 native GUI frontend (Fase 1+ of the MFC -> Qt migration)
 if(RMT_USE_QT)
     find_package(Qt5 5.12 REQUIRED COMPONENTS Core Widgets)
@@ -338,10 +348,14 @@ endif()
 add_executable(Rmt WIN32 ${RMT_SOURCES})
 
 # Set target properties
-set_target_properties(Rmt PROPERTIES
-    VERSION ${PROJECT_VERSION}
-    SOVERSION 1
-)
+# VERSION/SOVERSION on an executable only make a versioned file plus a
+# symlink (Rmt.exe-1.35.0 -> Rmt.exe): not wanted on Windows
+if(NOT WIN32)
+    set_target_properties(Rmt PROPERTIES
+        VERSION ${PROJECT_VERSION}
+        SOVERSION 1
+    )
+endif()
 
 # Preprocessor definitions
 target_compile_definitions(Rmt PRIVATE ${RMT_DEFINES})
@@ -451,7 +465,7 @@ message(STATUS "  Defines: ${RMT_DEFINES}")
 
 # Create separate MIDI test executable (core-only builds)
 if(RMT_BUILD_CORE_ONLY)
-    add_executable(RmtMidiTest WIN32
+    set(RMT_MIDITEST_SOURCES
         main-midi.cpp
         # Audio Backend
         AudioBackend.cpp
@@ -462,14 +476,25 @@ if(RMT_BUILD_CORE_ONLY)
         WindowsMidiBackend.cpp
         RtMidiBackend.cpp
     )
-    
+    if(RMT_NO_PORTAUDIO)
+        list(REMOVE_ITEM RMT_MIDITEST_SOURCES PortAudioBackend.cpp)
+    endif()
+    add_executable(RmtMidiTest WIN32 ${RMT_MIDITEST_SOURCES})
+
     # Apply same configuration as main Rmt executable
-    set_target_properties(RmtMidiTest PROPERTIES
-        VERSION ${PROJECT_VERSION}
-        OUTPUT_NAME "RmtMidiTest.exe"
-    )
+    if(WIN32)
+        set_target_properties(RmtMidiTest PROPERTIES OUTPUT_NAME "RmtMidiTest")
+    else()
+        set_target_properties(RmtMidiTest PROPERTIES
+            VERSION ${PROJECT_VERSION}
+            OUTPUT_NAME "RmtMidiTest.exe"
+        )
+    endif()
     
     target_compile_definitions(RmtMidiTest PRIVATE ${RMT_DEFINES})
+    if(WIN32)
+        target_link_libraries(RmtMidiTest PRIVATE winmm dsound)
+    endif()
     target_include_directories(RmtMidiTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     
     # Link audio libraries
@@ -561,15 +586,7 @@ if(RMT_CORE_TEST)
         Song_DumpSong.cpp
         SongExport.cpp
         SongExporter.cpp
-        # NOTE: SongExporterTest.cpp is intentionally NOT included here.
-        # OpenOutputStream() in that file declares its 3rd parameter as a
-        # plain 'int' and passes it straight to std::ofstream::open(), which
-        # expects a std::ios_base::openmode. This happens to compile under
-        # MSVC's STL (where openmode is effectively an int) but not under
-        # libstdc++ (GCC), which uses a distinct bitmask type with no
-        # implicit int conversion. This is a pre-existing bug unrelated to
-        # MFC/Windows types (Fase 0 scope) - flagged as a follow-up for the
-        # maintainer rather than silently patched here.
+        SongExporterTest.cpp
         SongTimer.cpp
         Tracks.cpp
         Tuning.cpp

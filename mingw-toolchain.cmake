@@ -14,9 +14,13 @@ set(CMAKE_SYSTEM_PROCESSOR x86_64)
 # MinGW cross-compiler prefix
 set(MINGW_PREFIX "x86_64-w64-mingw32")
 
-# Set C and C++ compiler
-set(CMAKE_C_COMPILER ${MINGW_PREFIX}-gcc)
-set(CMAKE_CXX_COMPILER ${MINGW_PREFIX}-g++)
+# Set C and C++ compiler. The "-posix" variants (Debian/Ubuntu mingw-w64)
+# have the posix thread model, needed for std::thread/std::this_thread;
+# the plain names default to the "win32" thread model on those systems.
+find_program(MINGW_CC NAMES ${MINGW_PREFIX}-gcc-posix ${MINGW_PREFIX}-gcc)
+find_program(MINGW_CXX NAMES ${MINGW_PREFIX}-g++-posix ${MINGW_PREFIX}-g++)
+set(CMAKE_C_COMPILER ${MINGW_CC})
+set(CMAKE_CXX_COMPILER ${MINGW_CXX})
 set(CMAKE_RC_COMPILER ${MINGW_PREFIX}-windres)
 
 # Archiver
