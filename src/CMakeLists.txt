@@ -3,6 +3,17 @@
 # Platform and dependency detection
 message(STATUS "Configuring RMT dependencies...")
 
+# Bitmaps of res/ compiled into the builds without MFC (MfcTypes.h CBitmap)
+include(${PROJECT_SOURCE_DIR}/cmake/EmbedResources.cmake)
+set(RMT_EMBEDDED_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/RmtEmbeddedResources.cpp)
+rmt_embed_resources(${RMT_EMBEDDED_RESOURCES}
+    IDB_GFX             ${CMAKE_CURRENT_SOURCE_DIR}/res/asciagr.bmp
+    IDR_MAINFRAME       ${CMAKE_CURRENT_SOURCE_DIR}/res/Toolbar.bmp
+    IDR_TOOLBARPLAY     ${CMAKE_CURRENT_SOURCE_DIR}/res/toolbarp.bmp
+    IDR_TOOLBARBLOCK    ${CMAKE_CURRENT_SOURCE_DIR}/res/toolbar1.bmp
+    IDR_TOOLBARCHANNELS ${CMAKE_CURRENT_SOURCE_DIR}/res/bmp00001.bmp
+)
+
 # Check if MFC is available (MSVC only)
 if(MSVC)
     message(STATUS "MSVC detected, MFC will be linked")
@@ -180,15 +191,23 @@ else()
         wasap.c
     )
 
+    # The Qt5 frontend: the MFC view/document (RmtView.cpp, RmtDoc.cpp)
+    # compiled against MfcTypes.h, hosted by a Qt main window (qt/).
     set(RMT_GUI_QT_SOURCES
-        # Populated by later phases of the MFC -> Qt migration (Fase 3+).
+        qt/main-qt.cpp
+        qt/RmtQtFrontend.cpp
+        qt/RmtQtFrontend.h
+        qt/RmtQtKeys.cpp
+        qt/QtMainFrame.cpp
+        RmtView.cpp
+        RmtDoc.cpp
     )
 
     if(RMT_USE_QT)
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES})
         if(NOT MFC_AVAILABLE)
             # Non-MFC type shim (Fase 0)
-            list(APPEND RMT_SOURCES MfcTypes.cpp MfcDialogStubs.cpp)
+            list(APPEND RMT_SOURCES MfcTypes.cpp MfcDialogStubs.cpp ${RMT_EMBEDDED_RESOURCES})
         endif()
     else()
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES})
@@ -376,6 +395,7 @@ if(RMT_USE_QT)
     set_target_properties(Rmt PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC OFF)
     target_link_libraries(Rmt PRIVATE Qt5::Core Qt5::Widgets)
     target_compile_definitions(Rmt PRIVATE RMT_QT_GUI=1)
+    target_include_directories(Rmt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/qt)
 endif()
 
 # Windows-specific libraries
@@ -454,9 +474,11 @@ set_target_properties(Rmt PROPERTIES
 )
 
 if(NOT WIN32)
-    set_target_properties(Rmt PROPERTIES
-        OUTPUT_NAME "Rmt.exe"
-    )
+    if(RMT_USE_QT)
+        set_target_properties(Rmt PROPERTIES OUTPUT_NAME "rmt")    # the Qt tracker
+    else()
+        set_target_properties(Rmt PROPERTIES OUTPUT_NAME "Rmt.exe")
+    endif()
 endif()
 
 message(STATUS "Rmt executable target configured")
@@ -610,6 +632,7 @@ if(RMT_CORE_TEST)
     )
 
     if(NOT MFC_AVAILABLE)
+        list(APPEND RMT_ENGINE_SOURCES ${RMT_EMBEDDED_RESOURCES})
         # MfcTypes.h/MfcTypes.cpp/MfcDialogStubs.cpp are the non-MFC type
         # shim (Fase 0): only meaningful - and only safe to compile - when
         # NOT building against real MFC (they define e.g. CString::LoadString()

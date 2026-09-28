@@ -6,7 +6,7 @@
 #include "Rmt.h"
 #include "TuningDlg.h"
 #include "Tuning.h"
-#include "global.h"
+#include "Global.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

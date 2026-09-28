@@ -13,7 +13,7 @@
 #include "RmtView.h"
 #include "MainFrm.h"
 #include "ConfigDlg.h"
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 #include "TuningDlg.h"
 #include "Atari.h"
 #include "PokeyRederer.h"
@@ -28,7 +28,9 @@
 #include "Undo.h"
 #include "Song.h"
 #include "Tuning.h"
-#include "Rmt.h"
+#ifdef RMT_HAS_MFC
+#include "Rmt.h"        // outside MFC, CRmtApp/g_app come from MfcTypes.h
+#endif
 
 
 

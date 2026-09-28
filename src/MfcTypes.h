@@ -35,6 +35,7 @@
 #include <fstream>
 #include <filesystem>
 #include <type_traits>
+#include <algorithm>
 #include <ctime>
 #include <system_error>
 #include <strings.h>
@@ -95,10 +96,42 @@ typedef const void*         LPCVOID;
 #define WINAPI
 #define AFX_MSG
 #define afx_msg
-#define DECLARE_MESSAGE_MAP()
 #define DECLARE_DYNCREATE(x)
+#define IMPLEMENT_DYNCREATE(x, base)
+#define DECLARE_DYNAMIC(x)
+#define IMPLEMENT_DYNAMIC(x, base)
+// DECLARE_MESSAGE_MAP / BEGIN_MESSAGE_MAP ...: see CCmdTarget below
 #define TEXT(x) x
 #define _T(x) x
+
+// Standard command IDs of MFC (afxres.h), used by the menus and message maps
+#define ID_FILE_NEW             0xE100
+#define ID_FILE_OPEN            0xE101
+#define ID_FILE_CLOSE           0xE102
+#define ID_FILE_SAVE            0xE103
+#define ID_FILE_SAVE_AS         0xE104
+#define ID_FILE_PAGE_SETUP      0xE105
+#define ID_FILE_PRINT_SETUP     0xE106
+#define ID_FILE_PRINT           0xE107
+#define ID_FILE_PRINT_DIRECT    0xE108
+#define ID_FILE_PRINT_PREVIEW   0xE109
+#define ID_FILE_MRU_FILE1       0xE110
+#define ID_EDIT_CLEAR           0xE120
+#define ID_EDIT_COPY            0xE122
+#define ID_EDIT_CUT             0xE123
+#define ID_EDIT_PASTE           0xE125
+#define ID_EDIT_SELECT_ALL      0xE12A
+#define ID_EDIT_UNDO            0xE12B
+#define ID_EDIT_REDO            0xE12C
+#define ID_APP_ABOUT            0xE140
+#define ID_APP_EXIT             0xE141
+#define ID_VIEW_TOOLBAR         0xE800
+#define ID_VIEW_STATUS_BAR      0xE801
+#define ID_VIEW_REBAR           0xE804
+#define AFX_IDW_TOOLBAR         0xE800
+#define AFX_IDW_STATUS_BAR      0xE801
+
+#define TRACE(...) ((void)0)
 
 // Dialog / message-box results (subset actually used)
 #define IDOK      1
@@ -175,6 +208,54 @@ typedef const void*         LPCVOID;
 #define VK_CAPITAL   0x14
 #define VK_OEM_PLUS  0xBB
 #define VK_OEM_MINUS 0xBD
+#define VK_RETURN    0x0D
+#define VK_SHIFT     0x10
+#define VK_CONTROL   0x11
+#define VK_MENU      0x12
+#define VK_PAUSE     0x13
+#define VK_LSHIFT    0xA0
+#define VK_RSHIFT    0xA1
+#define VK_LCONTROL  0xA2
+#define VK_RCONTROL  0xA3
+#define VK_LMENU     0xA4
+#define VK_RMENU     0xA5
+#define VK_NUMPAD0   0x60
+#define VK_DECIMAL   0x6E
+#define VK_F5  0x74
+#define VK_F6  0x75
+#define VK_F7  0x76
+#define VK_F8  0x77
+#define VK_F9  0x78
+#define VK_F10 0x79
+#define VK_F11 0x7A
+#define VK_F12 0x7B
+#define VK_NUMLOCK   0x90
+#define VK_MEDIA_NEXT_TRACK 0xB0
+#define VK_MEDIA_PREV_TRACK 0xB1
+#define VK_MEDIA_STOP       0xB2
+#define VK_MEDIA_PLAY_PAUSE 0xB3
+#define VK_OEM_1      0xBA
+#define VK_OEM_COMMA  0xBC
+#define VK_OEM_PERIOD 0xBE
+#define VK_OEM_2      0xBF
+#define VK_OEM_3      0xC0
+#define VK_OEM_4      0xDB
+#define VK_OEM_5      0xDC
+#define VK_OEM_6      0xDD
+#define VK_OEM_7      0xDE
+#define VK_OEM_102    0xE2
+
+// mouse key state flags (WM_*BUTTON* wParam)
+#define MK_LBUTTON  0x0001
+#define MK_RBUTTON  0x0002
+#define MK_SHIFT    0x0004
+#define MK_CONTROL  0x0008
+#define MK_MBUTTON  0x0010
+
+// window messages actually posted / sent by the GUI code
+#define WM_CLOSE    0x0010
+#define WM_COMMAND  0x0111
+#define WM_TIMER    0x0113
 
 #define MB_OK              0x00000000L
 #define MB_OKCANCEL        0x00000001L
@@ -390,20 +471,33 @@ inline bool operator<(const CString& a, const CString& b) { return a.str() < b.s
 // GDI-ish minimal shims: CPoint / CRect / CPen / CBitmap / CBrush
 // ---------------------------------------------------------------------------
 
+struct POINT { int x, y; };
+struct RECT { int left, top, right, bottom; };
+typedef RECT* LPRECT;
+typedef const RECT* LPCRECT;
+
 class CPoint {
 public:
     int x = 0, y = 0;
     CPoint() = default;
     CPoint(int x_, int y_) : x(x_), y(y_) {}
+    CPoint(const POINT& p) : x(p.x), y(p.y) {}
     CPoint operator+(const CPoint& o) const { return CPoint(x + o.x, y + o.y); }
     CPoint operator-(const CPoint& o) const { return CPoint(x - o.x, y - o.y); }
 };
 
-class CRect {
+class CRect : public RECT {
 public:
-    int left = 0, top = 0, right = 0, bottom = 0;
-    CRect() = default;
-    CRect(int l, int t, int r, int b) : left(l), top(t), right(r), bottom(b) {}
+    CRect() : RECT{ 0, 0, 0, 0 } {}
+    CRect(int l, int t, int r, int b) : RECT{ l, t, r, b } {}
+    CRect(const RECT& r) : RECT(r) {}
+    CRect(CPoint tl, CPoint br) : RECT{ tl.x, tl.y, br.x, br.y } {}
+    BOOL PtInRect(CPoint p) const { return p.x >= left && p.x < right && p.y >= top && p.y < bottom; }
+    BOOL IsRectEmpty() const { return right <= left || bottom <= top; }
+    void OffsetRect(int dx, int dy) { left += dx; right += dx; top += dy; bottom += dy; }
+    void InflateRect(int dx, int dy) { left -= dx; right += dx; top -= dy; bottom += dy; }
+    operator LPRECT() { return this; }
+    operator LPCRECT() const { return this; }
     void SetRect(int l, int t, int r, int b) { left = l; top = t; right = r; bottom = b; }
     int Width() const { return right - left; }
     int Height() const { return bottom - top; }
@@ -413,59 +507,129 @@ public:
 
 #define PS_SOLID 0
 #define SRCCOPY  0x00CC0020L
+#define HALFTONE 4
+#define COLORONCOLOR 3
+
+#ifndef MAKEINTRESOURCE
+#define MAKEINTRESOURCE(i) ((LPCTSTR)(uintptr_t)(WORD)(i))
+#endif
+
+// Resources compiled into the program (bitmaps of src/res, generated by
+// src/CMakeLists.txt from Rmt.rc: see RmtEmbeddedResources.cpp).
+// Returns false if the id is unknown.
+bool RmtFindResource(UINT id, const unsigned char** data, size_t* size);
+
+// Pixel format of CBitmap / CDC: 0xFFRRGGBB (QImage::Format_RGB32 compatible)
+inline uint32_t RmtPixel(COLORREF c) {
+    return 0xFF000000u | ((c & 0xFFu) << 16) | (c & 0xFF00u) | ((c >> 16) & 0xFFu);
+}
 
 class CPen {
 public:
     CPen() = default;
     CPen(int style, int width, COLORREF color) : m_style(style), m_width(width), m_color(color) {}
+    BOOL CreatePen(int style, int width, COLORREF color) { m_style = style; m_width = width; m_color = color; return TRUE; }
+    COLORREF GetColor() const { return m_color; }
 private:
     int m_style = PS_SOLID;
     int m_width = 1;
     COLORREF m_color = 0;
 };
 
+class CDC;
+
+// CBitmap - an RGB32 pixel buffer
 class CBitmap {
 public:
     CBitmap() = default;
+
+    BOOL CreateCompatibleBitmap(CDC*, int w, int h) { return Create(w, h); }
+    BOOL Create(int w, int h) {
+        if (w <= 0 || h <= 0) return FALSE;
+        m_w = w; m_h = h;
+        m_px.assign((size_t)w * h, 0xFF000000u);
+        return TRUE;
+    }
+    // Bitmap resource: MAKEINTRESOURCE(IDB_...)
+    BOOL LoadBitmap(LPCTSTR name) { return LoadBitmap((UINT)(uintptr_t)name); }
+    BOOL LoadBitmap(UINT id) {
+        const unsigned char* data; size_t size;
+        return RmtFindResource(id, &data, &size) && LoadBMP(data, size);
+    }
+    BOOL LoadBMP(const unsigned char* data, size_t size);   // Windows .bmp, 1/4/8/24/32 bit
+    BOOL DeleteObject() { m_px.clear(); m_w = m_h = 0; return TRUE; }
+
+    int Width() const { return m_w; }
+    int Height() const { return m_h; }
+    uint32_t* Bits() { return m_px.empty() ? nullptr : m_px.data(); }
+    const uint32_t* Bits() const { return m_px.empty() ? nullptr : m_px.data(); }
+
+private:
+    int m_w = 0, m_h = 0;
+    std::vector<uint32_t> m_px;
 };
 
 class CBrush {
 public:
     CBrush() = default;
-    explicit CBrush(COLORREF) {}
+    explicit CBrush(COLORREF c) : m_color(c) {}
+    BOOL CreateSolidBrush(COLORREF c) { m_color = c; return TRUE; }
+    COLORREF GetColor() const { return m_color; }
+private:
+    COLORREF m_color = 0;
 };
 
 // ---------------------------------------------------------------------------
-// CDC - "null" device context. Only the handful of drawing primitives
-// actually called from GUI_Song.cpp / GUI_Instruments.cpp / GuiHelpers.cpp /
-// TracksControl.cpp / ChannelControl.cpp are implemented, all as no-ops.
-// A real backend (QImage/QPainter) can implement this exact same interface
-// later (Fase 2 of the migration plan) without touching any caller.
+// CDC - software device context drawing into the selected CBitmap: the few
+// GDI primitives the GUI-shared sources use (GUI_Song.cpp, GUI_Instruments.cpp,
+// GuiHelpers.cpp, TracksControl.cpp, ChannelControl.cpp, RmtView.cpp), with
+// GDI semantics: FillSolidRect/FrameRect exclude right/bottom, LineTo excludes
+// the end point, BitBlt/StretchBlt only SRCCOPY (the only mode used).
+// A window host (Qt) shows the bitmap of its DC.
 // ---------------------------------------------------------------------------
 
 class CDC {
 public:
+    void* m_hDC = nullptr;                      // non-null once created
+
     virtual ~CDC() = default;
 
-    void FillSolidRect(int, int, int, int, COLORREF) {}
-    void FillSolidRect(const CRect&, COLORREF) {}
+    BOOL CreateCompatibleDC(CDC*) { m_hDC = this; return TRUE; }
+    BOOL DeleteDC() { m_hDC = nullptr; m_bitmap = nullptr; return TRUE; }
 
-    void MoveTo(int x, int y) { m_curX = x; m_curY = y; }
-    void LineTo(int x, int y) { m_curX = x; m_curY = y; }
+    CBitmap* SelectObject(CBitmap* bmp) { CBitmap* prev = m_bitmap; m_bitmap = bmp; return prev; }
+    CPen* SelectObject(CPen* pen) { CPen* prev = m_pen; m_pen = pen; return prev; }
+    CBitmap* GetBitmap() const { return m_bitmap; }
 
-    void FrameRect(const CRect&, CBrush*) {}
+    void FillSolidRect(int x, int y, int cx, int cy, COLORREF color) { Fill(x, y, x + cx, y + cy, RmtPixel(color)); }
+    void FillSolidRect(const CRect& r, COLORREF color) { Fill(r.left, r.top, r.right, r.bottom, RmtPixel(color)); }
 
-    CPen* SelectObject(CPen* pen) {
-        CPen* prev = m_currentPen;
-        m_currentPen = pen;
-        return prev;
+    void FrameRect(const CRect& r, CBrush* brush) {
+        uint32_t c = RmtPixel(brush ? brush->GetColor() : 0);
+        Fill(r.left, r.top, r.right, r.top + 1, c);
+        Fill(r.left, r.bottom - 1, r.right, r.bottom, c);
+        Fill(r.left, r.top, r.left + 1, r.bottom, c);
+        Fill(r.right - 1, r.top, r.right, r.bottom, c);
     }
 
-    void BitBlt(int, int, int, int, CDC*, int, int, DWORD) {}
+    CPoint MoveTo(int x, int y) { CPoint prev(m_curX, m_curY); m_curX = x; m_curY = y; return prev; }
+    BOOL LineTo(int x, int y);
+
+    BOOL BitBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, DWORD rop);
+    BOOL StretchBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, int ws, int hs, DWORD rop);
+    int SetStretchBltMode(int mode) { int prev = m_stretchMode; m_stretchMode = mode; return prev; }
 
 private:
+    void Fill(int l, int t, int r, int b, uint32_t c);
+    void Plot(int x, int y, uint32_t c) {
+        if (m_bitmap && x >= 0 && y >= 0 && x < m_bitmap->Width() && y < m_bitmap->Height())
+            m_bitmap->Bits()[(size_t)y * m_bitmap->Width() + x] = c;
+    }
+
+    CBitmap* m_bitmap = nullptr;
+    CPen* m_pen = nullptr;
     int m_curX = 0, m_curY = 0;
-    CPen* m_currentPen = nullptr;
+    int m_stretchMode = COLORONCOLOR;
 };
 
 // ---------------------------------------------------------------------------
@@ -481,18 +645,228 @@ struct CREATESTRUCT;
 typedef CREATESTRUCT* LPCREATESTRUCT;
 struct MINMAXINFO;
 
-class CWnd {
+class CWnd;
+class CControlBar;
+class CFrameWnd;
+typedef intptr_t LRESULT;
+
+// ---------------------------------------------------------------------------
+// IRmtHost - what the MFC window classes ask of the window system. The GUI
+// frontend (src/qt) implements it and sets g_rmtHost; with no host (headless
+// RmtCoreTest) the calls do nothing and MessageBox prints to stderr.
+// ---------------------------------------------------------------------------
+
+struct IRmtHost {
+    virtual ~IRmtHost() = default;
+    virtual CFrameWnd* GetMainWnd() = 0;
+    virtual void GetClientRect(const CWnd* wnd, RECT* r) = 0;
+    virtual void Invalidate(CWnd* wnd) = 0;
+    virtual CDC* GetDC(CWnd* wnd) = 0;
+    virtual UINT_PTR SetTimer(CWnd* wnd, UINT_PTR id, UINT ms) = 0;
+    virtual BOOL KillTimer(CWnd* wnd, UINT_PTR id) = 0;
+    virtual void PostCommand(UINT id) = 0;                  // WM_COMMAND
+    virtual void Close() = 0;                               // WM_CLOSE
+    virtual int MessageBox(const char* text, const char* caption, UINT type) = 0;
+    virtual HCURSOR LoadCursor(UINT id) = 0;                // IDC_* of resource.h, or system IDC_ARROW/IDC_WAIT
+    virtual void SetCursor(HCURSOR cursor) = 0;
+    virtual short GetKeyState(int vk) = 0;
+    virtual UINT MapVirtualKeyToChar(UINT vk) = 0;
+    virtual void SetWindowText(CWnd* wnd, const char* text) = 0;
+    virtual void ShowControlBar(CControlBar* bar, BOOL show) = 0;
+    virtual BOOL IsControlBarVisible(const CControlBar* bar) = 0;
+    virtual void SetStatusText(int pane, const char* text) = 0;
+};
+extern IRmtHost* g_rmtHost;
+
+// ---------------------------------------------------------------------------
+// CCmdTarget and the message maps. BEGIN_MESSAGE_MAP ... END_MESSAGE_MAP
+// build a table of the ON_COMMAND / ON_UPDATE_COMMAND_UI handlers (as MFC
+// does), used by the frontend to run menu, toolbar and accelerator commands
+// and to update their state. Window messages (ON_WM_*) are delivered by the
+// frontend calling the handlers directly, so those entries are empty.
+// ---------------------------------------------------------------------------
+
+class CCmdUI {
+public:
+    UINT m_nID = 0;
+    BOOL m_bEnabled = TRUE;
+    int m_nCheck = 0;
+    CString m_strText;
+    bool m_bTextSet = false;
+
+    virtual ~CCmdUI() = default;
+    virtual void Enable(BOOL on = TRUE) { m_bEnabled = on; }
+    virtual void SetCheck(int check = 1) { m_nCheck = check; }
+    virtual void SetRadio(BOOL on = TRUE) { m_nCheck = on ? 1 : 0; }
+    virtual void SetText(LPCTSTR text) { m_strText = text; m_bTextSet = true; }
+};
+
+class CCmdTarget;
+typedef void (CCmdTarget::*RmtCmdFn)();
+typedef void (CCmdTarget::*RmtUpdFn)(CCmdUI*);
+struct RmtMsgEntry {
+    UINT id;
+    RmtCmdFn cmd;           // ON_COMMAND
+    RmtUpdFn upd;           // ON_UPDATE_COMMAND_UI
+};
+
+class CCmdTarget {
+public:
+    virtual ~CCmdTarget() = default;
+    virtual const RmtMsgEntry* GetMessageEntries() const { return nullptr; }
+
+    // run the ON_COMMAND handler of id; FALSE if there is none
+    BOOL OnCmdMsg(UINT id) {
+        for (const RmtMsgEntry* e = GetMessageEntries(); e && e->id; e++)
+            if (e->id == id && e->cmd) { (this->*(e->cmd))(); return TRUE; }
+        return FALSE;
+    }
+    // run the ON_UPDATE_COMMAND_UI handler of ui->m_nID; FALSE if there is none
+    BOOL OnUpdateCmdUI(CCmdUI* ui) {
+        for (const RmtMsgEntry* e = GetMessageEntries(); e && e->id; e++)
+            if (e->id == ui->m_nID && e->upd) { (this->*(e->upd))(ui); return TRUE; }
+        return FALSE;
+    }
+    BOOL HasCommand(UINT id) const {
+        for (const RmtMsgEntry* e = GetMessageEntries(); e && e->id; e++)
+            if (e->id == id && e->cmd) return TRUE;
+        return FALSE;
+    }
+};
+
+#define DECLARE_MESSAGE_MAP() \
+    public: const RmtMsgEntry* GetMessageEntries() const override;
+#define BEGIN_MESSAGE_MAP(theClass, baseClass) \
+    const RmtMsgEntry* theClass::GetMessageEntries() const { \
+        typedef theClass ThisClass; \
+        static const RmtMsgEntry entries[] = {
+#define END_MESSAGE_MAP() \
+            { 0, nullptr, nullptr } }; \
+        return entries; }
+#define ON_COMMAND(id, fn) { (UINT)(id), static_cast<RmtCmdFn>(&ThisClass::fn), nullptr },
+#define ON_UPDATE_COMMAND_UI(id, fn) { (UINT)(id), nullptr, static_cast<RmtUpdFn>(&ThisClass::fn) },
+#define ON_CBN_SELCHANGE(id, fn)
+#define ON_CBN_CLOSEUP(id, fn)
+#define ON_CBN_KILLFOCUS(id, fn)
+#define ON_BN_CLICKED(id, fn)
+#define ON_EN_CHANGE(id, fn)
+#define ON_WM_CLOSE()
+#define ON_WM_CREATE()
+#define ON_WM_DESTROY()
+#define ON_WM_ERASEBKGND()
+#define ON_WM_GETMINMAXINFO()
+#define ON_WM_KEYDOWN()
+#define ON_WM_KEYUP()
+#define ON_WM_KILLFOCUS()
+#define ON_WM_LBUTTONDBLCLK()
+#define ON_WM_LBUTTONDOWN()
+#define ON_WM_LBUTTONUP()
+#define ON_WM_MOUSEMOVE()
+#define ON_WM_MOUSEWHEEL()
+#define ON_WM_RBUTTONDBLCLK()
+#define ON_WM_RBUTTONDOWN()
+#define ON_WM_RBUTTONUP()
+#define ON_WM_SETCURSOR()
+#define ON_WM_SETFOCUS()
+#define ON_WM_SIZE()
+#define ON_WM_SYSCHAR()
+#define ON_WM_TIMER()
+
+// ---------------------------------------------------------------------------
+// CWnd and friends: window operations go to g_rmtHost; the ON_WM_* handler
+// defaults do nothing (derived classes call CView::OnTimer() etc.)
+// ---------------------------------------------------------------------------
+
+class CWnd : public CCmdTarget {
 public:
     HWND m_hWnd = nullptr;
     virtual ~CWnd() = default;
-    void SetWindowText(const char*) {}
-    void Invalidate(BOOL = TRUE) {}
+
+    void GetClientRect(LPRECT r) const { if (g_rmtHost) g_rmtHost->GetClientRect(this, r); else *r = RECT{ 0, 0, 0, 0 }; }
+    void Invalidate(BOOL = TRUE) { if (g_rmtHost) g_rmtHost->Invalidate(this); }
+    void UpdateWindow() {}
+    CDC* GetDC() { return g_rmtHost ? g_rmtHost->GetDC(this) : nullptr; }
+    int ReleaseDC(CDC*) { return 1; }
+    UINT_PTR SetTimer(UINT_PTR id, UINT ms, void*) { return g_rmtHost ? g_rmtHost->SetTimer(this, id, ms) : 0; }
+    BOOL KillTimer(UINT_PTR id) { return g_rmtHost ? g_rmtHost->KillTimer(this, id) : FALSE; }
+    BOOL PostMessage(UINT msg, WPARAM wParam = 0, LPARAM = 0) {
+        if (!g_rmtHost) return FALSE;
+        if (msg == WM_COMMAND) g_rmtHost->PostCommand((UINT)(wParam & 0xFFFF));
+        else if (msg == WM_CLOSE) g_rmtHost->Close();
+        return TRUE;
+    }
+    LRESULT SendMessage(UINT msg, WPARAM wParam = 0, LPARAM lParam = 0) { return PostMessage(msg, wParam, lParam); }
+    int MessageBox(LPCTSTR text, LPCTSTR caption = nullptr, UINT type = 0);
+    void SetWindowText(LPCTSTR text) { if (g_rmtHost) g_rmtHost->SetWindowText(this, text); }
+    CWnd* SetFocus() { return this; }
     BOOL GetSafeHwnd() const { return m_hWnd != nullptr; }
+    BOOL IsWindowVisible() const { return TRUE; }
+
+    void OnDestroy() {}
+    void OnTimer(UINT_PTR) {}
+    void OnSize(UINT, int, int) {}
+    void OnKeyDown(UINT, UINT, UINT) {}
+    void OnKeyUp(UINT, UINT, UINT) {}
+    void OnSysChar(UINT, UINT, UINT) {}
+    void OnLButtonDown(UINT, CPoint) {}
+    void OnLButtonUp(UINT, CPoint) {}
+    void OnLButtonDblClk(UINT, CPoint) {}
+    void OnRButtonDown(UINT, CPoint) {}
+    void OnRButtonUp(UINT, CPoint) {}
+    void OnRButtonDblClk(UINT, CPoint) {}
+    void OnMouseMove(UINT, CPoint) {}
+    BOOL OnMouseWheel(UINT, short, CPoint) { return TRUE; }
+    BOOL OnSetCursor(CWnd*, UINT, UINT) { return TRUE; }
+    void OnSetFocus(CWnd*) {}
+    void OnKillFocus(CWnd*) {}
+    BOOL OnEraseBkgnd(CDC*) { return TRUE; }
+    BOOL PreCreateWindow(CREATESTRUCT&) { return TRUE; }
+};
+
+class CControlBar : public CWnd {};
+class CToolBar : public CControlBar {};
+class CReBar : public CControlBar {};
+class CStatusBar : public CControlBar {
+public:
+    BOOL SetPaneText(int pane, LPCTSTR text, BOOL = TRUE) { if (g_rmtHost) g_rmtHost->SetStatusText(pane, text); return TRUE; }
 };
 
 class CFrameWnd : public CWnd {
 public:
     virtual ~CFrameWnd() = default;
+    void ShowControlBar(CControlBar* bar, BOOL show, BOOL /*delay*/) { if (g_rmtHost) g_rmtHost->ShowControlBar(bar, show); }
+};
+
+class CDocument : public CCmdTarget {
+public:
+    virtual ~CDocument() = default;
+    virtual BOOL OnNewDocument() { return TRUE; }
+    void SetTitle(LPCTSTR title) { m_strTitle = title; }
+    const CString& GetTitle() const { return m_strTitle; }
+    void SetModifiedFlag(BOOL modified = TRUE) { m_bModified = modified; }
+    BOOL IsModified() const { return m_bModified; }
+    void UpdateAllViews(void*, LPARAM = 0, void* = nullptr) { if (g_rmtHost) g_rmtHost->Invalidate(nullptr); }
+private:
+    CString m_strTitle;
+    BOOL m_bModified = FALSE;
+};
+
+class CArchive {};
+struct CPrintInfo {};
+
+class CView : public CWnd {
+public:
+    CDocument* m_pDocument = nullptr;
+    virtual ~CView() = default;
+    CDocument* GetDocument() const { return m_pDocument; }
+    virtual void OnInitialUpdate() {}
+    virtual void OnDraw(CDC*) {}
+    void OnFilePrint() {}
+    void OnFilePrintPreview() {}
+    BOOL OnPreparePrinting(CPrintInfo*) { return FALSE; }
+    BOOL DoPreparePrinting(CPrintInfo*) { return FALSE; }
+    void OnBeginPrinting(CDC*, CPrintInfo*) {}
+    void OnEndPrinting(CDC*, CPrintInfo*) {}
 };
 
 class CStatic : public CWnd {};
@@ -512,9 +886,6 @@ public:
     void SetCurSel(int) {}
     int GetCurSel() const { return -1; }
 };
-class CToolBar : public CWnd {};
-class CReBar : public CWnd {};
-class CStatusBar : public CWnd {};
 class CScrollBar : public CWnd {};
 class CFont : public CWnd {};
 
@@ -653,15 +1024,16 @@ private:
 class CWinApp {
 public:
     HINSTANCE m_hInstance = nullptr;
-    CWnd* GetMainWnd() { return nullptr; }
+    CWnd* GetMainWnd() { return g_rmtHost ? (CWnd*)g_rmtHost->GetMainWnd() : nullptr; }
 };
 
 inline CWinApp* AfxGetApp() {
     static CWinApp s_app;
     return &s_app;
 }
-inline CWnd* AfxGetMainWnd() { return nullptr; }
+inline CWnd* AfxGetMainWnd() { return g_rmtHost ? (CWnd*)g_rmtHost->GetMainWnd() : nullptr; }
 inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0) {
+    if (g_rmtHost) return g_rmtHost->MessageBox(text, "RMT", type);
     std::fprintf(stderr, "[AfxMessageBox] %s\n", text ? text : "");
     (void)type;
     return IDOK;
@@ -673,6 +1045,7 @@ inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0) {
 class CRmtApp {
 public:
     CString GetVersionAndBuild() const;
+    void OpenOnlineHelp();          // frontend (opens the help URL)
 };
 extern CRmtApp g_app;
 
@@ -684,10 +1057,11 @@ extern CRmtApp g_app;
 // ---------------------------------------------------------------------------
 
 inline int MessageBox(HWND, const char* text, const char* caption, UINT type) {
+    if (g_rmtHost) return g_rmtHost->MessageBox(text, caption, type);
     std::fprintf(stderr, "[MessageBox] %s: %s\n", caption ? caption : "", text ? text : "");
-    (void)type;
-    return IDOK;
+    return (type & 0x0F) == MB_YESNO || (type & 0x0F) == MB_YESNOCANCEL ? IDYES : IDOK;
 }
+inline int CWnd::MessageBox(LPCTSTR text, LPCTSTR caption, UINT type) { return ::MessageBox(m_hWnd, text, caption, type); }
 
 inline void GetWindowRect(HWND, CRect* rect) { if (rect) *rect = CRect(0, 0, 0, 0); }
 
@@ -714,18 +1088,31 @@ inline HANDLE ShellExecute(HWND, const char*, const char*, const char*, const ch
 
 inline void ZeroMemory(void* dst, size_t size) { std::memset(dst, 0, size); }
 
+// Sleep() / GetTickCount()
+void Sleep(DWORD ms);
+
+// Windows MIDI API: only the device enumeration used by the configuration
+// code of RmtView.cpp; MIDI itself is MidiBackend (RtMidi) outside Windows.
+struct MIDIINCAPS { WORD wMid; WORD wPid; UINT vDriverVersion; char szPname[32]; DWORD dwSupport; };
+#define MMSYSERR_NOERROR 0
+#define MMSYSERR_BADDEVICEID 2
+inline UINT midiInGetNumDevs() { return 0; }
+inline UINT midiInGetDevCaps(UINT_PTR, MIDIINCAPS*, UINT) { return MMSYSERR_BADDEVICEID; }
+
 #define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
 #define HIWORD(l) ((WORD)(((DWORD_PTR)(l) >> 16) & 0xffff))
 
+#define IDC_ARROW ((LPCTSTR)(intptr_t)32512)
 #define IDC_WAIT ((LPCTSTR)(intptr_t)32514)
-inline HCURSOR LoadCursor(HINSTANCE, LPCTSTR) { return nullptr; }
-inline HCURSOR SetCursor(HCURSOR) { return nullptr; }
+inline HCURSOR LoadCursor(HINSTANCE, LPCTSTR id) { return g_rmtHost ? g_rmtHost->LoadCursor((UINT)(uintptr_t)id) : nullptr; }
+inline HCURSOR SetCursor(HCURSOR c) { if (g_rmtHost) g_rmtHost->SetCursor(c); return nullptr; }
 inline BOOL EnableWindow(HWND, BOOL) { return TRUE; }
 inline BOOL UpdateWindow(HWND) { return TRUE; }
-inline int GetKeyState(int) { return 0; }
+inline short GetKeyState(int vk) { return g_rmtHost ? g_rmtHost->GetKeyState(vk) : 0; }
+inline short GetAsyncKeyState(int vk) { return GetKeyState(vk); }
 
 #define MAPVK_VK_TO_CHAR 2
-inline UINT MapVirtualKeyEx(UINT, UINT, HANDLE) { return 0; }
+inline UINT MapVirtualKeyEx(UINT vk, UINT type, HANDLE) { return g_rmtHost && type == MAPVK_VK_TO_CHAR ? g_rmtHost->MapVirtualKeyToChar(vk) : 0; }
 
 inline void OutputDebugString(const char* s) { std::fprintf(stderr, "%s", s ? s : ""); }
 
@@ -779,11 +1166,7 @@ inline UINT timeKillEvent(UINT) { return 0; }
 
 // ---------------------------------------------------------------------------
 // Minimal DirectSound shim (legacy CXPokey/PokeyRederer.cpp renderer).
-// DirectSoundCreate() always reports failure, exactly like it would on a
-// real machine that has no DirectSound driver - InitSoundInternal() already
-// handles that case by returning FALSE with a warning message, so none of
-// the interface methods below are ever actually invoked at runtime, they
-// only need to exist so the (dead) call sites link.
+// DirectSound types; the device below is silent (see IDirectSoundBuffer).
 // ---------------------------------------------------------------------------
 
 struct WAVEFORMATEX {
@@ -822,16 +1205,26 @@ struct DSBCAPS {
 #define DSBLOCK_FROMWRITECURSOR 0x00000001
 #define DSBPLAY_LOOPING 0x00000001
 
+// A silent DirectSound device: buffers are plain memory that nobody plays.
+// It lets the sound code (PokeyRederer.cpp) initialise without Windows; the
+// real output outside Windows is the PortAudio backend (later phase).
 class IDirectSoundBuffer {
 public:
+    explicit IDirectSoundBuffer(DWORD bytes = 0) : m_data(bytes) {}
     HRESULT SetFormat(const WAVEFORMATEX*) { return DS_OK; }
-    HRESULT GetCaps(DSBCAPS*) { return DS_OK; }
-    HRESULT Lock(DWORD, DWORD, void** ppData1, DWORD* pSize1, void** ppData2, DWORD* pSize2, DWORD) {
-        if (ppData1) *ppData1 = nullptr;
-        if (pSize1) *pSize1 = 0;
+    HRESULT GetCaps(DSBCAPS* caps) { if (caps) caps->dwBufferBytes = (DWORD)m_data.size(); return DS_OK; }
+    HRESULT Lock(DWORD offset, DWORD bytes, void** ppData1, DWORD* pSize1, void** ppData2, DWORD* pSize2, DWORD) {
+        DWORD size = (DWORD)m_data.size();
         if (ppData2) *ppData2 = nullptr;
         if (pSize2) *pSize2 = 0;
-        return DS_ERR_GENERIC;
+        if (!size || !ppData1 || !pSize1) return DS_ERR_GENERIC;
+        offset %= size;
+        if (bytes > size) bytes = size;
+        DWORD first = std::min(bytes, size - offset);
+        *ppData1 = m_data.data() + offset;
+        *pSize1 = first;
+        if (bytes > first && ppData2 && pSize2) { *ppData2 = m_data.data(); *pSize2 = bytes - first; }
+        return DS_OK;
     }
     HRESULT Unlock(void*, DWORD, void*, DWORD) { return DS_OK; }
     HRESULT Play(DWORD, DWORD, DWORD) { return DS_OK; }
@@ -841,19 +1234,30 @@ public:
         if (writeCursor) *writeCursor = 0;
         return DS_OK;
     }
-    HRESULT Release() { return DS_OK; }
+    HRESULT Release() { delete this; return DS_OK; }
+private:
+    std::vector<unsigned char> m_data;
 };
 typedef IDirectSoundBuffer* LPDIRECTSOUNDBUFFER;
 
 class IDirectSound {
 public:
     HRESULT SetCooperativeLevel(HWND, DWORD) { return DS_OK; }
-    HRESULT CreateSoundBuffer(const DSBUFFERDESC*, LPDIRECTSOUNDBUFFER*, void*) { return DS_ERR_GENERIC; }
+    HRESULT CreateSoundBuffer(const DSBUFFERDESC* desc, LPDIRECTSOUNDBUFFER* buffer, void*) {
+        if (!buffer) return DS_ERR_GENERIC;
+        *buffer = new IDirectSoundBuffer(desc ? desc->dwBufferBytes : 0);
+        return DS_OK;
+    }
     HRESULT Release() { return DS_OK; }
 };
 typedef IDirectSound* LPDIRECTSOUND;
 
-inline HRESULT DirectSoundCreate(void*, LPDIRECTSOUND*, void*) { return DS_ERR_GENERIC; }
+inline HRESULT DirectSoundCreate(void*, LPDIRECTSOUND* ds, void*) {
+    static IDirectSound device;
+    if (!ds) return DS_ERR_GENERIC;
+    *ds = &device;
+    return DS_OK;
+}
 
 // ---------------------------------------------------------------------------
 // Minimal legacy MMIO/WAV shim (WaveFile.h/.cpp). mmioOpen() always

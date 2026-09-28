@@ -14,6 +14,17 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <stdint.h>
+
+// MSVC builds use MFC unless they build the Qt frontend: the Visual Studio
+// project (Rmt.vcxproj) does not define RMT_HAS_MFC, CMake does (MFC_AVAILABLE)
+#if !defined(RMT_HAS_MFC) && defined(_MSC_VER) && !defined(RMT_QT_GUI)
+#define RMT_HAS_MFC
+#endif
+
+#ifndef RMT_HAS_MFC
+// Builds without MFC (Qt frontend, RmtCoreTest): the MfcTypes.h shim
+#include "MfcTypes.h"
+#else
 #define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
 
 #include <afxwin.h>         // MFC core and standard components
@@ -26,6 +37,7 @@
 #define DIRECTSOUND_VERSION	0x0900	
 #include <mmsystem.h>
 #include <dsound.h>
+#endif // RMT_HAS_MFC
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

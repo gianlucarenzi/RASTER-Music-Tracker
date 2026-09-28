@@ -39,9 +39,9 @@ Output: `out\Rmt.exe`
 **What builds with MinGW:** the RMT engine and the audio/MIDI backends.
 **What does not:** the full tracker. Its GUI (Rmt.cpp, MainFrm.cpp, RmtView.cpp,
 RmtDoc.cpp and the dialogs, 18 files) is MFC, and MFC exists only for MSVC:
-no MinGW toolchain provides `afxwin.h`. The Qt5 frontend (`-DRMT_USE_QT=ON`)
-has no sources yet (MFC -> Qt migration, Fase 3+), so it does not link either
-(`undefined reference to main`, on Linux too). For the full tracker use MSVC.
+no MinGW toolchain provides `afxwin.h`. The Qt5 frontend (`-DRMT_USE_QT=ON`,
+see below) needs a Qt5 built for MinGW, not tested yet. For the full MFC
+tracker use MSVC.
 
 ### Cross-compile from Linux
 
@@ -91,6 +91,56 @@ cmake -B build-core-linux -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
 cmake --build build-core-linux
 ./build-core-linux/out/RmtCoreTest
 ```
+
+---
+
+## Qt5 frontend (Linux / POSIX) - work in progress
+
+The tracker GUI is the MFC code itself (`RmtView.cpp`, `RmtDoc.cpp` and the
+GUI-shared drawing code) compiled against `src/MfcTypes.h`, a small
+replacement of the MFC classes it uses: a software device context (`CDC`,
+`CBitmap`, bitmaps of `src/res` compiled in by `cmake/EmbedResources.cmake`),
+message maps that build a real command table, and `CWnd`/`CView` whose window
+operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
+
+| File | |
+|------|---|
+| `qt/main-qt.cpp` | start-up of `CRmtApp::InitInstance()`, main window |
+| `qt/RmtQtFrontend.cpp` | `RmtMainWindow`, `RmtViewWidget` (shows the view, passes keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
+| `qt/RmtQtKeys.cpp` | key events -> Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
+| `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
+
+```bash
+sudo apt install qtbase5-dev
+cmake -B build-qt                  # RMT_USE_QT is ON by default off Windows
+cmake --build build-qt -j
+./build-qt/out/rmt song.rmt
+```
+
+Status:
+
+- ✅ the main screen, drawn by the original code (tracks, song, instrument,
+  info, POKEY registers), window resize, the 16 ms screen timer
+- ✅ keyboard (navigation, editing keys), mouse buttons, wheel, cursors
+- ✅ a song given on the command line is loaded
+- ❌ menus and toolbars (next step: from `Rmt.rc`, dispatched through the
+  message maps)
+- ❌ dialogs: the MFC dialogs are stubs that answer "cancel"
+  (`MfcDialogStubs.cpp`), they have to be rewritten in Qt
+- ❌ sound: no 6502/POKEY emulation yet (`sa_c6502.dll` / `apokeysnd.dll` are
+  Windows binaries), the DirectSound device of `MfcTypes.h` is silent, the
+  song timer (`timeSetEvent`) does not run
+- ❌ MIDI input
+
+Test without a display: `RMT_QT_GRAB=shot.png` saves the window after 1 s and
+quits, `RMT_QT_KEYS=108,106` first presses keys (Linux evdev codes), message
+boxes are answered automatically:
+
+```bash
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
+```
+
+`RmtCoreTest --screenshot out.ppm [song.rmt]` draws the main screen without Qt.
 
 ---
 
@@ -148,10 +198,11 @@ MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 |---------------|--------|
 | `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` | ✅ `RmtCoreTest.exe`, `Rmt.exe`, `RmtMidiTest.exe` build (not run: needs Windows or Wine) |
 | default (full MFC GUI) | ❌ 18 MFC files: `afxwin.h` not available with MinGW |
-| `-DRMT_USE_QT=ON` | ❌ no Qt5 for MinGW installed; the Qt frontend has no sources yet |
+| `-DRMT_USE_QT=ON` | ❌ no Qt5 for MinGW installed |
 
 Linux native GCC 10: `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` builds and
-`RmtCoreTest` runs ("finished successfully"); `-DRMT_USE_QT=ON` stops at link
-time (`undefined reference to main`, no Qt sources yet).
+`RmtCoreTest` runs ("finished successfully", `--screenshot` draws gemx.rmt);
+the Qt5 frontend builds and shows the main screen with a song, keys move the
+cursor (checked offscreen with `RMT_QT_GRAB` / `RMT_QT_KEYS`).
 
 MSVC builds: not tested here.

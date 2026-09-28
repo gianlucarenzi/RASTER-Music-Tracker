@@ -9,7 +9,7 @@
 #include "MainFrm.h"			//!
 #include <mmsystem.h>
 #include "RmtMidi.h"
-#include "global.h"
+#include "Global.h"
 #include "Song.h"
 
 

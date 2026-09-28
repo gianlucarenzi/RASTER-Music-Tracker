@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Resource.h"
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CAboutDialog dialog used for App About

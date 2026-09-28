@@ -8,7 +8,7 @@
 
 #include "Song.h"
 #include "IOHelpers.h"
-#include "global.h"
+#include "Global.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -18,6 +18,12 @@
 
 #pragma once
 
+// MSVC builds use MFC unless they build the Qt frontend: the Visual Studio
+// project (Rmt.vcxproj) does not define RMT_HAS_MFC, CMake does (MFC_AVAILABLE)
+#if !defined(RMT_HAS_MFC) && defined(_MSC_VER) && !defined(RMT_QT_GUI)
+#define RMT_HAS_MFC
+#endif
+
 #ifdef RMT_HAS_MFC
 #include "StdAfx.h"
 #else

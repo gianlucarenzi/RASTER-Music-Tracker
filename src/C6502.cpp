@@ -82,6 +82,7 @@ void C6502::DeInit()
 
 
 void C6502::JSR(C6502::Address& adr, C6502::Register& a, C6502::Register& x, C6502::Register& y, C6502::CycleCount& cycles) {
+    if (!SA_C6502_JSR) return;      // no 6502 emulation loaded (see Init())
     SA_C6502_JSR(&adr, &a, &x, &y, &cycles);
 }
 

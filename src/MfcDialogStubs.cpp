@@ -31,6 +31,8 @@
 #include "exportdlgs.h"
 #include "SAPFileExportDialog.h"
 #include "RmtMidi.h"
+#include "ConfigDlg.h"
+#include "TuningDlg.h"
 
 // ---------------------------------------------------------------------------
 // EffectsDlg.h
@@ -168,3 +170,66 @@ CRmtMidi::CRmtMidi() {
 }
 
 CRmtMidi::~CRmtMidi() {}
+
+// ---------------------------------------------------------------------------
+// Dialogs opened by the view (RmtView.cpp), and the message maps of all the
+// stubbed dialogs (DECLARE_MESSAGE_MAP in their headers). The Qt frontend
+// replaces these dialogs one by one in later phases.
+// ---------------------------------------------------------------------------
+
+CConfigDlg::CConfigDlg(CWnd*) {}
+void CConfigDlg::DoDataExchange(CDataExchange*) {}
+BOOL CConfigDlg::OnInitDialog() { return TRUE; }
+void CConfigDlg::OnOK() {}
+void CConfigDlg::OnMidiTouchResponseClicked() {}
+void CConfigDlg::OnPaths() {}
+
+TuningDlg::TuningDlg(CWnd*) {}
+void TuningDlg::DoDataExchange(CDataExchange*) {}
+BOOL TuningDlg::OnInitDialog() { return TRUE; }
+void TuningDlg::OnOK() {}
+void TuningDlg::OnClickedIdtestnow() {}
+void TuningDlg::OnClickedIdreset() {}
+void TuningDlg::OnBnClickedCancel() {}
+
+CChangeMaxtracklenDlg::CChangeMaxtracklenDlg(CWnd*) {}
+void CChangeMaxtracklenDlg::DoDataExchange(CDataExchange*) {}
+
+CRenumberTracksDlg::CRenumberTracksDlg(CWnd*) {}
+void CRenumberTracksDlg::DoDataExchange(CDataExchange*) {}
+BOOL CRenumberTracksDlg::OnInitDialog() { return TRUE; }
+void CRenumberTracksDlg::OnOK() {}
+
+CRenumberInstrumentsDlg::CRenumberInstrumentsDlg(CWnd*) {}
+void CRenumberInstrumentsDlg::DoDataExchange(CDataExchange*) {}
+BOOL CRenumberInstrumentsDlg::OnInitDialog() { return TRUE; }
+void CRenumberInstrumentsDlg::OnOK() {}
+
+#define RMT_EMPTY_MAP(c) BEGIN_MESSAGE_MAP(c, CDialog) END_MESSAGE_MAP()
+RMT_EMPTY_MAP(CEffectsDlg)
+RMT_EMPTY_MAP(COctaveSelectDlg)
+RMT_EMPTY_MAP(CVolumeSelectDlg)
+RMT_EMPTY_MAP(CInstrumentSelectDlg)
+RMT_EMPTY_MAP(CSongTracksOrderDlg)
+RMT_EMPTY_MAP(CInstrumentChangeDlg)
+RMT_EMPTY_MAP(CInsertCopyOrCloneOfSongLinesDlg)
+RMT_EMPTY_MAP(CFileNewDlg)
+RMT_EMPTY_MAP(CImportModDlg)
+RMT_EMPTY_MAP(CImportModFinishedDlg)
+RMT_EMPTY_MAP(CImportTmcDlg)
+RMT_EMPTY_MAP(CImportTmcFinishedDlg)
+RMT_EMPTY_MAP(CTracksLoadDlg)
+RMT_EMPTY_MAP(CExportStrippedRMTDialog)
+RMT_EMPTY_MAP(CExpMSXDlg)
+RMT_EMPTY_MAP(CExportAsmDlg)
+RMT_EMPTY_MAP(CExportRelocatableAsmForRmtPlayer)
+RMT_EMPTY_MAP(CConfigDlg)
+RMT_EMPTY_MAP(TuningDlg)
+RMT_EMPTY_MAP(CChangeMaxtracklenDlg)
+RMT_EMPTY_MAP(CRenumberTracksDlg)
+RMT_EMPTY_MAP(CRenumberInstrumentsDlg)
+
+// MIDI input: MidiBackend (RtMidi) in a later phase
+int CRmtMidi::MidiInit() { return 0; }
+int CRmtMidi::MidiOn() { return 0; }
+void CRmtMidi::MidiOff() {}

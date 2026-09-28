@@ -8,7 +8,7 @@
 #include "RmtView.h"
 #include "Song.h"
 #include "Global.h"
-#include "Resource.h"
+#include "resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
