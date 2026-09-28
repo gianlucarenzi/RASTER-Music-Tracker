@@ -105,49 +105,66 @@ operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
 
 | File | |
 |------|---|
-| `qt/main-qt.cpp` | start-up of `CRmtApp::InitInstance()`, main window |
-| `qt/RmtQtFrontend.cpp` | `RmtMainWindow`, `RmtViewWidget` (shows the view, passes keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
-| `qt/RmtQtKeys.cpp` | key events -> Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
+| `qt/main-qt.cpp` | start-up and main window; `RMT_QT_GRAB` / `RMT_QT_MENU_TEST` test hooks |
+| `qt/RmtQtFrontend.cpp` | `RmtMainWindow` (menu bar, `QtCCmdUI`), `RmtViewWidget` (view, keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
+| `qt/RmtQtKeys.cpp` | key events → Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
 | `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
 
 ```bash
 sudo apt install qtbase5-dev
 cmake -B build-qt                  # RMT_USE_QT is ON by default off Windows
 cmake --build build-qt -j
-./build-qt/out/rmt song.rmt
+./build-qt/out/rmt song.rmt        # or the versioned binary: rmt-2.0.0
 ```
 
 ### Loading and playing a song
 
-For now a song can only be loaded from the command line, when RMT starts:
+A song can be loaded from the command line at start-up:
 
 ```bash
 ./build-qt/out/rmt legacy/rmt_128/songs/thrust.rmt
 ```
 
-Give the window the focus (click on it) and press **F5** to play.
+Or via **File → Load…** (`Ctrl+L`) from the menu bar. Give the window focus
+and press **F5** to play.
 
-A song cannot be loaded from inside the program yet:
+> **Note:** `CFileDialog` in `src/MfcTypes.h` is a stand-in whose `DoModal()`
+> always returns `IDCANCEL` — file open/save dialogs are not shown yet.
+> The menu items are wired up and invoke the correct handlers, but the
+> underlying dialogs must still be rewritten in Qt to be functional.
+> As a workaround, load songs from the command line.
 
-- there are no menus or toolbars, so *File → Load* (`Ctrl+L` in `Rmt.rc`)
-  cannot be reached
-- `CFileDialog` in `src/MfcTypes.h` is a stand-in whose `DoModal()` always
-  returns `IDCANCEL`, so Load / Save / Save as would be cancelled anyway
+At start-up a message box may say that `tuning.ini` is missing; the default
+tuning is used and the message is harmless.
 
-To play another song, quit RMT and start it again with the new file. At
-start-up a message box says that `build-qt/out/tuning.ini` is missing and the
-default tuning is used; it is harmless.
+### Menu bar
 
-Status:
+All 7 top-level menus from `Rmt.rc` (`IDR_MAINFRAME MENU`) are present:
+
+| Menu | Contents |
+|------|---------|
+| **File** | New, Load, Reload, Save, Save As, Import, Export As, Exit |
+| **Edit** | Undo, Redo, Clear Undo & Redo history |
+| **Track** | Copy/Paste/Cut/Delete, Info, loop tools, renumber, load/save track, cleanup |
+| **Block** | Backup, Copy/Paste/Cut/Delete, Paste special (submenu), Effects, Select all |
+| **Instrument** | Copy/Paste/Cut/Delete, Paste special (submenu, 9 items), Info, renumber, load/save, cleanup |
+| **Song** | Line operations, 4/8 channel switch, order change, length, optimizations |
+| **View** | Configuration, Tuning, toolbar toggles, Play time counter, Volume analyzer, Pokey regs, Instrument active help |
+| **Help** | Help Topics, Online Help, About |
+
+Menu items are enabled/disabled automatically via `ON_UPDATE_COMMAND_UI`
+handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
+
+### Status
 
 - ✅ the main screen, drawn by the original code (tracks, song, instrument,
   info, POKEY registers), window resize, the 16 ms screen timer
 - ✅ keyboard (navigation, editing keys), mouse buttons, wheel, cursors
 - ✅ a song given on the command line is loaded
-- ❌ menus and toolbars (next step: from `Rmt.rc`, dispatched through the
-  message maps)
-- ❌ dialogs: the MFC dialogs are stubs that answer "cancel"
-  (`MfcDialogStubs.cpp`), they have to be rewritten in Qt
+- ✅ full menu bar (7 menus, 81 actions, all with handlers; auto-tested)
+- ⚠️  dialogs: the MFC dialogs are stubs that answer "cancel"
+  (`MfcDialogStubs.cpp` + `CFileDialog::DoModal() = IDCANCEL`); they must
+  still be rewritten in Qt to be functional
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
@@ -157,6 +174,7 @@ Status:
   code streams to is played by PortAudio with real cursors (`MfcAudio.cpp`,
   `RMT_HAVE_PORTAUDIO`, `sudo apt install portaudio19-dev`)
 - ❌ MIDI input
+- ❌ toolbars (menu shortcuts are all present)
 
 Test without a display: `RMT_QT_GRAB=shot.png` saves the window after 1 s
 (`RMT_QT_GRAB_MS`) and quits, `RMT_QT_KEYS=108,106` first presses keys (Linux
@@ -168,6 +186,17 @@ sound buffer in real time and writes it to a WAV file:
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
 QT_QPA_PLATFORM=offscreen RMT_AUDIO_DUMP=play.wav RMT_QT_KEYS=63 RMT_QT_GRAB_MS=6000 \
     RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
+```
+
+`RMT_QT_MENU_TEST=1` (use with `RMT_QT_GRAB=1` and `QT_QPA_PLATFORM=offscreen`)
+triggers all 81 leaf menu actions programmatically and exits 0 if every action
+has a registered handler, 1 otherwise:
+
+```bash
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_MENU_TEST=1 \
+    ./build-qt/out/rmt
+# RMT_QT_MENU_TEST: triggered 81 menu actions
+# RMT_QT_MENU_TEST: PASS
 ```
 
 Checked this way with gemx.rmt: after F5 the time counter shows 5.50 s at
@@ -193,6 +222,48 @@ independent player and 6502 core): over 800 frames AUDC and AUDCTL are
 identical and AUDF within 1 (RMT recomputes its frequency tables from the
 tuning, rmtplay has the original tables); the sound correlates 0.98 (chroma)
 and 0.97 (loudness per frame).
+
+---
+
+## Versioning
+
+The version string baked into the binary is derived **at CMake configure time**
+from the nearest git tag. A single source of truth; no hardcoded version
+strings in C++ source files.
+
+| Situation | Version shown |
+|-----------|--------------|
+| On an exact tag `v2.0-rc1` | `2.0-rc1` |
+| Commits after that tag | `2.0-rc1+dev` |
+| No tag reachable | `2.0-dev` |
+
+`RMT_BASE_VERSION` in `CMakeLists.txt` is the numeric `MAJOR.MINOR` used by
+the release scripts. The generated header `RmtVersion.h` (build directory)
+exposes `RMT_VERSION_FULL` and `RMT_VERSION_STRING`.
+
+### Release candidate workflow
+
+Each push to the main development branch should be tagged as a release
+candidate. Use `scripts/push.sh` instead of a bare `git push`:
+
+```bash
+./scripts/push.sh            # auto-creates v2.0-rcN (N = last+1) and pushes branch + tag
+```
+
+The script reads `RMT_BASE_VERSION` from `CMakeLists.txt`, finds the highest
+existing `v<BASE>-rcN`, increments N, creates the tag, and pushes both the
+branch and the tag to `origin`.
+
+### Final release
+
+When the release candidate cycle is finished:
+
+```bash
+./scripts/release.sh 2.1     # creates v2.1, pushes branch + tag
+```
+
+After a release, update `RMT_BASE_VERSION` in `CMakeLists.txt` to the next
+development target (e.g. `"2.1"`) so subsequent RC tags follow the new series.
 
 ---
 
@@ -230,15 +301,20 @@ All output binaries are in `out/` subdirectory of the build folder.
 
 ---
 
-## Next Steps: Phase 2 (POSIX Support)
+## Next Steps: Phase 2 (POSIX / Qt)
 
-To enable POSIX support (Linux/macOS), Phase 2 will:
-1. Replace MFC with wxWidgets or Qt (cross-platform GUI)
-2. Replace DirectSound/WinMM with PortAudio (cross-platform audio)
-3. Replace Windows MIDI API with RtMidi (cross-platform MIDI)
-4. Add Linux/macOS CI/CD workflows
+The Qt5 frontend (`-DRMT_USE_QT=ON`, default on Linux) is the active
+development track for the 2.x series. Remaining work:
 
-Phase 1 (current) establishes the CMake foundation needed for Phase 2.
+1. **Native Qt dialogs** — rewrite `MfcDialogStubs.cpp` dialogs and
+   `CFileDialog` in Qt so File → Load/Save and all other dialogs are
+   functional
+2. **MIDI input** — wire `RtMidiBackend` to the Qt event loop
+3. **Toolbars** — recreate the MFC rebars as Qt toolbars
+4. **Windows Qt build** — package Qt5 for MinGW and test `-DRMT_USE_QT=ON`
+   on Windows
+
+Phase 1 (CMake foundation, cross-compile, core test) is complete.
 
 ---
 
@@ -255,6 +331,7 @@ MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 Linux native GCC 10: `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` builds and
 `RmtCoreTest` runs ("finished successfully", `--screenshot` draws gemx.rmt);
 the Qt5 frontend builds and shows the main screen with a song, keys move the
-cursor (checked offscreen with `RMT_QT_GRAB` / `RMT_QT_KEYS`).
+cursor, all 81 menu actions are verified via `RMT_QT_MENU_TEST`
+(checked offscreen with `RMT_QT_GRAB` / `RMT_QT_KEYS`).
 
 MSVC builds: not tested here.

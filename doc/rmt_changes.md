@@ -17,6 +17,23 @@ Changes in RMT 2.00 (Planned)
 - Include the export settings in the file format instead of repeating the dialogs for user input on every export.
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
+Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
+- Full menu bar added to the Qt5 frontend (branch feature/Qt-Side, 2026-09-28).
+  All 7 top-level menus (File, Edit, Track, Block, Instrument, Song, View, Help)
+  with nested submenus and keyboard shortcuts are built from the MFC
+  IDR_MAINFRAME MENU resource structure. Menu item enabled/checked state is
+  updated automatically via ON_UPDATE_COMMAND_UI handlers (QtCCmdUI bridge).
+  All 81 leaf actions have registered handlers; verified by the RMT_QT_MENU_TEST
+  headless test hook (QT_QPA_PLATFORM=offscreen, exit code 0).
+  Help commands (ID_HELP_HELP_TOPICS, ID_HELP_ONLINE_HELP, ID_HELP_ABOUT_APP)
+  are handled directly in the Qt Dispatch() layer since CRmtApp is MFC-only.
+- Version string unified: derived at CMake configure time from the nearest git
+  tag (v2.0-rc1 → "2.0-rc1", between tags → "2.0-rc1+dev", no tag → "2.0-dev").
+  Single source of truth via src/RmtVersion.h.in / generated RmtVersion.h;
+  no hardcoded version strings in C++ source. (2026-09-28)
+- Release scripts added: scripts/push.sh auto-increments v2.0-rcN and pushes
+  branch + tag; scripts/release.sh creates a plain v2.X release tag. (2026-09-28)
+
 
 Changes in RMT 1.35 (Planned)
 -----------------------------
