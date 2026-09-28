@@ -16,14 +16,14 @@ REPO_ROOT="$(git -C "$(dirname "$0")" rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
 # Read the base version (e.g. "2.0") from CMakeLists.txt
-BASE=$(grep -m1 'set(RMT_BASE_VERSION' CMakeLists.txt | grep -oP '"\K[^"]+')
+BASE=$(grep -m1 -oP 'set\(RMT_BASE_VERSION\s+"\K[^"]+' CMakeLists.txt || true)
 if [ -z "$BASE" ]; then
     echo "ERROR: could not read RMT_BASE_VERSION from CMakeLists.txt" >&2
     exit 1
 fi
 
-# Find the highest existing rcN for this base
-LAST_N=$(git tag -l "v${BASE}-rc*" | grep -oP "(?<=-rc)[0-9]+" | sort -n | tail -1)
+# Find the highest existing rcN for this base (none yet: grep fails, N = 1)
+LAST_N=$(git tag -l "v${BASE}-rc*" | { grep -oP "(?<=-rc)[0-9]+$" || true; } | sort -n | tail -1)
 NEXT_N=$(( ${LAST_N:-0} + 1 ))
 NEW_TAG="v${BASE}-rc${NEXT_N}"
 
