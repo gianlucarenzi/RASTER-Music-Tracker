@@ -17,11 +17,14 @@
 #include "Tuning.h"
 #include "resource.h"
 #include "AtariTrackerDriver.h"
+#include "PokeyRederer.h"
+#include "emu/PokeySound.h"
 
 #include <cstdio>
 #include <cstring>
 
 extern CSong g_Song;
+extern CXPokey g_Pokey;
 extern CAtari g_Atari;
 extern TTuningSettings g_tuning;
 extern TTuningRatios g_tuningRatios;
@@ -91,7 +94,64 @@ static int Screenshot(const char* out, int w, int h, const char* song)
     return 0;
 }
 
+// --play: play a song with the engine (tracker driver on the built-in 6502,
+// one CSong::TimerRoutine() per frame) and write the POKEY registers the
+// driver leaves in memory each frame; with a WAV name, also the sound of
+// the built-in POKEY
+static int PlaySong(const char* song, int frames, const char* regsOut, const char* wavOut)
+{
+    g_Atari.Init(g_Song.IsNTSC());
+    g_AtariTrackerDriver = new CAtariTrackerDriver(g_Atari);
+    g_AtariTrackerDriver->LoadRMTRoutines(g_trackerDriverVersion);
+    g_AtariTrackerDriver->Init();
+    g_Song.ClearSong(8);
+    if (!g_Song.FileOpen(song, FALSE)) { std::fprintf(stderr, "cannot open %s\n", song); return 1; }
+    g_Pokey.InitSound(g_Song.IsNTSC(), g_Song.IsStereo());
+    g_Song.Play(PLAY_SONG, FALSE, 0);
+
+    FILE* regs = std::fopen(regsOut, "w");
+    if (!regs) { std::perror(regsOut); return 1; }
+    FILE* wav = wavOut ? std::fopen(wavOut, "wb") : nullptr;
+    rmt_emu::PokeySound pokey;
+    pokey.Initialize(false);
+    pokey.SetMainClock(g_Atari.GetClockFrequency());
+    std::vector<uint8_t> pcm;
+    int cyclesPerFrame = g_Atari.GetFrameCycleCount();
+    for (int f = 0; f < frames; f++) {
+        g_Song.TimerRoutine();
+        std::fprintf(regs, "%6d ", f);
+        for (int i = 0; i < 9; i++) std::fprintf(regs, " %02X", g_Atari.GetByteAt(0xd200 + i));
+        std::fprintf(regs, "\n");
+        if (wav) {
+            for (int i = 0; i < 9; i++) pokey.PutByte(i, g_Atari.GetByteAt(0xd200 + i));
+            uint8_t buf[8192];
+            int n = pokey.Generate(cyclesPerFrame, buf, 16);
+            pcm.insert(pcm.end(), buf, buf + n);
+        }
+    }
+    std::fclose(regs);
+    if (wav) {
+        auto put32 = [&](uint32_t v) { std::fwrite(&v, 4, 1, wav); };
+        auto put16 = [&](uint16_t v) { std::fwrite(&v, 2, 1, wav); };
+        std::fwrite("RIFF", 1, 4, wav); put32(36 + (uint32_t)pcm.size());
+        std::fwrite("WAVEfmt ", 1, 8, wav); put32(16); put16(1); put16(2);
+        put32(44100); put32(44100 * 4); put16(4); put16(16);
+        std::fwrite("data", 1, 4, wav); put32((uint32_t)pcm.size());
+        std::fwrite(pcm.data(), 1, pcm.size(), wav);
+        std::fclose(wav);
+    }
+    std::printf("Played %d frames of %s\n", frames, song);
+    return 0;
+}
+
 int main(int argc, char** argv) {
+    // program folder = folder of the executable: resources/drivers is there
+    {
+        std::error_code ec;
+        auto exe = std::filesystem::canonical("/proc/self/exe", ec);
+        std::filesystem::path dir = ec ? std::filesystem::path(argv[0]).parent_path() : exe.parent_path();
+        SetProgramFolderPath(CString((dir.string() + "/").c_str()));
+    }
     std::printf("RmtCoreTest - RASTER Music Tracker engine (non-MFC build)\n");
     std::printf("Version string: %s\n", g_app.GetVersionAndBuild().GetString());
 
@@ -112,6 +172,8 @@ int main(int argc, char** argv) {
     g_tuning.Initialize(g_Song.IsNTSC());
     g_tuningRatios.Initialize();
 
+    if (argc >= 5 && !std::strcmp(argv[1], "--play"))
+        return PlaySong(argv[2], std::atoi(argv[3]), argv[4], argc >= 6 ? argv[5] : nullptr);
     if (argc >= 3 && !std::strcmp(argv[1], "--screenshot"))
         return Screenshot(argv[2], 1280, 800, argc >= 4 ? argv[3] : nullptr);
 

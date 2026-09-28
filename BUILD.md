@@ -127,9 +127,11 @@ Status:
   message maps)
 - ❌ dialogs: the MFC dialogs are stubs that answer "cancel"
   (`MfcDialogStubs.cpp`), they have to be rewritten in Qt
-- ❌ sound: no 6502/POKEY emulation yet (`sa_c6502.dll` / `apokeysnd.dll` are
-  Windows binaries), the DirectSound device of `MfcTypes.h` is silent, the
-  song timer (`timeSetEvent`) does not run
+- ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
+  `apokeysnd.dll` are not there (always outside Windows): the tracker driver
+  runs, notes and instruments play inside the engine
+- ❌ sound output: the DirectSound device of `MfcTypes.h` is silent and the song
+  timer (`timeSetEvent`) does not run yet (next: PortAudio + a timer thread)
 - ❌ MIDI input
 
 Test without a display: `RMT_QT_GRAB=shot.png` saves the window after 1 s and
@@ -140,7 +142,25 @@ boxes are answered automatically:
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
 ```
 
-`RmtCoreTest --screenshot out.ppm [song.rmt]` draws the main screen without Qt.
+`RmtCoreTest --screenshot out.ppm [song.rmt]` draws the main screen without Qt;
+`RmtCoreTest --play song.rmt frames regs.txt [out.wav]` plays a song with the
+engine (one `CSong::TimerRoutine()` per frame), writes the POKEY registers of
+every frame and the sound of the built-in POKEY.
+
+### Built-in 6502 and POKEY (`src/emu`)
+
+| File | Replaces | |
+|------|----------|---|
+| `emu/Cpu6502.cpp` | `sa_c6502.dll` | NMOS 6502, documented opcodes, cycle counted (page crossing, branches), flat 64 KB memory; `C6502_JSR` runs until the RTS or the cycles |
+| `emu/PokeySound.cpp` | `apokeysnd.dll` | one or two POKEYs (`PutByte` 0x10.. = second chip), cycle based model (clocks, 16 bit, filters, polys, distortions), 44100 Hz, 2 interleaved channels |
+
+Derived from the emulation of `AT2019/ATARI-Driver/RmtSkeleton/tools/rmtplay`.
+`C6502.cpp` and `Pokey.cpp` load the DLLs first, as before, and fall back to
+these. Checked with `RmtCoreTest --play` on gemx.rmt against `rmtplay` (an
+independent player and 6502 core): over 800 frames AUDC and AUDCTL are
+identical and AUDF within 1 (RMT recomputes its frequency tables from the
+tuning, rmtplay has the original tables); the sound correlates 0.98 (chroma)
+and 0.97 (loudness per frame).
 
 ---
 

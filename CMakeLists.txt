@@ -100,6 +100,10 @@ endif()
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 
+# Runtime files next to the programs: the tracker drivers (rmt_driver_v*.obx)
+# and the other files RMT loads from <program folder>/resources
+file(COPY ${PROJECT_SOURCE_DIR}/rmt/resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
 # Main source subdirectory
 add_subdirectory(src)
 

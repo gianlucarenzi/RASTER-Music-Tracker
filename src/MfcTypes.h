@@ -1226,17 +1226,22 @@ public:
         if (bytes > first && ppData2 && pSize2) { *ppData2 = m_data.data(); *pSize2 = bytes - first; }
         return DS_OK;
     }
-    HRESULT Unlock(void*, DWORD, void*, DWORD) { return DS_OK; }
+    HRESULT Unlock(void* p1, DWORD s1, void*, DWORD s2) {
+        // plays instantly: the cursors follow what was written
+        if (p1 && !m_data.empty()) m_cursor = (DWORD)(((unsigned char*)p1 - m_data.data()) + s1 + s2) % (DWORD)m_data.size();
+        return DS_OK;
+    }
     HRESULT Play(DWORD, DWORD, DWORD) { return DS_OK; }
     HRESULT Stop() { return DS_OK; }
     HRESULT GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor) {
-        if (playCursor) *playCursor = 0;
-        if (writeCursor) *writeCursor = 0;
+        if (playCursor) *playCursor = m_cursor;
+        if (writeCursor) *writeCursor = m_cursor;
         return DS_OK;
     }
     HRESULT Release() { delete this; return DS_OK; }
 private:
     std::vector<unsigned char> m_data;
+    DWORD m_cursor = 0;
 };
 typedef IDirectSoundBuffer* LPDIRECTSOUNDBUFFER;
 

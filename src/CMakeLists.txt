@@ -107,6 +107,8 @@ else()
         RtMidiBackend.cpp
 
         # Engine
+        emu/Cpu6502.cpp
+        emu/PokeySound.cpp
         ASMFileBuilder.cpp
         ASMFile.cpp
         ASMFileExporter.cpp
@@ -576,6 +578,8 @@ if(RMT_CORE_TEST)
 
     set(RMT_ENGINE_SOURCES
         # ---- engine (no GUI) ----
+        emu/Cpu6502.cpp
+        emu/PokeySound.cpp
         AssemblerTypes.cpp
         AtariBinaries.cpp
         Atari.cpp
