@@ -80,12 +80,14 @@ public:
     QtCCmdUI(UINT id, QAction* action) { m_nID = id; m_action = action; }
     void Enable(BOOL on) override { m_action->setEnabled(on != FALSE); }
     void SetCheck(int check) override {
-        m_action->setCheckable(true);
-        m_action->setChecked(check != 0);
+        // setCheckable(true) is set at construction for known toggle items;
+        // calling it here during aboutToShow emits QAction::changed → menu repaint.
+        if (m_action->isCheckable())
+            m_action->setChecked(check != 0);
     }
     void SetRadio(BOOL on) override {
-        m_action->setCheckable(true);
-        m_action->setChecked(on != FALSE);
+        if (m_action->isCheckable())
+            m_action->setChecked(on != FALSE);
     }
     void SetText(LPCTSTR text) override {
         CCmdUI::SetText(text);
@@ -133,7 +135,10 @@ public:
 
     void Paint(QPainter& painter) {
         EnsureWindowDC();
-        if (m_started) m_view.OnDraw(&m_windowDC);
+        // Only call OnDraw (expensive DrawAll) when the tracker has flagged a
+        // redraw needed. OS expose / resize events just re-blit the cached bitmap.
+        if (m_started && g_screenupdate)
+            m_view.OnDraw(&m_windowDC);
         QImage image((const uchar*)m_windowBitmap.Bits(), m_windowBitmap.Width(), m_windowBitmap.Height(),
                      m_windowBitmap.Width() * 4, QImage::Format_RGB32);
         painter.drawImage(0, 0, image);
@@ -176,33 +181,35 @@ public:
             return act;
         };
 
-        // Helper: connect a menu's aboutToShow to run ON_UPDATE_COMMAND_UI on
-        // all registered actions of that menu (recursively through submenus).
-        auto connectUpdate = [&](QMenu* menu, auto& self) -> void {
-            QObject::connect(menu, &QMenu::aboutToShow, [this, menu] {
-                if (!m_started) return;
-                std::function<void(QMenu*)> update = [&](QMenu* m) {
-                    for (QAction* act : m->actions()) {
-                        UINT id = act->data().toUInt();
-                        if (id) {
-                            QtCCmdUI ui(id, act);
-                            if (!m_view.OnUpdateCmdUI(&ui)) m_frame.OnUpdateCmdUI(&ui);
-                        }
-                        if (act->menu()) update(act->menu());
-                    }
-                };
-                update(menu);
-            });
-            for (QAction* act : menu->actions())
-                if (act->menu()) self(act->menu(), self);
-        };
-
-        // Store the ID in action data so aboutToShow can find it
+        // Store the ID in action data so aboutToShow can find it.
+        // Used for ON_UPDATE_COMMAND_UI (enable/checked state refresh).
         auto addItemTagged = [&](QMenu* menu, const char* text, UINT id,
                                  const char* shortcut = nullptr) -> QAction* {
             QAction* act = addItem(menu, text, id, shortcut);
             act->setData(id);
             return act;
+        };
+
+        // Toggle item: checkable at construction so SetCheck() in aboutToShow
+        // does not emit QAction::changed (which would repaint the open menu).
+        auto addToggle = [&](QMenu* menu, const char* text, UINT id) -> QAction* {
+            QAction* act = addItemTagged(menu, text, id);
+            act->setCheckable(true);
+            return act;
+        };
+
+        // Connect ON_UPDATE_COMMAND_UI for a menu's *direct* children only.
+        // Each submenu is responsible for its own items via its own aboutToShow.
+        auto connectUpdate = [&](QMenu* menu) {
+            QObject::connect(menu, &QMenu::aboutToShow, [this, menu] {
+                if (!m_started) return;
+                for (QAction* act : menu->actions()) {
+                    UINT id = act->data().toUInt();
+                    if (!id) continue;
+                    QtCCmdUI ui(id, act);
+                    if (!m_view.OnUpdateCmdUI(&ui)) m_frame.OnUpdateCmdUI(&ui);
+                }
+            });
         };
 
         // ---- File ----
@@ -318,22 +325,22 @@ public:
         mSong->addSeparator();
         addItemTagged(mSong, "All size optimizations...",       ID_SONG_SIZEOPTIMIZATION);
 
-        // ---- View ----
+        // ---- View ---- (toggle items are checkable at construction)
         QMenu* mView = bar->addMenu("&View");
         addItemTagged(mView, "&Configuration...", ID_VIEW_CONFIGURATION);
         mView->addSeparator();
         addItemTagged(mView, "&Tuning...",        ID_VIEW_TUNING);
         mView->addSeparator();
-        addItemTagged(mView, "Main &toolbar",     ID_VIEW_TOOLBAR);
-        addItemTagged(mView, "&Block toolbar",    ID_VIEW_BLOCKTOOLBAR);
+        addToggle(mView,   "Main &toolbar",       ID_VIEW_TOOLBAR);
+        addToggle(mView,   "&Block toolbar",      ID_VIEW_BLOCKTOOLBAR);
         mView->addSeparator();
-        addItemTagged(mView, "&Status Bar",       ID_VIEW_STATUS_BAR);
+        addToggle(mView,   "&Status Bar",         ID_VIEW_STATUS_BAR);
         mView->addSeparator();
-        addItemTagged(mView, "&Play time counter",  ID_VIEW_PLAYTIMECOUNTER);
-        addItemTagged(mView, "&Volume analyzer",    ID_VIEW_VOLUMEANALYZER);
-        addItemTagged(mView, "Pokey chip &registers", ID_VIEW_POKEYREGS);
+        addToggle(mView,   "&Play time counter",  ID_VIEW_PLAYTIMECOUNTER);
+        addToggle(mView,   "&Volume analyzer",    ID_VIEW_VOLUMEANALYZER);
+        addToggle(mView,   "Pokey chip &registers", ID_VIEW_POKEYREGS);
         mView->addSeparator();
-        addItemTagged(mView, "&Instrument active help", ID_VIEW_INSTRUMENTACTIVEHELP);
+        addToggle(mView,   "&Instrument active help", ID_VIEW_INSTRUMENTACTIVEHELP);
 
         // ---- Help ----
         QMenu* mHelp = bar->addMenu("&Help");
@@ -341,11 +348,15 @@ public:
         addItemTagged(mHelp, "&Online Help",                    ID_HELP_ONLINE_HELP, "Shift+F1");
         addItemTagged(mHelp, "&About RASTER Music Tracker",     ID_HELP_ABOUT_APP);
 
-        // Wire up ON_UPDATE_COMMAND_UI for all top-level menus
-        for (QAction* act : bar->actions()) {
-            if (QMenu* m = act->menu())
-                connectUpdate(m, connectUpdate);
-        }
+        // Wire up ON_UPDATE_COMMAND_UI: each menu updates only its own direct
+        // children (submenus update their own items via their own aboutToShow).
+        std::function<void(QMenu*)> wireUpdate = [&](QMenu* menu) {
+            connectUpdate(menu);
+            for (QAction* act : menu->actions())
+                if (act->menu()) wireUpdate(act->menu());
+        };
+        for (QAction* act : bar->actions())
+            if (act->menu()) wireUpdate(act->menu());
     }
 
     static UINT MouseFlags(Qt::MouseButtons b, Qt::KeyboardModifiers m) {
