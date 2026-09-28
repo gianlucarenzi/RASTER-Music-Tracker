@@ -117,6 +117,27 @@ cmake --build build-qt -j
 ./build-qt/out/rmt song.rmt
 ```
 
+### Loading and playing a song
+
+For now a song can only be loaded from the command line, when RMT starts:
+
+```bash
+./build-qt/out/rmt legacy/rmt_128/songs/thrust.rmt
+```
+
+Give the window the focus (click on it) and press **F5** to play.
+
+A song cannot be loaded from inside the program yet:
+
+- there are no menus or toolbars, so *File → Load* (`Ctrl+L` in `Rmt.rc`)
+  cannot be reached
+- `CFileDialog` in `src/MfcTypes.h` is a stand-in whose `DoModal()` always
+  returns `IDCANCEL`, so Load / Save / Save as would be cancelled anyway
+
+To play another song, quit RMT and start it again with the new file. At
+start-up a message box says that `build-qt/out/tuning.ini` is missing and the
+default tuning is used; it is harmless.
+
 Status:
 
 - ✅ the main screen, drawn by the original code (tracks, song, instrument,
