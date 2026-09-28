@@ -33,6 +33,22 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   no hardcoded version strings in C++ source. (2026-09-28)
 - Release scripts added: scripts/push.sh auto-increments v2.0-rcN and pushes
   branch + tag; scripts/release.sh creates a plain v2.X release tag. (2026-09-28)
+- Fixed the Qt frontend using 100% of all CPU cores. (2026-09-28)
+  The song timer (MfcAudio.cpp, timeSetEvent) re-created from its own tick
+  could start its callback while the previous one was still running, whenever
+  the timer fell behind by more than one tick: CSongTimer then kept two live
+  timers, their number doubled at every stall, and CSong::TimerRoutine() ran
+  concurrently (corrupted 6502 state, thousands of threads, abort). A
+  re-created timer now waits for the tick that created it, and a timer more
+  than 200 ms late restarts from now instead of catching up.
+- Fixed a segfault on exit of the Qt frontend: the song timer kept ticking while
+  g_Song was destroyed. CSongTimer::StopTimer() now runs on every exit, and a
+  lock plus a "stopped" flag keep a running tick from creating a new timer.
+- Qt frontend redraw made cheaper (idle CPU about 50% of one core, was 78%):
+  the widget shows the view's bitmap directly (no full-screen copy per frame,
+  scaling done by QPainter), and CDC::BitBlt / StretchBlt of the non-MFC
+  builds clip once and copy whole rows. The 60 fps screen refresh and the
+  50/60 Hz song timer (VBI) are unchanged and independent of each other.
 
 
 Changes in RMT 1.35 (Planned)

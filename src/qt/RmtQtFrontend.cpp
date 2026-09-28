@@ -108,8 +108,9 @@ public:
     QtRmtDoc m_doc;
     QtMainFrame m_frame;
     QtRmtView m_view;
-    CBitmap m_windowBitmap;         // what the view draws into (OnDraw) and the widget shows
+    CBitmap m_windowBitmap;         // 1x1, only for GetDC() (CreateCompatibleDC/Bitmap)
     CDC m_windowDC;
+    QSize m_widgetSize;             // a change forces a redraw (the view resizes its bitmap)
     std::map<UINT_PTR, QTimer*> m_timers;
     std::set<unsigned> m_keysDown;
     // All (id → action) pairs registered in the menu bar, for update-UI polling
@@ -124,24 +125,42 @@ public:
     }
 
     void EnsureWindowDC() {
-        int w = std::max(1, m_widget->width()), h = std::max(1, m_widget->height());
-        if (m_windowBitmap.Width() != w || m_windowBitmap.Height() != h) {
-            m_windowBitmap.Create(w, h);
+        if (!m_windowBitmap.Width()) {
+            m_windowBitmap.Create(1, 1);
             m_windowDC.CreateCompatibleDC(nullptr);
             m_windowDC.SelectObject(&m_windowBitmap);
+        }
+        QSize size(std::max(1, m_widget->width()), std::max(1, m_widget->height()));
+        if (size != m_widgetSize) {
+            m_widgetSize = size;
             SCREENUPDATE;
         }
     }
 
     void Paint(QPainter& painter) {
         EnsureWindowDC();
-        // Only call OnDraw (expensive DrawAll) when the tracker has flagged a
-        // redraw needed. OS expose / resize events just re-blit the cached bitmap.
-        if (m_started && g_screenupdate)
-            m_view.OnDraw(&m_windowDC);
-        QImage image((const uchar*)m_windowBitmap.Bits(), m_windowBitmap.Width(), m_windowBitmap.Height(),
-                     m_windowBitmap.Width() * 4, QImage::Format_RGB32);
-        painter.drawImage(0, 0, image);
+        // CRmtView::OnDraw() without its final StretchBlt: the widget shows the
+        // view's own bitmap (m_mem_dc), which holds the g_width x g_height
+        // screen, and QPainter scales it (nearest neighbour, no smoothing).
+        // Only redraw when the tracker has flagged it; expose events re-show
+        // the last frame.
+        if (m_started && g_screenupdate) {
+            if (g_view.debugDisplay) m_view.GetFPS();
+            m_view.Resize();
+            g_Song.RespectBoundaries();
+            m_view.DrawAll();
+        }
+        NO_SCREENUPDATE;
+        const CBitmap& bmp = m_view.m_mem_bitmap;
+        if (!bmp.Bits()) {
+            painter.fillRect(m_widget->rect(), Qt::black);
+            return;
+        }
+        QImage image((const uchar*)bmp.Bits(), bmp.Width(), bmp.Height(), bmp.Width() * 4, QImage::Format_RGB32);
+        if (g_width == m_view.m_width && g_height == m_view.m_height)
+            painter.drawImage(0, 0, image);
+        else
+            painter.drawImage(QRect(0, 0, m_view.m_width, m_view.m_height), image, QRect(0, 0, g_width, g_height));
     }
 
     // WM_COMMAND: the view, then the frame (as the MFC command routing)

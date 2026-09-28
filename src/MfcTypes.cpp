@@ -7,6 +7,10 @@
 #include "resource.h"
 #include "RmtVersion.h"
 
+#include <algorithm>
+#include <cstring>
+#include <vector>
+
 // ---------------------------------------------------------------------------
 // CString::LoadString() - stand-in for the Windows .rc string table.
 // Only the resource IDs actually reached via LoadString() calls in the
@@ -128,15 +132,16 @@ BOOL CDC::LineTo(int x1, int y1) {
 BOOL CDC::BitBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, DWORD) {
     CBitmap* sb = src ? src->m_bitmap : nullptr;
     if (!m_bitmap || !m_bitmap->Bits() || !sb || !sb->Bits()) return FALSE;
-    for (int j = 0; j < h; j++) {
-        int dy = y + j, sy = ys + j;
-        if (dy < 0 || dy >= m_bitmap->Height() || sy < 0 || sy >= sb->Height()) continue;
-        uint32_t* dp = m_bitmap->Bits() + (size_t)dy * m_bitmap->Width();
-        const uint32_t* sp = sb->Bits() + (size_t)sy * sb->Width();
-        for (int i = 0; i < w; i++) {
-            int dx = x + i, sx = xs + i;
-            if (dx >= 0 && dx < m_bitmap->Width() && sx >= 0 && sx < sb->Width()) dp[dx] = sp[sx];
-        }
+    // clip the rectangle once against both bitmaps, then copy whole rows
+    int i0 = std::max({ 0, -x, -xs });
+    int i1 = std::min({ w, m_bitmap->Width() - x, sb->Width() - xs });
+    int j0 = std::max({ 0, -y, -ys });
+    int j1 = std::min({ h, m_bitmap->Height() - y, sb->Height() - ys });
+    if (i0 >= i1 || j0 >= j1) return TRUE;
+    for (int j = j0; j < j1; j++) {
+        uint32_t* dp = m_bitmap->Bits() + (size_t)(y + j) * m_bitmap->Width() + x + i0;
+        const uint32_t* sp = sb->Bits() + (size_t)(ys + j) * sb->Width() + xs + i0;
+        std::memmove(dp, sp, (size_t)(i1 - i0) * sizeof(uint32_t));
     }
     return TRUE;
 }
@@ -146,15 +151,19 @@ BOOL CDC::StretchBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, int w
     CBitmap* sb = src ? src->m_bitmap : nullptr;
     if (w == ws && h == hs) return BitBlt(x, y, w, h, src, xs, ys, rop);
     if (!m_bitmap || !m_bitmap->Bits() || !sb || !sb->Bits() || w <= 0 || h <= 0) return FALSE;
+    // source column of each destination column, -1 when clipped
+    std::vector<int> cols(w);
+    for (int i = 0; i < w; i++) {
+        int dx = x + i, sx = xs + (int)((long long)i * ws / w);
+        cols[i] = dx >= 0 && dx < m_bitmap->Width() && sx >= 0 && sx < sb->Width() ? sx : -1;
+    }
     for (int j = 0; j < h; j++) {
         int dy = y + j, sy = ys + (int)((long long)j * hs / h);
         if (dy < 0 || dy >= m_bitmap->Height() || sy < 0 || sy >= sb->Height()) continue;
-        uint32_t* dp = m_bitmap->Bits() + (size_t)dy * m_bitmap->Width();
+        uint32_t* dp = m_bitmap->Bits() + (size_t)dy * m_bitmap->Width() + x;
         const uint32_t* sp = sb->Bits() + (size_t)sy * sb->Width();
-        for (int i = 0; i < w; i++) {
-            int dx = x + i, sx = xs + (int)((long long)i * ws / w);
-            if (dx >= 0 && dx < m_bitmap->Width() && sx >= 0 && sx < sb->Width()) dp[dx] = sp[sx];
-        }
+        for (int i = 0; i < w; i++)
+            if (cols[i] >= 0) dp[i] = sp[cols[i]];
     }
     return TRUE;
 }

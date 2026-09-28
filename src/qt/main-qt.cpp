@@ -127,5 +127,10 @@ int main(int argc, char** argv)
         });
     }
 
-    return app.exec();
+    int result = app.exec();
+    // File/Exit already did this (CRmtView::OnWantExit); any other way out
+    // (test hooks, QCoreApplication::exit) must not leave the song timer
+    // ticking into the destruction of g_Song
+    g_Song.StopTimer();
+    return result;
 }

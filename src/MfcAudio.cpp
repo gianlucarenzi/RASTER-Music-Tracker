@@ -12,6 +12,7 @@
 #include "PlatformTypes.h"
 
 #include <chrono>
+#include <future>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -42,6 +43,10 @@ UINT s_nextTimerId = 1;
 thread_local LPTIMECALLBACK t_callback = nullptr;
 thread_local DWORD_PTR t_user = 0;
 thread_local Clock::time_point t_deadline;
+thread_local std::shared_future<void> t_callbackDone;   // ready when the running callback has returned
+
+// "too late" threshold: a timer this far behind restarts from now instead of catching up
+constexpr std::chrono::milliseconds kMaxLateness(200);
 
 } // namespace
 
@@ -49,8 +54,17 @@ UINT timeSetEvent(UINT delay, UINT, LPTIMECALLBACK callback, DWORD_PTR user, UIN
 {
     if (!callback || !delay) return 0;
     Clock::time_point first = Clock::now() + std::chrono::milliseconds(delay);
-    if (t_callback == callback && t_user == user)
-        first = t_deadline + std::chrono::milliseconds(delay);    // rescheduled from its own tick
+    std::shared_future<void> after;
+    if (t_callback == callback && t_user == user) {
+        // rescheduled from its own tick: keep the tempo, but do not start the
+        // callback before this one returns (else two ticks run concurrently,
+        // and CSongTimer, which stores the new id after this call, ends up
+        // with two live timers)
+        first = t_deadline + std::chrono::milliseconds(delay);
+        if (first < Clock::now() - kMaxLateness)
+            first = Clock::now();                                   // too late: do not catch up
+        after = t_callbackDone;
+    }
 
     auto timer = std::make_shared<MmTimer>();
     UINT id;
@@ -60,19 +74,24 @@ UINT timeSetEvent(UINT delay, UINT, LPTIMECALLBACK callback, DWORD_PTR user, UIN
         if (!s_nextTimerId) s_nextTimerId = 1;
         s_timers[id] = timer;
     }
-    timer->thread = std::thread([timer, id, delay, callback, user, flags, first] {
+    timer->thread = std::thread([timer, id, delay, callback, user, flags, first, after] {
+        if (after.valid()) after.wait();
         Clock::time_point deadline = first;
         while (!timer->stop) {
             std::this_thread::sleep_until(deadline);
             if (timer->stop) break;
+            std::promise<void> done;
+            t_callbackDone = done.get_future().share();
             t_callback = callback;
             t_user = user;
             t_deadline = deadline;
             callback(id, 0, user, 0, 0);
             t_callback = nullptr;
+            t_callbackDone = {};
+            done.set_value();
             if (!(flags & TIME_PERIODIC)) break;
             deadline += std::chrono::milliseconds(delay);
-            if (deadline < Clock::now() - std::chrono::milliseconds(200))
+            if (deadline < Clock::now() - kMaxLateness)
                 deadline = Clock::now();                            // too late (debugger, suspend): do not catch up
         }
     });

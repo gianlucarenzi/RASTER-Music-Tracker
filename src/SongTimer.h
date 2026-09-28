@@ -4,6 +4,8 @@
 
 #include "Song.h"
 
+#include <mutex>
+
 class CSongTimer
 {
 
@@ -39,5 +41,11 @@ private:
     UINT m_timerRoutine;
     bool volatile busyInCallback;
     bool volatile m_timerRoutineProcessed;
+
+    // SetTimer() runs on the timer's own tick while StopTimer() runs on the
+    // UI thread: the lock keeps them from both owning a live timer, and once
+    // stopped no tick can start a new one
+    std::mutex m_lock;
+    bool m_stopped = false;
 };
 

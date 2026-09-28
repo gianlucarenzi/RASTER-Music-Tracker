@@ -22,13 +22,21 @@ void CSongTimer::KillTimer()
 
 void CSongTimer::StopTimer()
 {
-    while (busyInCallback) {};			// Wait until not in timer handler
-    KillTimer();					// Kill the timer
+    UINT timer;
+    {
+        std::lock_guard<std::mutex> lock(m_lock);
+        m_stopped = true;				// A tick running now cannot set a new timer
+        timer = m_timerRoutine;
+        m_timerRoutine = 0;
+    }
+    if (timer) timeKillEvent(timer);	// Outside the lock: it may wait for the running tick, which may be in SetTimer()
     while (busyInCallback) {};			// Make sure not in the timer handler
 }
 
 void CSongTimer::SetTimer(CSong& song, int ms)
 {
+    std::lock_guard<std::mutex> lock(m_lock);
+    if (m_stopped) return;
     KillTimer();
     this->m_song = &song;
     m_timerRoutine = timeSetEvent(ms, 0, TimerCallback, (DWORD_PTR)(this), TIME_PERIODIC);

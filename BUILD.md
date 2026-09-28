@@ -158,7 +158,12 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
 ### Status
 
 - ✅ the main screen, drawn by the original code (tracks, song, instrument,
-  info, POKEY registers), window resize, the 16 ms screen timer
+  info, POKEY registers), window resize, the 16 ms screen timer. The widget
+  shows the view's own bitmap (`m_mem_dc`) directly: `RmtQtBridge::Paint()`
+  runs `CRmtView::OnDraw()` without its final `StretchBlt`, and the scaling
+  (`SCALEPERCENTAGE` > 100) is done by `QPainter` (nearest neighbour; at
+  scaled sizes a duplicated row/column may land one pixel apart from the MFC
+  version)
 - ✅ keyboard (navigation, editing keys), mouse buttons, wheel, cursors
 - ✅ a song given on the command line is loaded
 - ✅ full menu bar (7 menus, 81 actions, all with handlers; auto-tested)
@@ -172,7 +177,18 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   re-created from its own tick keeps the deadline, so the tempo does not
   drift) runs `CSong::TimerRoutine()`, and the DirectSound buffer the sound
   code streams to is played by PortAudio with real cursors (`MfcAudio.cpp`,
-  `RMT_HAVE_PORTAUDIO`, `sudo apt install portaudio19-dev`)
+  `RMT_HAVE_PORTAUDIO`, `sudo apt install portaudio19-dev`). A re-created
+  timer waits for the tick that created it to return, and a timer more than
+  200 ms late restarts from now instead of catching up: before, a stall of
+  more than one tick (window move, load, debugger) let two ticks run at once,
+  the timers doubled at every stall and the process ended at 100% on all
+  cores (thousands of threads, then an abort). `CSongTimer::StopTimer()` is
+  called on every exit (`main-qt.cpp`) and no tick can start a new timer once
+  it has run, so the song timer no longer runs into the destruction of
+  `g_Song` (segfault on exit)
+- ✅ CPU (offscreen, gemx.rmt): about 50% of one core idle and while playing
+  (was 78% / 66%), almost all of it the 60 fps redraw; `CDC::BitBlt` copies
+  clipped rows with `memmove`, `CDC::StretchBlt` precomputes its columns
 - ❌ MIDI input
 - ❌ toolbars (menu shortcuts are all present)
 
