@@ -74,6 +74,18 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   master. BUILD.md starts with it, README.md has a "Building" section. Windows
   keeps the MFC GUI built with MSVC by default (RMT_USE_QT=OFF) until the Qt
   frontend is tested there. (2026-09-29)
+- Qt frontend: the file dialogs work (QFileDialog). Songs load and save
+  (RMT, TXT, RMW), instruments (RTI) and tracks (TXT) load and save, and
+  Import / Export As show their file choice. CFileDialog::DoModal() asks the
+  frontend via IRmtHost::FileDialog, so IO_Song.cpp is unchanged; the chosen
+  file type, last folder and proposed file name behave as with MFC, and upper
+  case extensions are matched too. (2026-09-29)
+- Fixed loading TXT songs and instruments with LF line ends (files written on
+  Linux): an empty line made the reader swallow the next "[SECTION]" line, so
+  only the [MODULE] header was loaded. Files with CR LF line ends were not
+  affected. (2026-09-29)
+- Qt test hooks RMT_QT_COMMANDS (trigger menu commands) and
+  RMT_QT_FILEDIALOG (answer file dialogs) added. (2026-09-29)
 
 
 Changes in RMT 1.35 (Planned)

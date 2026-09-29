@@ -49,6 +49,19 @@ CRmtApp g_app;
 
 IRmtHost* g_rmtHost = nullptr;
 
+INT_PTR CFileDialog::DoModal() {
+    if (!g_rmtHost) return IDCANCEL;
+    const char* fileName = m_ofn.lpstrFile && *m_ofn.lpstrFile ? m_ofn.lpstrFile : m_fileName.GetString();
+    int filterIndex = m_ofn.nFilterIndex;
+    CString path;
+    if (!g_rmtHost->FileDialog(m_bOpen != FALSE, m_ofn.lpstrTitle, m_ofn.lpstrInitialDir, fileName,
+                               m_filter.GetString(), m_flags, filterIndex, path))
+        return IDCANCEL;
+    m_path = path;
+    m_ofn.nFilterIndex = filterIndex;
+    return IDOK;
+}
+
 CString CRmtApp::GetVersionAndBuild() const {
     CString version;
     version.LoadString(IDS_RMTVERSION);
