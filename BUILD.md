@@ -386,7 +386,7 @@ Each push to the main development branch should be tagged as a release
 candidate. Use `scripts/push.sh` instead of a bare `git push`:
 
 ```bash
-./scripts/push.sh            # auto-creates v2.0-rcN (N = last+1) and pushes branch + tag
+./scripts/push.sh            # auto-creates v2.1-rcN (N = last+1) and pushes branch + tag
 ```
 
 The script reads `RMT_BASE_VERSION` from `CMakeLists.txt`, finds the highest
@@ -402,7 +402,8 @@ When the release candidate cycle is finished:
 ```
 
 After a release, update `RMT_BASE_VERSION` in `CMakeLists.txt` to the next
-development target (e.g. `"2.1"`) so subsequent RC tags follow the new series.
+development target (e.g. `"2.2"`) so subsequent RC tags follow the new series.
+The last release is `v2.0`; `RMT_BASE_VERSION` is `"2.1"`.
 
 ---
 
@@ -454,7 +455,7 @@ All output binaries are in `out/` subdirectory of the build folder.
 
 ## Linux, Windows and macOS builds on GitHub Actions
 
-Pushing a tag `v*` (`scripts/push.sh` → `v2.0-rcN`, `scripts/release.sh` →
+Pushing a tag `v*` (`scripts/push.sh` → `v2.1-rcN`, `scripts/release.sh` →
 `v2.1`...) builds the Qt5 frontend on GitHub and publishes the packages as
 assets of the release of that tag (a pre-release for the `-rc` tags); every
 job also uploads its package and an offscreen screenshot of gemx.rmt (the
