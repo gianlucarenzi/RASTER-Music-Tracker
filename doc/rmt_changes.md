@@ -74,6 +74,10 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   master. BUILD.md starts with it, README.md has a "Building" section. Windows
   keeps the MFC GUI built with MSVC by default (RMT_USE_QT=OFF) until the Qt
   frontend is tested there. (2026-09-29)
+- Fixed loading TXT songs and instruments with LF line ends (files written on
+  Linux): an empty line made the reader swallow the next "[SECTION]" line, so
+  only the [MODULE] header was loaded. Files with CR LF line ends were not
+  affected. (2026-09-29)
 
 
 Changes in RMT 1.35 (Planned)

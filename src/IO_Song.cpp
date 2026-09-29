@@ -1046,7 +1046,7 @@ bool CSong::LoadTxt(std::ifstream& in)
             while (!in.eof())
             {
                 // Check for next segment start '['
-                in.read((char*)&b, 1);
+                b = NextLineStart(in);
                 if (b == '[') break;
                 // Not a segment start so save the read character and get the rest of the line
                 line[0] = b;
@@ -1122,7 +1122,7 @@ bool CSong::LoadTxt(std::ifstream& in)
                 {
                     // Read the song line. Dump out if its the next section
                     memset(line, 0, 32);
-                    in.read((char*)&b, 1);
+                    b = NextLineStart(in);
                     if (b == '[') break;
                     line[0] = b;
                     in.getline(line + 1, 1024);

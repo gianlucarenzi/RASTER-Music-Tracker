@@ -5,6 +5,7 @@
 extern CString GetFilePath(CString pathandfilename);
 
 extern BOOL NextSegment(std::ifstream& in);
+extern char NextLineStart(std::ifstream& in);
 extern char CharH4(unsigned char b);
 extern char CharL4(unsigned char b);
 

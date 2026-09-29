@@ -229,7 +229,7 @@ int CInstruments::LoadInstrument(int instr, std::ifstream& in, InstrumentIOType 
         int v, j, k, vlen;
         while (!in.eof())
         {
-            in.read((char*)&b, 1);
+            b = NextLineStart(in);
             if (b == '[') goto InstrEnd;	//end of instrument (beginning of something else)
             line[0] = b;
             in.getline(line + 1, 1024);

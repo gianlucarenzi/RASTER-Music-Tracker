@@ -29,6 +29,19 @@ BOOL NextSegment(std::ifstream& in)
 	return 0;
 }
 
+// Read the first character of the next non-empty line: empty lines (LF or
+// CR LF) are skipped, so the caller's getline() never swallows the line after
+char NextLineStart(std::ifstream& in)
+{
+	char b;
+	do
+	{
+		b = 0;
+		in.read((char*)&b, 1);
+	} while (in && (b == '\n' || b == '\r'));
+	return b;
+}
+
 char CharH4(unsigned char b)
 {
 	BYTE i = b >> 4; 
