@@ -15,6 +15,9 @@
 #include <QAction>
 #include <QCloseEvent>
 #include <QDesktopServices>
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
 #include <QGuiApplication>
 #include <QImage>
 #include <QKeyEvent>
@@ -491,6 +494,71 @@ public:
     void ShowControlBar(CControlBar*, BOOL) override {}            // no toolbars yet
     BOOL IsControlBarVisible(const CControlBar*) override { return FALSE; }
     void SetStatusText(int, const char* text) override { m_win->statusBar()->showMessage(text); }
+
+    bool FileDialog(bool open, const char* title, const char* initialDir, const char* fileName,
+                    const char* filter, DWORD flags, int& filterIndex, CString& path) override {
+        // MFC filter "Name (*.a)|*.a;*.b|...||" -> Qt name filter "Name (*.a *.A *.b *.B)":
+        // the patterns come from the second field, in both cases (Linux file
+        // names are case sensitive, Atari files are often upper case)
+        QStringList filters, suffixes;
+        QList<QStringList> patternLists;
+        QStringList parts = QString::fromLocal8Bit(filter ? filter : "").split('|');
+        for (int i = 0; i + 1 < parts.size() && !parts[i].isEmpty(); i += 2) {
+            QString name = parts[i];
+            int paren = name.lastIndexOf('(');
+            if (paren > 0) name = name.left(paren).trimmed();
+            QStringList patterns;
+            for (const QString& p : parts[i + 1].split(';', Qt::SkipEmptyParts)) {
+                patterns << p.trimmed().toLower();
+                if (p.trimmed().toUpper() != patterns.last()) patterns << p.trimmed().toUpper();
+            }
+            filters << QString("%1 (%2)").arg(name, patterns.join(' '));
+            suffixes << (patterns.value(0).startsWith("*.") ? patterns.value(0).mid(2) : QString());
+            patternLists << patterns;
+        }
+        int index = filterIndex >= 1 && filterIndex <= filters.size() ? filterIndex : 1;
+
+        if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {        // test run: no modal dialogs
+            // RMT_QT_FILEDIALOG="a.rmt,b.txt" answers the file dialogs in turn,
+            // with the filter that matches the file; none left: cancel
+            static QStringList answers = qEnvironmentVariable("RMT_QT_FILEDIALOG").split(',', Qt::SkipEmptyParts);
+            if (answers.isEmpty()) {
+                qWarning("[FileDialog] %s: cancelled", title ? title : "");
+                return false;
+            }
+            QString answer = answers.takeFirst();
+            for (int i = 0; i < patternLists.size(); i++)
+                if (QDir::match(patternLists[i].join(' '), QFileInfo(answer).fileName())) { index = i + 1; break; }
+            qWarning("[FileDialog] %s: %s (filter %d)", title ? title : "", qPrintable(answer), index);
+            path = answer.toLocal8Bit().constData();
+            filterIndex = index;
+            return true;
+        }
+
+        QFileDialog dlg(m_win, title ? QString::fromLocal8Bit(title) : QString());
+        dlg.setAcceptMode(open ? QFileDialog::AcceptOpen : QFileDialog::AcceptSave);
+        dlg.setFileMode(open ? QFileDialog::ExistingFile : QFileDialog::AnyFile);
+        if (!open && !(flags & OFN_OVERWRITEPROMPT)) dlg.setOption(QFileDialog::DontConfirmOverwrite);
+        if (initialDir && *initialDir) dlg.setDirectory(QString::fromLocal8Bit(initialDir));
+        if (!filters.isEmpty()) {
+            dlg.setNameFilters(filters);
+            dlg.selectNameFilter(filters[index - 1]);
+        }
+        // A save without extension gets the one of the chosen filter, so the
+        // overwrite prompt checks the file that is really written
+        auto setSuffix = [&](int i) { if (!open && i >= 0 && i < suffixes.size()) dlg.setDefaultSuffix(suffixes[i]); };
+        setSuffix(index - 1);
+        QObject::connect(&dlg, &QFileDialog::filterSelected, [&](const QString& f) { setSuffix(filters.indexOf(f)); });
+        if (fileName && *fileName) dlg.selectFile(QString::fromLocal8Bit(fileName));
+
+        bool ok = dlg.exec() == QDialog::Accepted && !dlg.selectedFiles().isEmpty();
+        m_widget->setFocus();
+        if (!ok) return false;
+        path = dlg.selectedFiles().first().toLocal8Bit().constData();
+        int selected = filters.indexOf(dlg.selectedNameFilter());
+        filterIndex = selected >= 0 ? selected + 1 : index;
+        return true;
+    }
 };
 
 // CRmtApp::OpenOnlineHelp() (Rmt.cpp is MFC only)

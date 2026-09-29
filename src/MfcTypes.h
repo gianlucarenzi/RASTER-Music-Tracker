@@ -676,6 +676,11 @@ struct IRmtHost {
     virtual void ShowControlBar(CControlBar* bar, BOOL show) = 0;
     virtual BOOL IsControlBarVisible(const CControlBar* bar) = 0;
     virtual void SetStatusText(int pane, const char* text) = 0;
+    // Common Open/Save dialog (CFileDialog::DoModal). filter is in MFC format
+    // ("Name|*.a;*.b|...||"), filterIndex is 1-based in and out. Returns false
+    // when cancelled.
+    virtual bool FileDialog(bool open, const char* title, const char* initialDir, const char* fileName,
+                            const char* filter, DWORD flags, int& filterIndex, CString& path) = 0;
 };
 extern IRmtHost* g_rmtHost;
 
@@ -908,9 +913,10 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// CFileDialog - very small stand-in for the common Open/Save dialog used
-// directly (not through a project header) in IO_Song.cpp. DoModal() always
-// "cancels"; every call site already checks the return value.
+// CFileDialog - the common Open/Save dialog, used directly in IO_Song.cpp.
+// DoModal() asks the frontend (IRmtHost::FileDialog); with no frontend
+// (headless RmtCoreTest) it "cancels". m_ofn carries the title, initial
+// folder and file name in, and the chosen filter index out, as with MFC.
 // ---------------------------------------------------------------------------
 
 struct OPENFILENAME_STUB {
@@ -932,18 +938,25 @@ public:
                 DWORD dwFlags = 0,
                 LPCTSTR lpszFilter = nullptr,
                 CWnd* pParentWnd = nullptr)
-        : m_bOpen(bOpenFileDialog) {
-        (void)lpszDefExt; (void)lpszFileName; (void)dwFlags; (void)lpszFilter; (void)pParentWnd;
+        : m_bOpen(bOpenFileDialog), m_fileName(lpszFileName), m_flags(dwFlags), m_filter(lpszFilter) {
+        (void)lpszDefExt; (void)pParentWnd;
     }
 
-    INT_PTR DoModal() override { return IDCANCEL; }
+    INT_PTR DoModal() override;
     CString GetPathName() const { return m_path; }
-    CString GetFileName() const { return m_path; }
+    CString GetFileName() const {
+        int pos = m_path.ReverseFind('/');
+        if (pos < 0) pos = m_path.ReverseFind('\\');
+        return pos < 0 ? m_path : m_path.Mid(pos + 1);
+    }
 
     OPENFILENAME_STUB m_ofn;
 
 private:
     BOOL m_bOpen = TRUE;
+    CString m_fileName;
+    DWORD m_flags = 0;
+    CString m_filter;
     CString m_path;
 };
 
