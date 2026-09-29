@@ -47,7 +47,8 @@ if [ "${RMT_APPIMAGE_DEPS:-1}" = 1 ]; then
     # (some of the aqtinstall modules are compiled for the Python 3.8 of
     # Ubuntu 20.04: with gcc-10, the only compiler installed)
     CC=gcc-10 python3 -m pip install cmake aqtinstall
-    [ -d "$QT_DIR" ] || python3 -m aqt install-qt linux desktop $QT_VERSION gcc_64 -O /opt/qt
+    # (from /tmp: aqt writes aqtinstall.log in the current folder)
+    [ -d "$QT_DIR" ] || (cd /tmp && python3 -m aqt install-qt linux desktop $QT_VERSION gcc_64 -O /opt/qt)
 fi
 
 # --- build -------------------------------------------------------------------
