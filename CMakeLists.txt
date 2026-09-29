@@ -66,12 +66,13 @@ if(RMT_BUILD_CORE_ONLY)
 endif()
 
 
-# Qt5 native GUI frontend: the official build on Linux/POSIX (default ON there).
+# Qt native GUI frontend (Qt6, or Qt 5.15): the official build on Linux/POSIX
+# (default ON there).
 # Windows keeps the MFC GUI by default; -DRMT_USE_QT=ON selects Qt there too.
 if(WINDOWS_PLATFORM)
-    option(RMT_USE_QT "Build the Qt5 native GUI frontend instead of MFC" OFF)
+    option(RMT_USE_QT "Build the Qt native GUI frontend instead of MFC" OFF)
 else()
-    option(RMT_USE_QT "Build the Qt5 native GUI frontend (official build on this platform)" ON)
+    option(RMT_USE_QT "Build the Qt native GUI frontend (official build on this platform)" ON)
 endif()
 
 # Check if MFC is available
@@ -80,7 +81,7 @@ if(NOT WINDOWS_PLATFORM AND NOT CMAKE_CROSSCOMPILING AND NOT RMT_BUILD_CORE_ONLY
         "The MFC GUI (RMT_USE_QT=OFF) can only be built on Windows with MSVC.\n"
         "\n"
         "To build on this system:\n"
-        "  - Build the Qt5 frontend, the official build here: cmake -DRMT_USE_QT=ON (the default)\n"
+        "  - Build the Qt frontend, the official build here: cmake -DRMT_USE_QT=ON (the default)\n"
         "  - Or build core only: cmake -DRMT_BUILD_CORE_ONLY=ON (for testing)\n"
         "See BUILD.md.\n"
     )

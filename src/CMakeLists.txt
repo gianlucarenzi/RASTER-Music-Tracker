@@ -22,11 +22,11 @@ else()
     # MFC is Windows/MSVC only
     if(CMAKE_CROSSCOMPILING AND NOT MSVC)
         message(WARNING "Cross-compiling to Windows without MSVC - MFC will not be available")
-        message(STATUS "For production builds, use MSVC on Windows or build the Qt5 frontend (-DRMT_USE_QT=ON)")
+        message(STATUS "For production builds, use MSVC on Windows or build the Qt frontend (-DRMT_USE_QT=ON)")
     elseif(WIN32)
         message(WARNING "Building on Windows without MSVC - MFC may not be available")
     else()
-        message(STATUS "Non-Windows platform - MFC not required (the Qt5 frontend is the official GUI)")
+        message(STATUS "Non-Windows platform - MFC not required (the Qt frontend is the official GUI)")
     endif()
     set(MFC_AVAILABLE FALSE)
 endif()
@@ -94,7 +94,7 @@ else()
     #                             Win32 MIDI, not yet merged into MidiBackend -
     #                             see Fase 9) and the WASAP cluster used only
     #                             by RmtTest.cpp. Windows/MFC only.
-    #   - RMT_GUI_QT_SOURCES:     the new Qt5 frontend. Empty until Fase 3+.
+    #   - RMT_GUI_QT_SOURCES:     the new Qt frontend. Empty until Fase 3+.
     set(RMT_CORE_SOURCES
         # Audio Backend (Phase 2) - cross-platform, no MFC
         AudioBackend.cpp
@@ -192,7 +192,7 @@ else()
         wasap.c
     )
 
-    # The Qt5 frontend: the MFC view/document (RmtView.cpp, RmtDoc.cpp)
+    # The Qt frontend: the MFC view/document (RmtView.cpp, RmtDoc.cpp)
     # compiled against MfcTypes.h, hosted by a Qt main window (qt/).
     set(RMT_GUI_QT_SOURCES
         qt/main-qt.cpp
@@ -378,9 +378,21 @@ if(WIN32 AND NOT PortAudio_FOUND AND NOT PORTAUDIO_LIB)
     endif()
 endif()
 
-# Qt5 native GUI frontend (Fase 1+ of the MFC -> Qt migration)
+# Qt native GUI frontend (Fase 1+ of the MFC -> Qt migration): Qt6, or Qt 5.15
+# where Qt6 is not installed. -DRMT_QT_MAJOR=5 forces Qt5.
 if(RMT_USE_QT)
-    find_package(Qt5 5.12 REQUIRED COMPONENTS Core Widgets)
+    set(RMT_QT_MAJOR "" CACHE STRING "Qt major version of the frontend (6 or 5; empty: Qt6, else Qt5)")
+    if(RMT_QT_MAJOR)
+        find_package(QT NAMES Qt${RMT_QT_MAJOR} REQUIRED COMPONENTS Core)
+    else()
+        find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+    endif()
+    if(QT_VERSION_MAJOR EQUAL 5)
+        find_package(Qt5 5.15 REQUIRED COMPONENTS Core Widgets)
+    else()
+        find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+    endif()
+    message(STATUS "Qt frontend: Qt ${QT_VERSION}")
 endif()
 
 # std::thread (song timer of MfcAudio.cpp, backends)
@@ -415,10 +427,10 @@ target_include_directories(Rmt PRIVATE
     ${CMAKE_BINARY_DIR}
 )
 
-# Qt5 native GUI frontend
+# Qt native GUI frontend
 if(RMT_USE_QT)
     set_target_properties(Rmt PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC OFF)
-    target_link_libraries(Rmt PRIVATE Qt5::Core Qt5::Widgets)
+    target_link_libraries(Rmt PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets)
     target_compile_definitions(Rmt PRIVATE RMT_QT_GUI=1)
     target_include_directories(Rmt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/qt)
 endif()
@@ -726,7 +738,7 @@ else()
     if(CMAKE_CROSSCOMPILING)
         message(STATUS "  This is expected during cross-compilation (Phase 1)")
         message(STATUS "  Full builds require Windows+MSVC")
-        message(STATUS "  Or build the Qt5 frontend: cmake -DRMT_USE_QT=ON")
+        message(STATUS "  Or build the Qt frontend: cmake -DRMT_USE_QT=ON")
     endif()
 endif()
 

@@ -1,10 +1,10 @@
 name: Build RMT on Linux
 
-# The Qt5 frontend as an AppImage, built in an Ubuntu 20.04 container: its
+# The Qt6 frontend as an AppImage, built in an Ubuntu 20.04 container: its
 # glibc 2.31 is the one of Debian 11, so the AppImage runs there and on every
 # newer distribution (scripts/build-appimage.sh checks it). The runner
 # ubuntu-20.04 is gone, the container gives the same system. The official Qt
-# 5.15.2, PortAudio and RtMidi go into the AppImage with linuxdeploy. A tag
+# 6, PortAudio and RtMidi go into the AppImage with linuxdeploy. A tag
 # v* builds it and publishes it as a release asset; started by hand it only
 # keeps it as an artifact.
 

@@ -1,10 +1,11 @@
 name: Build RMT on macOS
 
-# The Qt5 frontend built with Apple Clang, twice on an Apple Silicon runner:
-# - arm64: native, with Qt5, PortAudio and RtMidi from Homebrew
+# The Qt6 frontend built with Apple Clang, twice on an Apple Silicon runner,
+# both with the official Qt 6 (clang_64: universal, arm64 and x86_64):
+# - arm64: native, with PortAudio and RtMidi from Homebrew
 # - x86_64: for Intel Macs (and Apple Silicon through Rosetta 2). Homebrew no
-#   longer installs on Intel, so it is the official Qt 5.15.2 (clang_64, Intel
-#   only) with PortAudio and RtMidi built from their sources for x86_64
+#   longer installs on Intel, so PortAudio and RtMidi are built from their
+#   sources for x86_64
 # PortAudio plays the sound, RtMidi is the MIDI IN (CoreMIDI). The result is
 # RMT.app in a DMG: macdeployqt puts the Qt frameworks and the libraries into
 # the bundle, so nothing has to be installed to run it; the bundle is signed
@@ -22,6 +23,8 @@ permissions:
   contents: write
 
 env:
+  QT_VERSION: 6.8.3            # LTS; needs macOS 12
+  MACOS_MIN: '12.0'
   PORTAUDIO_VERSION: v19.7.0
   RTMIDI_VERSION: 6.0.0
 
@@ -43,32 +46,31 @@ jobs:
         with:
           fetch-depth: 0              # the version comes from the nearest git tag
 
-      # --- arm64: Homebrew ---------------------------------------------------
-
-      - name: Install dependencies (Homebrew)
-        if: matrix.arch == 'arm64'
-        run: |
-          brew install qt@5 portaudio rtmidi pkgconf ninja
-          echo "QT_PREFIX=$(brew --prefix qt@5)" >> $GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5);$(brew --prefix)" >> $GITHUB_ENV
-          echo "RUN=" >> $GITHUB_ENV
-
-      # --- x86_64: official Qt, PortAudio and RtMidi from source --------------
-
-      - name: Install Rosetta 2
-        if: matrix.arch == 'x86_64'
-        run: /usr/bin/pgrep -q oahd || softwareupdate --install-rosetta --agree-to-license
-
-      - name: Install Qt 5.15.2 (x86_64)
-        if: matrix.arch == 'x86_64'
+      - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
-          version: '5.15.2'
+          version: ${{ env.QT_VERSION }}
           host: mac
           target: desktop
           arch: clang_64
           dir: ${{ runner.temp }}
           setup-python: true
+
+      # --- arm64: Homebrew ---------------------------------------------------
+
+      - name: Install dependencies (Homebrew)
+        if: matrix.arch == 'arm64'
+        run: |
+          brew install portaudio rtmidi pkgconf ninja
+          echo "QT_PREFIX=$QT_ROOT_DIR" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$QT_ROOT_DIR;$(brew --prefix)" >> $GITHUB_ENV
+          echo "RUN=" >> $GITHUB_ENV
+
+      # --- x86_64: PortAudio and RtMidi from source ---------------------------
+
+      - name: Install Rosetta 2
+        if: matrix.arch == 'x86_64'
+        run: /usr/bin/pgrep -q oahd || softwareupdate --install-rosetta --agree-to-license
 
       - name: Build PortAudio and RtMidi (x86_64)
         if: matrix.arch == 'x86_64'
@@ -77,7 +79,7 @@ jobs:
           # Absolute install names, so that macdeployqt finds and bundles them
           COMMON="-G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
                   -DCMAKE_INSTALL_PREFIX=$DEPS -DCMAKE_INSTALL_NAME_DIR=$DEPS/lib
-                  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+                  -DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOS_MIN -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
           # (CMAKE_POLICY_VERSION_MINIMUM: PortAudio 19.7.0 asks for CMake 2.8,
           # refused by CMake 4)
           git clone --depth 1 --branch $PORTAUDIO_VERSION https://github.com/PortAudio/portaudio.git portaudio-src
@@ -90,21 +92,10 @@ jobs:
           cmake --build rtmidi-build
           cmake --install rtmidi-build
           ls -la $DEPS/lib $DEPS/include
-          QT=${QT_ROOT_DIR:-$Qt5_DIR}             # set by install-qt-action
-          echo "QT_PREFIX=$QT" >> $GITHUB_ENV
-          echo "CMAKE_PREFIX_PATH=$DEPS;$QT" >> $GITHUB_ENV
+          echo "QT_PREFIX=$QT_ROOT_DIR" >> $GITHUB_ENV        # set by install-qt-action
+          echo "CMAKE_PREFIX_PATH=$DEPS;$QT_ROOT_DIR" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$DEPS/lib/pkgconfig" >> $GITHUB_ENV
           echo "RUN=arch -x86_64" >> $GITHUB_ENV
-
-      - name: Remove AGL from the Qt 5.15.2 CMake files
-        if: matrix.arch == 'x86_64'
-        # The AGL framework is gone from the recent macOS SDKs
-        run: |
-          grep -rl AGL "$QT_PREFIX/lib/cmake" | while read f; do
-            # as a name in a list ("OpenGL;AGL"), a flag or a framework path
-            perl -pi -e 's/;AGL(?=[;"])//g; s/(?<=")AGL;//g; s/;?-framework AGL//g; s#;?[^;"]*/AGL\.framework##g' "$f"
-          done
-          ! grep -r AGL "$QT_PREFIX/lib/cmake"
 
       # --- both --------------------------------------------------------------
 
@@ -113,8 +104,8 @@ jobs:
           # The arm64 Homebrew of the runner must not be used by the x86_64 build
           IGNORE=
           [ "$ARCH" = x86_64 ] && IGNORE="-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew"
-          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON \
-            -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON -DRMT_QT_MAJOR=6 \
+            -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=$MACOS_MIN \
             -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" $IGNORE
 
       - name: Build
@@ -151,7 +142,7 @@ jobs:
             <key>CFBundlePackageType</key><string>APPL</string>
             <key>CFBundleShortVersionString</key><string>${VERSION}</string>
             <key>CFBundleVersion</key><string>${VERSION}</string>
-            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>LSMinimumSystemVersion</key><string>${MACOS_MIN}</string>
             <key>NSHighResolutionCapable</key><true/>
             ${ICON}
           </dict>
@@ -159,9 +150,10 @@ jobs:
           PLIST
           plutil -lint $APP/Contents/Info.plist
           # xcrun (behind /usr/bin/otool, install_name_tool, strip) builds its
-          # cache on the first call of each tool; through Rosetta that takes
-          # longer than the time macdeployqt 5.15.2 gives them, and then it
-          # deploys nothing: do the first calls here. No strip: the Release
+          # cache on the first call of each tool; that can take longer than
+          # the time macdeployqt gives them (it did with the x86_64-only
+          # macdeployqt of Qt 5.15.2, through Rosetta), and then it deploys
+          # nothing: do the first calls here. No strip: the Release
           # binaries have nothing to strip
           for tool in otool install_name_tool; do
             time xcrun --find $tool

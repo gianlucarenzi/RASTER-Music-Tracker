@@ -1,7 +1,7 @@
 name: Build RMT on Windows
 
-# The Qt5 frontend built with MSYS2 / MinGW-w64 (GCC, like the Linux build):
-# Qt5, PortAudio (sound) and RtMidi (MIDI IN through WinMM) are MSYS2
+# The Qt6 frontend built with MSYS2 / MinGW-w64 (GCC, like the Linux build):
+# Qt6, PortAudio (sound) and RtMidi (MIDI IN through WinMM) are MSYS2
 # packages. The result is a folder with Rmt.exe, its resources and all the
 # DLLs it needs, zipped; a tag v* builds it and publishes it as a release
 # asset.
@@ -37,13 +37,13 @@ jobs:
             toolchain:p
             cmake:p
             ninja:p
-            qt5-base:p
-            qt5-tools:p
+            qt6-base:p
+            qt6-tools:p
             portaudio:p
             rtmidi:p
 
       - name: Configure
-        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON -DRMT_QT_MAJOR=6
 
       - name: Build
         run: cmake --build build --parallel
@@ -60,9 +60,11 @@ jobs:
           mkdir -p $DIST
           cp build/out/Rmt.exe $DIST/
           cp -r build/out/resources $DIST/
-          WINDEPLOYQT=$(command -v windeployqt-qt5 || command -v windeployqt)
-          # RMT draws with the raster engine: no ANGLE / software OpenGL (not in MSYS2)
-          "$WINDEPLOYQT" --release --no-translations --compiler-runtime --no-angle --no-opengl-sw $DIST/Rmt.exe
+          WINDEPLOYQT=$(command -v windeployqt-qt6 || command -v windeployqt6 \
+            || ls /mingw64/share/qt6/bin/windeployqt.exe)
+          # RMT draws with the raster engine: no software OpenGL (not in MSYS2;
+          # ANGLE is gone in Qt6)
+          "$WINDEPLOYQT" --release --no-translations --compiler-runtime --no-opengl-sw $DIST/Rmt.exe
           # The MinGW DLLs of the program and of the Qt DLLs and plugins,
           # until nothing new is found
           for pass in 1 2 3 4 5; do

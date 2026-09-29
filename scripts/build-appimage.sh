@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/build-appimage.sh - build RMT (Qt5 frontend) as an AppImage
+# scripts/build-appimage.sh - build RMT (Qt6 frontend) as an AppImage
 #
 # Meant for Ubuntu 20.04 (glibc 2.31, the one of Debian 11), so that the
 # AppImage also runs on those systems and on every newer one. Used by
@@ -7,8 +7,8 @@
 #
 #   docker run --rm -v "$PWD":/src -w /src ubuntu:20.04 scripts/build-appimage.sh
 #
-# Ubuntu 20.04 has Qt 5.12, RMT needs 5.15: the official Qt 5.15.2 (built on
-# RHEL 7, older glibc) is installed with aqtinstall and goes into the AppImage.
+# Ubuntu 20.04 has no Qt6: the official Qt 6 (built on RHEL 8, glibc 2.28) is
+# installed with aqtinstall and goes into the AppImage.
 # GCC 10, PortAudio and RtMidi come from Ubuntu. linuxdeploy with its Qt
 # plugin makes the AppImage; the ELF files in it may need no glibc newer
 # than MAX_GLIBC.
@@ -20,8 +20,8 @@
 
 set -euo pipefail
 
-QT_VERSION=5.15.2
-QT_DIR=/opt/qt/$QT_VERSION/gcc_64
+QT_VERSION=6.8.3
+QT_DIR=/opt/qt/$QT_VERSION/gcc_64          # (aqt names the arch linux_gcc_64)
 MAX_GLIBC=2.31
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -34,27 +34,28 @@ if [ "${RMT_APPIMAGE_DEPS:-1}" = 1 ]; then
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     # the libraries of the Qt xcb plugin, which linuxdeploy puts in the AppImage
+    # (libxcb-cursor0: Qt 6.5+), and those the CMake files of Qt6Gui look for
     apt-get install -y --no-install-recommends \
         gcc-10 g++-10 ninja-build pkg-config git ca-certificates wget file \
         python3-pip python3-dev imagemagick \
         portaudio19-dev librtmidi-dev \
         libgl1-mesa-dev libegl1 libfontconfig1 libfreetype6 libdbus-1-3 \
-        libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+        libxkbcommon-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
         libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 \
-        libxcb-shape0 libxcb-xkb1 libxcb-util1
+        libxcb-shape0 libxcb-xkb1 libxcb-util1 libxcb-cursor0
     # CMake of Ubuntu 20.04 is 3.16, RMT needs 3.25
     python3 -m pip install --upgrade pip
     # (some of the aqtinstall modules are compiled for the Python 3.8 of
     # Ubuntu 20.04: with gcc-10, the only compiler installed)
     CC=gcc-10 python3 -m pip install cmake aqtinstall
     # (from /tmp: aqt writes aqtinstall.log in the current folder)
-    [ -d "$QT_DIR" ] || (cd /tmp && python3 -m aqt install-qt linux desktop $QT_VERSION gcc_64 -O /opt/qt)
+    [ -d "$QT_DIR" ] || (cd /tmp && python3 -m aqt install-qt linux desktop $QT_VERSION linux_gcc_64 -O /opt/qt)
 fi
 
 # --- build -------------------------------------------------------------------
 
 git config --global --add safe.directory "$ROOT" 2>/dev/null || true
-cmake -S . -B "$WORK/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON \
+cmake -S . -B "$WORK/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON -DRMT_QT_MAJOR=6 \
     -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10 \
     -DCMAKE_PREFIX_PATH="$QT_DIR"
 cmake --build "$WORK/build" --parallel
