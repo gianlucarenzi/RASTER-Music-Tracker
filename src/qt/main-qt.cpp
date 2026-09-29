@@ -52,7 +52,8 @@ int main(int argc, char** argv)
     // RMT_QT_GRAB_MS);
     // RMT_QT_KEYS="108,108,106" first presses those keys (Linux evdev codes);
     // RMT_QT_COMMANDS="0xE101,0xE104" then triggers the menu actions of those
-    // command IDs (file dialogs are answered by RMT_QT_FILEDIALOG)
+    // command IDs, or sends them as WM_COMMAND when they have no menu item
+    // (file dialogs are answered by RMT_QT_FILEDIALOG)
     QString grab = qEnvironmentVariable("RMT_QT_GRAB");
     if (!grab.isEmpty()) {
         QString keys = qEnvironmentVariable("RMT_QT_KEYS");
@@ -78,7 +79,7 @@ int main(int argc, char** argv)
                 for (QAction* top : window.menuBar()->actions())
                     if (top->menu() && (action = findAction(top->menu(), id))) break;
                 if (action) action->trigger();
-                else qWarning("RMT_QT_COMMANDS: no menu action for command %s", qPrintable(c));
+                else g_rmtHost->PostCommand(id);    // not in the menu (e.g. accelerators): WM_COMMAND
                 QCoreApplication::processEvents();
             }
         });

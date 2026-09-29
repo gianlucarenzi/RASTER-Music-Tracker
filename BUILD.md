@@ -145,7 +145,8 @@ QT_QPA_PLATFORM=offscreen RMT_AUDIO_DUMP=play.wav RMT_QT_KEYS=63 RMT_QT_GRAB_MS=
 ```
 
 `RMT_QT_COMMANDS` then triggers the menu actions of the given command IDs
-(`resource.h`, decimal or `0x` hex), and `RMT_QT_FILEDIALOG` answers the file
+(`resource.h`, decimal or `0x` hex; IDs without a menu item, such as
+`ID_PLAY1` = 32796, are sent as `WM_COMMAND`), and `RMT_QT_FILEDIALOG` answers the file
 dialogs in turn (the file type is taken from the extension, or given as
 `file@N` with the 1-based filter index, e.g. `song.asm@7` for the relocatable
 ASM export; none left: cancel). Load a song, save it as TXT, load the TXT and save it as RMT:
