@@ -404,7 +404,7 @@ When the release candidate cycle is finished:
 
 After a release, update `RMT_BASE_VERSION` in `CMakeLists.txt` to the next
 development target (e.g. `"2.2"`) so subsequent RC tags follow the new series.
-The last release is `v2.0`; `RMT_BASE_VERSION` is `"2.1"`.
+The last release is `v2.1`; `RMT_BASE_VERSION` is `"2.2"`.
 
 ---
 
