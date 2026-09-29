@@ -408,7 +408,7 @@ BOOL CASMFileExporter::BuildRelocatableAsm(
     // ?localvar	|   __localvar
 
     // Assembler type setup
-    BOOL hasDotLocal = 0;
+    [[maybe_unused]] BOOL hasDotLocal = 0;
     const char* _byte = "dta";
     if (assemblerFormat == ATASM)
     {

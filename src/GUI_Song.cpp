@@ -211,7 +211,7 @@ void CSong::DrawAnalyzer()
 		g_mem_dc->LineTo(ANALYZER2_X + ANALYZER2_S * 15 / 2 + 3 * 8 * (g2), ANALYZER_Y - 120);		\
 	}
 
-    int audf, audf2, audf3, audf16, audc, audc2, audctl, skctl, pitch, dist, vol, vol2;
+    int audf, audf2 = 0, audf16 = 0, audc, audc2, audctl, skctl, pitch, dist, vol, vol2 = 0;
     static int idx[8] = { 0xd200,0xd202,0xd204,0xd206,0xd210,0xd212,0xd214,0xd216 };	// AUDF and AUDC for mono and stereo
     static int idx2[2] = { 0xd208,0xd218 };	//AUDCTL and SKCTL
     int col[8];
@@ -389,9 +389,6 @@ void CSong::DrawAnalyzer()
             dist = audc & 0xf0;
             pitch = audf;
 
-            if (i % 4 == 0)								//only in valid sawtooth channels
-                audf3 = memory[idx[i + 2]];
-
             if (i % 2 == 1)								//only in valid 16-bit channels
             {
                 audf2 = memory[idx[i - 1]];
@@ -407,7 +404,7 @@ void CSong::DrawAnalyzer()
             a = i * 8 + gap + 16;
             int minus = (IS_RIGHT_POKEY) ? -8 : 0;
             int audnum = (i * 2) + minus;
-            char s[2];
+            char s[8];
             char p[12];
             char n[4];
             double PITCH = 0;
@@ -432,16 +429,6 @@ void CSong::DrawAnalyzer()
             REVERSE_16 = (((JOIN_12 && (i == 0 || i == 4)) || (JOIN_34 && (i == 2 || i == 6))) && (vol > 0x00));	//16-bit, invalid channel, with volume (Reverse-16)
             CLOCK_179 = ((CH1_179 && (i == 0 || i == 4)) || (CH3_179 && (i == 2 || i == 6))) ? 1 : 0;
             if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0;	//override, these 2 take priority over 15khz mode
-
-            int modoffset = 1;
-            int coarse_divisor = 1;
-            double divisor = 1;
-            int v_modulo = 0;
-            bool IS_VALID = 0;
-
-            if (JOIN_16BIT) modoffset = 7;
-            else if (CLOCK_179) modoffset = 4;
-            else coarse_divisor = (CLOCK_15) ? 114 : 28;
 
             int i_audf = (JOIN_16BIT || JOIN_64KHZ || JOIN_15KHZ) ? audf16 : audf;
             PITCH = g_Tuning.GetPOKEYPPitch(audc, i_audf, audctl, i);
@@ -875,12 +862,11 @@ void CSong::DrawSong()
 void CSong::DrawTracks()
 {
     const char* tnames = "L1L2L3L4R1R2R3R4";
-    char s[16], stmp[16];
+    char s[16], stmp[16] = {};
     int i, x, y, tr, line;
     TextColor color;
     int t;
 
-    BOOL printdebug = g_view.debugDisplay;
 
     //caching certain global variables makes sure they remain the same until the function finishes drawing the tracks
     //this appears to be related to routine timing, and might actually explain why certain bugs seem to happen randomly
@@ -1401,6 +1387,7 @@ BOOL CSong::InfoKey(int vk, int shift, int control)
 
     if ((num = NumbKey(vk)) >= 0 && num <= infand)
     {
+        i = infp;
         if (m_infoact >= EditArea::SPEED && m_infoact <= EditArea::INSTR_SPEED)
         {
             i = infp & 0x0f; //lower digit (hex)
@@ -1482,7 +1469,7 @@ edit_ok:
             g_Undo.ChangeInfo(0, UETYPE_INFODATA);
             infp = i;
         }
-        else if (!CAPSLOCK && shift || (CAPSLOCK && !shift && is_editing_infos) || (CAPSLOCK && shift && !is_editing_infos))
+        else if ((!CAPSLOCK && shift) || (CAPSLOCK && !shift && is_editing_infos) || (CAPSLOCK && shift && !is_editing_infos))
         {
             ActiveInstrPrev();
         }
@@ -1518,7 +1505,7 @@ edit_ok:
             g_Undo.ChangeInfo(0, UETYPE_INFODATA);
             infp = i;
         }
-        else if (!CAPSLOCK && shift || (CAPSLOCK && !shift && is_editing_infos) || (CAPSLOCK && shift && !is_editing_infos))
+        else if ((!CAPSLOCK && shift) || (CAPSLOCK && !shift && is_editing_infos) || (CAPSLOCK && shift && !is_editing_infos))
         {
             ActiveInstrNext();
         }
@@ -1659,6 +1646,8 @@ BOOL CSong::InstrKey(int vk, int shift, int control)
             case InstrumentSection::NOTETABLE:
                 ai->activeEditSection = InstrumentSection::PARAMETERS;
                 break;
+            default:
+                break;
             }
 
             g_isEditingInstrumentName = 0;
@@ -1667,7 +1656,7 @@ BOOL CSong::InstrKey(int vk, int shift, int control)
         return 1;
 
     case VK_LEFT:
-        if (!control && (!CAPSLOCK && shift || (CAPSLOCK && !shift && g_isEditingInstrumentName) || (CAPSLOCK && shift && !g_isEditingInstrumentName)))
+        if (!control && ((!CAPSLOCK && shift) || (CAPSLOCK && !shift && g_isEditingInstrumentName) || (CAPSLOCK && shift && !g_isEditingInstrumentName)))
         {
             ActiveInstrPrev();
             return 1;
@@ -1675,7 +1664,7 @@ BOOL CSong::InstrKey(int vk, int shift, int control)
         break;
 
     case VK_RIGHT:
-        if (!control && (!CAPSLOCK && shift || (CAPSLOCK && !shift && g_isEditingInstrumentName) || (CAPSLOCK && shift && !g_isEditingInstrumentName)))
+        if (!control && ((!CAPSLOCK && shift) || (CAPSLOCK && !shift && g_isEditingInstrumentName) || (CAPSLOCK && shift && !g_isEditingInstrumentName)))
         {
             ActiveInstrNext();
             return 1;
@@ -1823,6 +1812,7 @@ BOOL CSong::InstrKey(int vk, int shift, int control)
 
         case VK_SPACE:
             if (control) break;	//prevents inputing a SPACE while exiting PROVE mode
+            [[fallthrough]];
         case VK_BACK:	//BACKSPACE
         case VK_DELETE:
             g_Undo.ChangeInstrument(m_activeinstr, 0, UETYPE_INSTRDATA);
@@ -2115,6 +2105,7 @@ BOOL CSong::InstrKey(int vk, int shift, int control)
             if (control) break;	//prevents inputing a SPACE while exiting PROVE mode
             if (ai->editNoteTableCursorPos < ai->parameters[PAR_TBL_LENGTH]) ai->editNoteTableCursorPos++;
             //and proceeds the same as VK_BACKSPACE
+            [[fallthrough]];
         case 8:			//VK_BACKSPACE: parameter reset
             g_Undo.ChangeInstrument(m_activeinstr, 0, UETYPE_INSTRDATA);
             at = 0;
@@ -3558,12 +3549,14 @@ BOOL CSong::SongKey(int vk, int shift, int control)
 
     case VKX_SONGDELETELINE:	//Control+VK_U:
         if (!control) break;
+        [[fallthrough]];
     case VK_DELETE:
         SongDeleteLine(m_songactiveline);
         break;
 
     case VKX_SONGINSERTLINE:	//Control+VK_I:
         if (!control) break;
+        [[fallthrough]];
     case VK_INSERT:
         SongInsertLine(m_songactiveline);
         break;

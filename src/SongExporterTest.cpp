@@ -99,7 +99,7 @@ void CSongExporterTest::Test(CSong& song) {
     bool XEX_LZSS = true;
     bool SAP_B_LZSS = false;
     bool SAP_R = true;
-    bool SAP_R_LZSS = false;
+    [[maybe_unused]] bool SAP_R_LZSS = false;	// not exported by this test yet
     bool WAV = false;
 
     if (LZSS) {

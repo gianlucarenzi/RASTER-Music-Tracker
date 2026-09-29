@@ -16,7 +16,7 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
     BYTE* buffer = NULL;
     BYTE* streambuffer = NULL;
     const WAVEFORMATEX* wfm = NULL;
-    int length = 0, frames = 0, offset = 0;
+    int length = 0, frames = 0;
     const int frameSize = CLZSSFile::GetFrameSize(songExport.GetSong());
 
     ou.close();	// hack, just to be able to actually use the filename for now...

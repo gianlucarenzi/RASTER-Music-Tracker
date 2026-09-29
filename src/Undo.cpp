@@ -44,7 +44,20 @@ char CUndo::DeleteEvent(int i)
 	char sep = ue->separator; //storage for return
 	if (ue->cursor) delete[] ue->cursor;
 	if (ue->pos) delete[] ue->pos;
-	if (ue->data) delete[] ue->data;
+	if (ue->data)
+	{
+		// Free the data with the type it was allocated with (see Change*)
+		switch (ue->type)
+		{
+		case UETYPE_TRACKDATA: delete (TTrack*)ue->data; break;
+		case UETYPE_TRACKSALL: delete (TTracksAll*)ue->data; break;
+		case UETYPE_SONGDATA: delete (TSong*)ue->data; break;
+		case UETYPE_INSTRDATA: delete (TInstrument*)ue->data; break;
+		case UETYPE_INSTRSALL: delete (TInstrumentsAll*)ue->data; break;
+		case UETYPE_INFODATA: delete (TInfo*)ue->data; break;
+		default: delete[] (int*)ue->data; break;
+		}
+	}
 	delete ue;
 	m_uar[i] = NULL;
 	return sep;

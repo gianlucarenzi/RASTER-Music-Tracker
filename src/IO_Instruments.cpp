@@ -224,7 +224,7 @@ int CInstruments::LoadInstrument(int instr, std::ifstream& in, InstrumentIOType 
         memset(ai->name, ' ', INSTRUMENT_NAME_MAX_LEN);
         int lname = INSTRUMENT_NAME_MAX_LEN;
         if (strlen(value) <= INSTRUMENT_NAME_MAX_LEN) lname = (int)strlen(value);
-        strncpy(ai->name, value, lname);
+        memcpy(ai->name, value, lname);
 
         int v, j, k, vlen;
         while (!in.eof())

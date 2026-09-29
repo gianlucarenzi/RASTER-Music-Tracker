@@ -16,14 +16,14 @@ CByteArray* LoadByteArray(const CString& filePath) {
     if (CFile::GetStatus(filePath, status) == 0) {
         return nullptr;
     }
-    if (status.m_size > CAtari::MEMORY_SIZE) {
+    if ((size_t)status.m_size > CAtari::MEMORY_SIZE) {
         return nullptr;
     }
     auto byteArray = new CByteArray();
     byteArray->SetSize(status.m_size);
     CFile file(filePath, CFile::modeRead);
     auto sizeRead = file.Read(byteArray->GetData(), (UINT)byteArray->GetSize());
-    if (!sizeRead == status.m_size) {
+    if (sizeRead != (UINT)status.m_size) {
         delete byteArray;
         return nullptr;
     }

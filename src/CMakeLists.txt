@@ -120,7 +120,6 @@ else()
         C6502.cpp
         Clipboard.cpp
         Fraction.cpp
-        import.cpp
         Instruments.cpp
         IOHelpers.cpp
         IO_Importer.cpp
@@ -634,7 +633,6 @@ if(RMT_CORE_TEST)
         ASMFileBuilder.cpp
         ASMFile.cpp
         ASMFileExporter.cpp
-        import.cpp
 
         # ---- "GUI-shared" rendering files (draw on g_mem_dc/g_gfx_dc) ----
         ChannelControl.cpp

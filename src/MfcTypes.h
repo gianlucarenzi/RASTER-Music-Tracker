@@ -739,7 +739,7 @@ public:
     public: const RmtMsgEntry* GetMessageEntries() const override;
 #define BEGIN_MESSAGE_MAP(theClass, baseClass) \
     const RmtMsgEntry* theClass::GetMessageEntries() const { \
-        typedef theClass ThisClass; \
+        using ThisClass [[maybe_unused]] = theClass; \
         static const RmtMsgEntry entries[] = {
 #define END_MESSAGE_MAP() \
             { 0, nullptr, nullptr } }; \

@@ -73,7 +73,7 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
     m_about = "";
 
     // apokeysnd.dll is first loaded, will be used in priority if it is found
-    if (m_pokey_dll = LoadLibrary("apokeysnd.dll"))
+    if ((m_pokey_dll = LoadLibrary("apokeysnd.dll")))
     {
         CString warningMessage = "";
 
@@ -107,7 +107,7 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
     }
 
     // sa_pokey.dll will be loaded next if apokeysnd.dll was not found or had an error, as a fallback
-    if (m_pokey_dll = LoadLibrary("sa_pokey.dll"))
+    if ((m_pokey_dll = LoadLibrary("sa_pokey.dll")))
     {
         CString warningMessage = "";
 
@@ -195,6 +195,8 @@ void CPokey::InitPokeys(const bool ntsc, const bool stereo, const DWORD samplesP
             // Currently cast to WORD, because no rate avve 64kHz are supported.
             Pokey_SoundInit(CAtari::GetClockFrequency(ntsc), (WORD)samplesPerSec, stereo ? 2 : 1);
             break;
+        default:
+            break;
         }
 
         m_initialized = true;
@@ -215,6 +217,8 @@ void CPokey::PutByte(const byte address, const byte value) {
     case CPokey::SoundDriver::SA_POKEY:
 
         Pokey_PutByte(address, value);
+        break;
+    default:
         break;
     }
 }

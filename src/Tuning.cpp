@@ -28,8 +28,8 @@ CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int chan
     //int skctl = 0;	//not yet implemented in calculations
     //bool TWO_TONE = (skctl == 0x8B) ? 1 : 0;
     bool CLOCK_15 = audctl & 0x01;
-    bool HPF_CH24 = audctl & 0x02;
-    bool HPF_CH13 = audctl & 0x04;
+    [[maybe_unused]] bool HPF_CH24 = audctl & 0x02;
+    [[maybe_unused]] bool HPF_CH13 = audctl & 0x04;
     bool JOIN_34 = audctl & 0x08;
     bool JOIN_12 = audctl & 0x10;
     bool CH3_179 = audctl & 0x20;
@@ -126,13 +126,13 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
     //int skctl = 0;	//not yet implemented in calculations
     //bool TWO_TONE = (skctl == 0x8B) ? 1 : 0;
     bool CLOCK_15 = audctl & 0x01;
-    bool HPF_CH24 = audctl & 0x02;
-    bool HPF_CH13 = audctl & 0x04;
+    [[maybe_unused]] bool HPF_CH24 = audctl & 0x02;
+    [[maybe_unused]] bool HPF_CH13 = audctl & 0x04;
     bool JOIN_34 = audctl & 0x08;
     bool JOIN_12 = audctl & 0x10;
     bool CH3_179 = audctl & 0x20;
     bool CH1_179 = audctl & 0x40;
-    bool POLY9 = audctl & 0x80;
+    [[maybe_unused]] bool POLY9 = audctl & 0x80;
 
     //combined modes for some special output... 
     //the channel number doesn't actually matter for creating tables, so the parameter is omitted
@@ -150,10 +150,10 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
     //If a known value provide unstable results, it may be avoided on purpose 
     bool MOD3 = 0;
     bool MOD5 = 0;
-    bool MOD7 = 0;
-    bool MOD15 = 0;
+    [[maybe_unused]] bool MOD7 = 0;
+    [[maybe_unused]] bool MOD15 = 0;
     bool MOD31 = 0;
-    bool MOD73 = 0;
+    [[maybe_unused]] bool MOD73 = 0;
 
     //Use the modulo flags to make sure the correct timbre will be output
     switch (timbre)
@@ -427,7 +427,7 @@ double CTuning::GetTruePitch(double tuning, Temperament temperament, int basenot
     }
     else	//any temperament preset will be used
     {
-        for (int i = 0; i < PRESETS_LENGTH; i++)
+        for (int i = 0; i < (int)PRESETS_LENGTH; i++)
         {
             if (temperament_preset[temperament][i]) continue;
             notesnum = i - 1;
@@ -453,7 +453,7 @@ void CTuning::InitTuning() {
 
     if (g_tuning.temperament > NO_TEMPERAMENT && g_tuning.temperament < TUNING_CUSTOM)	//...unless it is specified otherwise in the Temperament presets
     {
-        for (int i = 0; i < PRESETS_LENGTH; i++)
+        for (int i = 0; i < (int)PRESETS_LENGTH; i++)
         {
             if (temperament_preset[g_tuning.temperament][i]) { continue; }
             g_notesperoctave = i - 1;

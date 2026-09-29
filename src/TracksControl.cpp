@@ -43,7 +43,7 @@ void CTracksControl::DrawTrackLine(const CTracks& tracks, int col, int x, int y,
     auto color = TextColor::WHITE;
     int n, xline;
 
-    if (tt = tracks.GetConstTrack(tr))
+    if ((tt = tracks.GetConstTrack(tr)))
     {
         strcpy(s, " --- -- -- ---");
 

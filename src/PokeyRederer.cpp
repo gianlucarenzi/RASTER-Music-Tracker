@@ -222,7 +222,7 @@ BOOL CXPokey::RenderSound1_50(int instrspeed)
     m_LoadSize = chunkSize;	// 1764  (882 samples * 2 channels)
     if (delta > latencySize)
     {
-        if (delta > (BUFFER_SIZE / 2))
+        if (delta > (int)(BUFFER_SIZE / 2))
         {
             //we missed it, we're more than half a buffer late, so get to it and move on to what we should be right
             m_LoadPos = (m_WriteCursor + latencySize) & (BUFFER_SIZE - 1);
@@ -284,6 +284,8 @@ BOOL CXPokey::RenderSound1_50(int instrspeed)
             rendersize -= renderpartsize;
             renderoffset += renderpartsize;
             break;
+        default:
+            break;
         }
     }
 
@@ -336,6 +338,8 @@ void CXPokey::RenderSoundV2(int instrspeed, BYTE* buffer, int& length)
             Pokey_Process(buffer + renderoffset, (unsigned short)renderpartsize);
             rendersize -= renderpartsize;
             renderoffset += renderpartsize;
+            break;
+        default:
             break;
         }
     }
