@@ -75,9 +75,8 @@ jobs:
           ls -la $DIST
 
       - name: Create ZIP archive
-        run: |
-          cd dist
-          7z a ../RMT-Windows-x64.zip RMT >/dev/null
+        shell: pwsh
+        run: Compress-Archive -Path dist/RMT -DestinationPath RMT-Windows-x64.zip -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

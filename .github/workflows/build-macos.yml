@@ -101,7 +101,8 @@ jobs:
         # The AGL framework is gone from the recent macOS SDKs
         run: |
           grep -rl AGL "$QT_PREFIX/lib/cmake" | while read f; do
-            perl -pi -e 's/;?-framework AGL//g; s#;?[^;"]*/AGL\.framework##g' "$f"
+            # as a name in a list ("OpenGL;AGL"), a flag or a framework path
+            perl -pi -e 's/;AGL(?=[;"])//g; s/(?<=")AGL;//g; s/;?-framework AGL//g; s#;?[^;"]*/AGL\.framework##g' "$f"
           done
           ! grep -r AGL "$QT_PREFIX/lib/cmake"
 
