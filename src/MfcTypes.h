@@ -60,11 +60,14 @@ typedef uintptr_t           UINT_PTR;
 typedef intptr_t            LONG_PTR;
 typedef intptr_t            INT_PTR;
 typedef void*               HANDLE;
-typedef void*               HWND;
-typedef void*               HINSTANCE;
-typedef void*               HMODULE;
-typedef void*               HCURSOR;
-typedef void*               HICON;
+// Window, instance, cursor and icon handles are pointers to opaque structs,
+// as in <windows.h>: the Qt headers of Windows (qwindowdefs_win.h) declare
+// them the same way, and a typedef may be repeated only if identical
+struct HWND__;      typedef struct HWND__* HWND;
+struct HINSTANCE__; typedef struct HINSTANCE__* HINSTANCE;
+struct HICON__;     typedef struct HICON__* HICON;
+typedef HICON               HCURSOR;
+typedef HINSTANCE           HMODULE;
 typedef void*               HKEY;
 typedef void*               HMENU;
 typedef void*               HMIDIIN;
@@ -641,7 +644,8 @@ private:
 // ---------------------------------------------------------------------------
 
 struct CDataExchange;
-struct MSG;
+struct tagMSG;
+typedef struct tagMSG MSG;                  // as <windows.h> and qcoreapplication.h
 struct CREATESTRUCT;
 typedef CREATESTRUCT* LPCREATESTRUCT;
 struct MINMAXINFO;

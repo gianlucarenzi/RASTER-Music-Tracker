@@ -1,17 +1,17 @@
 name: Build RMT on macOS
 
 # The Qt5 frontend built with Apple Clang, twice on an Apple Silicon runner:
-# - arm64: native, with the Homebrew of /opt/homebrew
-# - x86_64: for Intel Macs (and Apple Silicon through Rosetta 2), with an
-#   Intel Homebrew in /usr/local run through Rosetta, as WaffleCopyPRO does
-# Qt5, PortAudio (sound) and RtMidi (MIDI IN through CoreMIDI) come from
-# Homebrew. The result is RMT.app in a DMG: macdeployqt puts the Qt
-# frameworks and the Homebrew libraries into the bundle, so nothing has to be
-# installed to run it; the bundle is signed ad hoc (not notarized: the first
-# time it is opened with right click -> Open). The program finds its
-# resources/ next to itself (Contents/MacOS), like out/ of the build; the
-# configuration is in the user's preferences (QSettings), so a new DMG keeps
-# it. A tag v* builds and publishes both DMGs.
+# - arm64: native, with Qt5, PortAudio and RtMidi from Homebrew
+# - x86_64: for Intel Macs (and Apple Silicon through Rosetta 2). Homebrew no
+#   longer installs on Intel, so it is the official Qt 5.15.2 (clang_64, Intel
+#   only) with PortAudio and RtMidi built from their sources for x86_64
+# PortAudio plays the sound, RtMidi is the MIDI IN (CoreMIDI). The result is
+# RMT.app in a DMG: macdeployqt puts the Qt frameworks and the libraries into
+# the bundle, so nothing has to be installed to run it; the bundle is signed
+# ad hoc (not notarized: the first time it is opened with right click ->
+# Open). The program finds its resources/ next to itself (Contents/MacOS),
+# like out/ of the build; the configuration is in the user's preferences
+# (QSettings), so a new DMG keeps it. A tag v* builds and publishes both.
 
 on:
   push:
@@ -20,24 +20,21 @@ on:
 permissions:
   contents: write
 
+env:
+  PORTAUDIO_VERSION: v19.7.0
+  RTMIDI_VERSION: 6.0.0
+
 jobs:
   build:
     runs-on: macos-14
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - arch: arm64
-            brew: /opt/homebrew/bin/brew
-            run: ''                   # native
-          - arch: x86_64
-            brew: /usr/local/bin/brew
-            run: arch -x86_64         # through Rosetta 2
+        arch: [arm64, x86_64]
 
     env:
       ARCH: ${{ matrix.arch }}
-      BREW: ${{ matrix.brew }}
-      RUN: ${{ matrix.run }}
+      DEPS: ${{ github.workspace }}/deps
 
     steps:
       - name: Checkout code
@@ -45,27 +42,80 @@ jobs:
         with:
           fetch-depth: 0              # the version comes from the nearest git tag
 
-      - name: Install Intel Homebrew
+      # --- arm64: Homebrew ---------------------------------------------------
+
+      - name: Install dependencies (Homebrew)
+        if: matrix.arch == 'arm64'
+        run: |
+          brew install qt@5 portaudio rtmidi pkgconf ninja
+          echo "QT_PREFIX=$(brew --prefix qt@5)" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix qt@5);$(brew --prefix)" >> $GITHUB_ENV
+          echo "RUN=" >> $GITHUB_ENV
+
+      # --- x86_64: official Qt, PortAudio and RtMidi from source --------------
+
+      - name: Install Rosetta 2
+        if: matrix.arch == 'x86_64'
+        run: /usr/bin/pgrep -q oahd || softwareupdate --install-rosetta --agree-to-license
+
+      - name: Install Qt 5.15.2 (x86_64)
+        if: matrix.arch == 'x86_64'
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          host: mac
+          target: desktop
+          arch: clang_64
+          dir: ${{ runner.temp }}
+          setup-python: false
+
+      - name: Build PortAudio and RtMidi (x86_64)
         if: matrix.arch == 'x86_64'
         run: |
-          NONINTERACTIVE=1 arch -x86_64 /bin/bash -c \
-            "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install ninja
+          # Absolute install names, so that macdeployqt finds and bundles them
+          COMMON="-G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
+                  -DCMAKE_INSTALL_PREFIX=$DEPS -DCMAKE_INSTALL_NAME_DIR=$DEPS/lib
+                  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+          git clone --depth 1 --branch $PORTAUDIO_VERSION https://github.com/PortAudio/portaudio.git portaudio-src
+          cmake -S portaudio-src -B portaudio-build $COMMON -DBUILD_SHARED_LIBS=ON
+          cmake --build portaudio-build
+          cmake --install portaudio-build
+          git clone --depth 1 --branch $RTMIDI_VERSION https://github.com/thestk/rtmidi.git rtmidi-src
+          cmake -S rtmidi-src -B rtmidi-build $COMMON -DBUILD_SHARED_LIBS=ON \
+            -DRTMIDI_API_CORE=ON -DRTMIDI_API_JACK=OFF -DRTMIDI_BUILD_TESTING=OFF
+          cmake --build rtmidi-build
+          cmake --install rtmidi-build
+          ls -la $DEPS/lib $DEPS/include
+          QT=${QT_ROOT_DIR:-$Qt5_DIR}             # set by install-qt-action
+          echo "QT_PREFIX=$QT" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$DEPS;$QT" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$DEPS/lib/pkgconfig" >> $GITHUB_ENV
+          echo "RUN=arch -x86_64" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: $RUN $BREW install qt@5 portaudio rtmidi pkgconf cmake ninja
+      - name: Remove AGL from the Qt 5.15.2 CMake files
+        if: matrix.arch == 'x86_64'
+        # The AGL framework is gone from the recent macOS SDKs
+        run: |
+          grep -rl AGL "$QT_PREFIX/lib/cmake" | while read f; do
+            perl -pi -e 's/;?-framework AGL//g; s#;?[^;"]*/AGL\.framework##g' "$f"
+          done
+          ! grep -r AGL "$QT_PREFIX/lib/cmake"
+
+      # --- both --------------------------------------------------------------
 
       - name: Configure
         run: |
-          PREFIX=$($RUN $BREW --prefix)
-          export PATH="$PREFIX/bin:$PATH"
-          $RUN cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON \
-            -DCMAKE_OSX_ARCHITECTURES=$ARCH \
-            -DCMAKE_PREFIX_PATH="$($RUN $BREW --prefix qt@5);$PREFIX"
+          # The arm64 Homebrew of the runner must not be used by the x86_64 build
+          IGNORE=
+          [ "$ARCH" = x86_64 ] && IGNORE="-DCMAKE_IGNORE_PREFIX_PATH=/opt/homebrew"
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON \
+            -DCMAKE_OSX_ARCHITECTURES=$ARCH -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+            -DCMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH" $IGNORE
 
       - name: Build
         run: |
-          export PATH="$($RUN $BREW --prefix)/bin:$PATH"
-          $RUN cmake --build build --parallel
+          cmake --build build --parallel
           file build/out/rmt
 
       - name: Smoke test (offscreen, screenshot of gemx.rmt)
@@ -104,11 +154,11 @@ jobs:
           </plist>
           PLIST
           plutil -lint $APP/Contents/Info.plist
-          $RUN "$($RUN $BREW --prefix qt@5)/bin/macdeployqt" $APP -always-overwrite
-          # Nothing may still come from Homebrew
+          $RUN "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite
+          # Nothing may still come from Homebrew or from the build folders
           if find $APP -type f \( -perm +111 -o -name '*.dylib' \) -exec otool -L {} \; 2>/dev/null \
-               | grep -E '^\s+/(opt/homebrew|usr/local)/'; then
-            echo "RMT.app still uses Homebrew libraries"; exit 1
+               | grep -E "^\s+(/opt/homebrew|/usr/local|$DEPS)/"; then
+            echo "RMT.app still uses libraries outside the bundle"; exit 1
           fi
           codesign --force --deep --sign - $APP
           codesign --verify --deep --verbose=2 $APP
