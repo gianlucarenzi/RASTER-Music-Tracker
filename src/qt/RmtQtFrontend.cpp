@@ -15,6 +15,7 @@
 
 #include <QAction>
 #include <QCloseEvent>
+#include <QComboBox>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileDialog>
@@ -28,6 +29,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QStatusBar>
+#include <QToolBar>
 #include <QTimer>
 #include <QUrl>
 #include <QWheelEvent>
@@ -99,6 +101,19 @@ public:
     }
 };
 
+// A toolbar button: it becomes a toggle when its handler checks it (no open
+// menu to repaint here), and keeps its icon whatever text the handler sets
+class QtToolCmdUI : public QtCCmdUI {
+public:
+    using QtCCmdUI::QtCCmdUI;
+    void SetCheck(int check) override {
+        m_action->setCheckable(true);
+        m_action->setChecked(check != 0);
+    }
+    void SetRadio(BOOL on) override { SetCheck(on); }
+    void SetText(LPCTSTR text) override { CCmdUI::SetText(text); }
+};
+
 // ---------------------------------------------------------------------------
 // RmtQtBridge - IRmtHost for the MFC code, owner of the MFC objects
 // ---------------------------------------------------------------------------
@@ -120,6 +135,13 @@ public:
     // All (id → action) pairs registered in the menu bar, for update-UI polling
     std::vector<std::pair<UINT, QAction*>> m_menuActions;
     bool m_started = false;
+    // The toolbars of CMainFrame::OnCreate() (m_wndToolBar, m_ToolBarBlock)
+    QToolBar* m_mainToolBar = nullptr;
+    QToolBar* m_blockToolBar = nullptr;
+    QComboBox* m_linesAfter = nullptr;              // m_comboSkipLinesAfterNoteInsert
+    struct ToolAction { UINT id; QAction* action; QToolBar* bar; };
+    std::vector<ToolAction> m_toolActions;
+    int m_toolScaling = 0;                          // g_scaling_percentage of the icon size
 
     void Attach(RmtViewWidget* widget) {
         m_widget = widget;
@@ -382,6 +404,138 @@ public:
             if (act->menu()) wireUpdate(act->menu());
     }
 
+    // The toolbars of the .rc (IDR_MAINFRAME, IDR_TOOLBARBLOCK): 16x15 images
+    // of their bitmap, one per button, the light gray of the bitmap is the
+    // background; the tooltips and the status bar texts are the ones of the
+    // string table
+    void BuildToolBars() {
+        struct Button { UINT id; const char* status; const char* tip; };
+        auto build = [&](const char* title, UINT bitmap, std::initializer_list<Button> buttons) {
+            auto* bar = new QToolBar(title, m_win);
+            bar->setObjectName(title);
+            bar->setFloatable(false);
+            bar->setContextMenuPolicy(Qt::PreventContextMenu);
+            QImage image;
+            const unsigned char* data;
+            size_t size;
+            if (RmtFindResource(bitmap, &data, &size)) image = QImage::fromData(data, (int)size, "BMP");
+            image = image.convertToFormat(QImage::Format_ARGB32);
+            for (int y = 0; y < image.height(); y++) {
+                QRgb* line = (QRgb*)image.scanLine(y);
+                for (int x = 0; x < image.width(); x++)
+                    if ((line[x] & 0xFFFFFF) == 0xC0C0C0) line[x] = 0;
+            }
+            int index = 0;
+            for (const Button& b : buttons) {
+                if (!b.id) {                        // SEPARATOR
+                    bar->addSeparator();
+                    continue;
+                }
+                QImage tile = image.copy(index++ * 16, 0, 16, 15);
+                QIcon icon;
+                for (int scale = 1; scale <= 3; scale++)    // nearest neighbour, like the view
+                    icon.addPixmap(QPixmap::fromImage(tile.scaled(16 * scale, 15 * scale)));
+                if (b.id == ID_BUTTONCOMBO1) {      // the combo takes the place of this button
+                    m_linesAfter = new QComboBox(bar);
+                    for (int i = 0; i <= 8; i++) m_linesAfter->addItem(QString::number(i));
+                    m_linesAfter->setCurrentIndex(g_linesafter);
+                    m_linesAfter->setToolTip(b.tip);
+                    m_linesAfter->setStatusTip(b.status);
+                    m_linesAfter->setFocusPolicy(Qt::ClickFocus);
+                    // OnSelChangedComboSkipLinesAfterNoteInsert(), OnRestoreFocusToMainWindow()
+                    QObject::connect(m_linesAfter, QOverload<int>::of(&QComboBox::activated), m_win, [this](int i) {
+                        g_linesafter = i;
+                        m_widget->setFocus();
+                    });
+                    bar->addWidget(m_linesAfter);
+                    continue;
+                }
+                QAction* act = bar->addAction(icon, b.tip);
+                act->setToolTip(b.tip);
+                act->setStatusTip(b.status);
+                UINT id = b.id;
+                QObject::connect(act, &QAction::triggered, m_win, [this, id] {
+                    Dispatch(id);
+                    UpdateToolBars();
+                    m_widget->setFocus();
+                });
+                m_toolActions.push_back({ id, act, bar });
+            }
+            m_win->addToolBar(Qt::TopToolBarArea, bar);
+            return bar;
+        };
+        m_mainToolBar = build("Main toolbar", IDR_MAINFRAME, {
+            { ID_FILE_NEW, "Create a new song", "New" },
+            { ID_FILE_OPEN, "Load an existing song", "Load" },
+            { ID_FILE_SAVE, "Save the song", "Save" },
+            { ID_FILE_EXPORT_AS, "Export song to file", "Export" },
+            { 0, nullptr, nullptr },
+            { ID_APP_ABOUT, "Display program information, version number and copyright", "About" },
+            { 0, nullptr, nullptr },
+            { ID_PLAY0, "Play song from bookmark position", "Play from bookmark" },
+            { ID_PLAY1, "Play song from start position", "Play from start" },
+            { ID_PLAY2, "Play song from current position", "Play" },
+            { ID_PLAY3, "Play and loop current tracks pattern", "Loop pattern" },
+            { ID_PLAYSTOP, "Stop playing the song. Mute all sounds.", "Stop" },
+            { 0, nullptr, nullptr },
+            { ID_PLAYFOLLOW, "Follow the currently playing position (turn on/off)", "Follow song" },
+            { 0, nullptr, nullptr },
+            { ID_EM_TRACKS, "Move to track edit view", "Track edit" },
+            { ID_EM_INSTRUMENTS, "Move to instrument edit view", "Instrument edit" },
+            { ID_EM_INFO, "Move cursor to Info edit", "Info edit" },
+            { ID_EM_SONG, "Move cursor to song edit", "Song edit" },
+            { 0, nullptr, nullptr },
+            { ID_PROVEMODE, "Edit/Jam mode toggle", "Jam mode" },
+            { 0, nullptr, nullptr },
+            { ID_MIDIONOFF, "MIDI on/off", "MIDI on/off" },
+            { 0, nullptr, nullptr },
+            { ID_BUTTONCOMBO1, "Insert note spacing", "Insert note spacing" },
+        });
+        m_blockToolBar = build("Block toolbar", IDR_TOOLBARBLOCK, {
+            { ID_BLOCK_BACKUP, "Restore block from backup", "Restore block" },
+            { 0, nullptr, nullptr },
+            { ID_BLOCK_NOTEUP, "Note transposition up", "Transpose up" },
+            { ID_BLOCK_NOTEDOWN, "Note transposition down", "Transpose down" },
+            { ID_BLOCK_INSTRLEFT, "Instrument number change", "Change instrument" },
+            { ID_BLOCK_INSTRRIGHT, "Instrument number change", "Change instrument" },
+            { ID_BLOCK_VOLUMEUP, "Volume up", "Volume up" },
+            { ID_BLOCK_VOLUMEDOWN, "Volume down", "Volume down" },
+            { ID_BLOCK_EFFECT, "Effects/tools", "Effects/tools" },
+            { 0, nullptr, nullptr },
+            { ID_BLOCK_INSTRALL, "Block modification mode", "Block mode" },
+            { 0, nullptr, nullptr },
+            { ID_BLOCK_PLAY, "Play selected block", "Play block" },
+        });
+        UpdateToolBars();
+    }
+
+    // ON_UPDATE_COMMAND_UI of the buttons (MFC runs it when idle), the combo
+    // follows g_linesafter (Ctrl+numpad +/-, new song), the icons the
+    // interface size
+    void UpdateToolBars() {
+        if (!m_started || !m_mainToolBar) return;
+        for (const ToolAction& t : m_toolActions) {
+            if (t.bar->isHidden()) continue;
+            QtToolCmdUI ui(t.id, t.action);
+            if (!m_view.OnUpdateCmdUI(&ui)) m_frame.OnUpdateCmdUI(&ui);
+        }
+        if (m_linesAfter->currentIndex() != g_linesafter && g_linesafter >= 0 && g_linesafter <= 8)
+            m_linesAfter->setCurrentIndex(g_linesafter);
+        if (m_toolScaling != g_scaling_percentage) {
+            m_toolScaling = g_scaling_percentage;
+            QSize size(16 * m_toolScaling / 100, 15 * m_toolScaling / 100);
+            m_mainToolBar->setIconSize(size);
+            m_blockToolBar->setIconSize(size);
+        }
+    }
+
+    QWidget* ControlBarWidget(const CControlBar* bar) {
+        if (bar == &m_frame.m_wndToolBar) return m_mainToolBar;
+        if (bar == &m_frame.m_ToolBarBlock) return m_blockToolBar;
+        if (bar == (const CControlBar*)&m_frame.m_wndStatusBar) return m_win->statusBar();
+        return nullptr;
+    }
+
     static UINT MouseFlags(Qt::MouseButtons b, Qt::KeyboardModifiers m) {
         UINT f = 0;
         if (b & Qt::LeftButton) f |= MK_LBUTTON;
@@ -492,8 +646,13 @@ public:
         else if (wnd == &m_frame.m_wndStatusBar) m_win->statusBar()->showMessage(text);
     }
 
-    void ShowControlBar(CControlBar*, BOOL) override {}            // no toolbars yet
-    BOOL IsControlBarVisible(const CControlBar*) override { return FALSE; }
+    void ShowControlBar(CControlBar* bar, BOOL show) override {
+        if (QWidget* w = ControlBarWidget(bar)) w->setVisible(show);
+    }
+    BOOL IsControlBarVisible(const CControlBar* bar) override {
+        QWidget* w = ControlBarWidget(bar);
+        return w && !w->isHidden();
+    }
     void SetStatusText(int, const char* text) override { m_win->statusBar()->showMessage(text); }
 
     bool FileDialog(bool open, const char* title, const char* initialDir, const char* fileName,
@@ -694,6 +853,10 @@ RmtMainWindow::RmtMainWindow() : m_bridge(new RmtQtBridge(this))
     g_rmtHost = m_bridge.get();
     statusBar();
     m_bridge->BuildMenuBar(menuBar());
+    m_bridge->BuildToolBars();
+    auto* toolUpdate = new QTimer(this);
+    QObject::connect(toolUpdate, &QTimer::timeout, this, [this] { m_bridge->UpdateToolBars(); });
+    toolUpdate->start(100);
     setWindowTitle("RASTER Music Tracker");
 }
 

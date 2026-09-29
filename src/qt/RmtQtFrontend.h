@@ -46,6 +46,10 @@ public:
     // CView::OnInitialUpdate() and the file given on the command line
     void Start(const QString& songFile);
 
+    // The toolbars are shown and hidden by the View menu (g_view), not by
+    // the right-click menu of QMainWindow
+    QMenu* createPopupMenu() override { return nullptr; }
+
 protected:
     void closeEvent(QCloseEvent* e) override;
 

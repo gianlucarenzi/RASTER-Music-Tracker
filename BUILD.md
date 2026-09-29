@@ -142,8 +142,15 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   thread, as from the winmm callback of `RmtMidi.cpp`. Checked with the ALSA
   "Midi Through" port (`snd-seq-dummy`): notes on MIDI channel 16 are
   written into the track in edit mode. MIDI on/off (`ID_MIDIONOFF`) is a
-  toolbar button only, so MIDI is on from the start when a device is set
-- ❌ toolbars (menu shortcuts are all present)
+  button of the main toolbar
+- ✅ toolbars: the main and block toolbars of `CMainFrame::OnCreate()`
+  (`IDR_MAINFRAME`, `IDR_TOOLBARBLOCK`) with the icons of their embedded
+  bitmaps, the tooltips and status texts of the string table and the
+  "Insert note spacing" combo (`g_linesafter`, also followed when changed with
+  Ctrl+numpad +/-); the buttons are checked and enabled by their
+  `ON_UPDATE_COMMAND_UI` handlers every 100 ms (MFC does it when idle), the
+  icons follow the interface size. View → Main toolbar / Block toolbar /
+  Status Bar show and hide them (`ShowControlBar()`), kept in `rmt.ini`
 
 ### Testing without a display
 
@@ -431,8 +438,7 @@ All output binaries are in `out/` subdirectory of the build folder.
 The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
-1. **Toolbars** — recreate the MFC rebars as Qt toolbars (with MIDI on/off)
-2. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
+1. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
    `-DRMT_USE_QT=ON` on Windows, so Qt can become the default there too
 
 ---
