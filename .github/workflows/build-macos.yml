@@ -77,7 +77,9 @@ jobs:
           # Absolute install names, so that macdeployqt finds and bundles them
           COMMON="-G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
                   -DCMAKE_INSTALL_PREFIX=$DEPS -DCMAKE_INSTALL_NAME_DIR=$DEPS/lib
-                  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0"
+                  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 -DCMAKE_POLICY_VERSION_MINIMUM=3.5"
+          # (CMAKE_POLICY_VERSION_MINIMUM: PortAudio 19.7.0 asks for CMake 2.8,
+          # refused by CMake 4)
           git clone --depth 1 --branch $PORTAUDIO_VERSION https://github.com/PortAudio/portaudio.git portaudio-src
           cmake -S portaudio-src -B portaudio-build $COMMON -DBUILD_SHARED_LIBS=ON
           cmake --build portaudio-build
@@ -156,10 +158,15 @@ jobs:
           PLIST
           plutil -lint $APP/Contents/Info.plist
           $RUN "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite
-          # Nothing may still come from Homebrew or from the build folders
-          if find $APP -type f \( -perm +111 -o -name '*.dylib' \) -exec otool -L {} \; 2>/dev/null \
-               | grep -E "^\s+(/opt/homebrew|/usr/local|$DEPS)/"; then
-            echo "RMT.app still uses libraries outside the bundle"; exit 1
+          # No library may still be loaded from Homebrew or the build folders:
+          # the load commands only (otool -L also lists the install name of a
+          # dylib itself, which macdeployqt leaves as it was)
+          OUTSIDE=$(find $APP -type f \( -perm +111 -o -name '*.dylib' \) | while read f; do
+            otool -l "$f" 2>/dev/null | awk '/cmd LC_(LOAD|LOAD_WEAK|REEXPORT)_DYLIB/ { getline; getline; print $2 }' \
+              | grep -E "^(/opt/homebrew|/usr/local|$DEPS)/" | sed "s#^#$f: #"
+          done)
+          if [ -n "$OUTSIDE" ]; then
+            echo "$OUTSIDE"; echo "RMT.app still uses libraries outside the bundle"; exit 1
           fi
           codesign --force --deep --sign - $APP
           codesign --verify --deep --verbose=2 $APP

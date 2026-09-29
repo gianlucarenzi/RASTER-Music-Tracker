@@ -61,7 +61,8 @@ jobs:
           cp build/out/Rmt.exe $DIST/
           cp -r build/out/resources $DIST/
           WINDEPLOYQT=$(command -v windeployqt-qt5 || command -v windeployqt)
-          "$WINDEPLOYQT" --release --no-translations --compiler-runtime $DIST/Rmt.exe
+          # RMT draws with the raster engine: no ANGLE / software OpenGL (not in MSYS2)
+          "$WINDEPLOYQT" --release --no-translations --compiler-runtime --no-angle --no-opengl-sw $DIST/Rmt.exe
           # The MinGW DLLs of the program and of the Qt DLLs and plugins,
           # until nothing new is found
           for pass in 1 2 3 4 5; do
