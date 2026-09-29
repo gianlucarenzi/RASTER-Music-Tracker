@@ -30,7 +30,6 @@
 #include "importdlgs.h"
 #include "exportdlgs.h"
 #include "SAPFileExportDialog.h"
-#include "RmtMidi.h"
 #include "ConfigDlg.h"
 #include "TuningDlg.h"
 
@@ -232,34 +231,6 @@ bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
 }
 
 // ---------------------------------------------------------------------------
-// RmtMidi.h
-//
-// Global.cpp defines a real global 'CRmtMidi g_Midi;' instance, so its
-// constructor/destructor must link. Full MIDI I/O behaviour is out of scope
-// for Fase 0 (see migration plan Fase 9 - RmtMidi legacy -> MidiBackend);
-// MidiInit()/MidiOn()/MidiOff()/MidiRestart() are declared but never called
-// from any file compiled in this target, so they are intentionally left
-// undefined here.
-// ---------------------------------------------------------------------------
-
-CRmtMidi::CRmtMidi() {
-    m_MidiIsOn = FALSE;
-    m_MidiInHandle = nullptr;
-    m_MidiInDeviceName[0] = '\0';
-    m_MidiInDeviceId = 0;
-    m_TouchResponse = FALSE;
-    m_VolumeOffset = 0;
-    m_NoteOff = FALSE;
-    for (int i = 0; i < 16; i++) {
-        m_LastNoteOnChannel[i] = -1;
-        m_NoteVolumeOnChannel[i] = 0;
-        m_InstrumentOnChannel[i] = 0;
-    }
-}
-
-CRmtMidi::~CRmtMidi() {}
-
-// ---------------------------------------------------------------------------
 // Dialogs opened by the view (RmtView.cpp), and the message maps of all the
 // stubbed dialogs (DECLARE_MESSAGE_MAP in their headers)
 // ---------------------------------------------------------------------------
@@ -355,8 +326,3 @@ RMT_EMPTY_MAP(TuningDlg)
 RMT_EMPTY_MAP(CChangeMaxtracklenDlg)
 RMT_EMPTY_MAP(CRenumberTracksDlg)
 RMT_EMPTY_MAP(CRenumberInstrumentsDlg)
-
-// MIDI input: MidiBackend (RtMidi) in a later phase
-int CRmtMidi::MidiInit() { return 0; }
-int CRmtMidi::MidiOn() { return 0; }
-void CRmtMidi::MidiOff() {}

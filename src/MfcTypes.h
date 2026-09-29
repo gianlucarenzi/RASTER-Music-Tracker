@@ -1114,12 +1114,14 @@ inline void ZeroMemory(void* dst, size_t size) { std::memset(dst, 0, size); }
 void Sleep(DWORD ms);
 
 // Windows MIDI API: only the device enumeration used by the configuration
-// code of RmtView.cpp; MIDI itself is MidiBackend (RtMidi) outside Windows.
-struct MIDIINCAPS { WORD wMid; WORD wPid; UINT vDriverVersion; char szPname[32]; DWORD dwSupport; };
+// code of RmtView.cpp, over the RtMidi input ports (RmtMidiRt.cpp, which is
+// also the MIDI IN of CRmtMidi). szPname is longer than the 32 characters of
+// Windows: ALSA port names often are.
+struct MIDIINCAPS { WORD wMid; WORD wPid; UINT vDriverVersion; char szPname[256]; DWORD dwSupport; };
 #define MMSYSERR_NOERROR 0
 #define MMSYSERR_BADDEVICEID 2
-inline UINT midiInGetNumDevs() { return 0; }
-inline UINT midiInGetDevCaps(UINT_PTR, MIDIINCAPS*, UINT) { return MMSYSERR_BADDEVICEID; }
+UINT midiInGetNumDevs();
+UINT midiInGetDevCaps(UINT_PTR id, MIDIINCAPS* caps, UINT size);
 
 #define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
 #define HIWORD(l) ((WORD)(((DWORD_PTR)(l) >> 16) & 0xffff))

@@ -19,10 +19,10 @@ default; MinGW builds the engine and the audio/MIDI backends only.
 - CMake 3.25+ and a C++20 compiler (GCC 10 or later)
 - Qt 5.12 or later (Core, Widgets)
 - PortAudio, for sound (without it the tracker runs silent)
-- RtMidi, optional (MIDI input is not wired to the Qt frontend yet)
+- RtMidi, for MIDI input (without it there are no MIDI IN devices)
 
 ```bash
-sudo apt install cmake qtbase5-dev portaudio19-dev
+sudo apt install cmake qtbase5-dev portaudio19-dev librtmidi-dev
 ```
 
 ### Build and run
@@ -107,8 +107,8 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   Checked against the sound of the tracker (`RMT_AUDIO_DUMP`): loudness
   correlation 0.97 (gemx.rmt), 0.94 / 0.97 left / right (shorty_noises.rmt)
 - ✅ View → Configuration (`IDD_CONFIG`) with its Paths... dialog
-  (`IDD_PATHS`, folder choice with `QFileDialog`); the MIDI device list only
-  has "--- none ---" until MIDI input is wired
+  (`IDD_PATHS`, folder choice with `QFileDialog`); the MIDI IN devices are
+  the RtMidi input ports
 - ✅ the other dialogs: block effects (`IDD_EFFECTS`, Try / Restore /
   Play/Stop), song columns' order (`IDD_SONGTRACKSORDER`), change of all the
   instrument occurrences (`IDD_INSTRCHANGE` with `IDD_CHANNELSSELECT`), insert
@@ -134,7 +134,15 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
 - ✅ CPU (offscreen, gemx.rmt): about 50% of one core idle and while playing
   (was 78% / 66%), almost all of it the 60 fps redraw; `CDC::BitBlt` copies
   clipped rows with `memmove`, `CDC::StretchBlt` precomputes its columns
-- ❌ MIDI input
+- ✅ MIDI input: the RtMidi input ports (ALSA sequencer) are the MIDI IN
+  devices of the configuration (`midiInGetNumDevs()` / `midiInGetDevCaps()`
+  in `RmtMidiRt.cpp`, the ALSA `client:port` numbers left out of the name so
+  the saved device is found again), and `CRmtMidi` opens the chosen one with
+  `RtMidiIn`: each message goes to `CSong::MidiEvent()` from the RtMidi
+  thread, as from the winmm callback of `RmtMidi.cpp`. Checked with the ALSA
+  "Midi Through" port (`snd-seq-dummy`): notes on MIDI channel 16 are
+  written into the track in edit mode. MIDI on/off (`ID_MIDIONOFF`) is a
+  toolbar button only, so MIDI is on from the start when a device is set
 - ❌ toolbars (menu shortcuts are all present)
 
 ### Testing without a display
@@ -182,6 +190,12 @@ QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png RMT_QT_GRAB_MS=5000 \
 `ID_FILE_NEW` = `0xE100`, `ID_FILE_OPEN` = `0xE101`, `ID_FILE_SAVE_AS` = `0xE104`, `ID_FILE_IMPORT` =
 32856, `ID_FILE_EXPORT_AS` = 32773, `ID_INSTR_LOAD` / `ID_INSTR_SAVE` = 32772
 / 32771, `ID_TRACK_LOAD` / `ID_TRACK_SAVE` = 32888 / 32889.
+
+MIDI input through the ALSA "Midi Through" port (client 14, module
+`snd-seq-dummy`) with `MIDI_IN = Midi Through:Midi Through Port-0` in
+`rmt.ini`: while the tracker runs, `aplaymidi -p 14:0 notes.mid` plays a MIDI
+file into it (notes on channel 16 are recorded in edit mode, `aconnect -l`
+shows the `RMT` client connected to 14:0).
 
 `RMT_QT_MENU_TEST=1` (use with `RMT_QT_GRAB=1` and `QT_QPA_PLATFORM=offscreen`)
 triggers all 81 leaf menu actions programmatically and exits 0 if every action
@@ -417,9 +431,8 @@ All output binaries are in `out/` subdirectory of the build folder.
 The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
-1. **MIDI input** — wire `RtMidiBackend` to the Qt event loop
-2. **Toolbars** — recreate the MFC rebars as Qt toolbars
-3. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
+1. **Toolbars** — recreate the MFC rebars as Qt toolbars (with MIDI on/off)
+2. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
    `-DRMT_USE_QT=ON` on Windows, so Qt can become the default there too
 
 ---

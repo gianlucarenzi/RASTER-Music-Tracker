@@ -9,6 +9,7 @@
 #include "Atari.h"
 #include "AtariTrackerDriver.h"
 #include "Tuning.h"
+#include "RmtMidi.h"
 #include "resource.h"
 
 #include "RmtQtFrontend.h"
@@ -23,6 +24,7 @@ extern CSong g_Song;
 extern CAtari g_Atari;
 extern TTuningSettings g_tuning;
 extern TTuningRatios g_tuningRatios;
+extern CRmtMidi g_Midi;
 
 int main(int argc, char** argv)
 {
@@ -150,7 +152,8 @@ int main(int argc, char** argv)
     int result = app.exec();
     // File/Exit already did this (CRmtView::OnWantExit); any other way out
     // (test hooks, QCoreApplication::exit) must not leave the song timer
-    // ticking into the destruction of g_Song
+    // ticking into the destruction of g_Song, nor MIDI IN calling it
     g_Song.StopTimer();
+    g_Midi.MidiOff();
     return result;
 }

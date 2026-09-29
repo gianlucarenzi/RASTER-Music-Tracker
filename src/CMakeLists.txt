@@ -210,7 +210,7 @@ else()
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES})
         if(NOT MFC_AVAILABLE)
             # Non-MFC type shim (Fase 0)
-            list(APPEND RMT_SOURCES MfcTypes.cpp MfcAudio.cpp MfcDialogStubs.cpp ${RMT_EMBEDDED_RESOURCES})
+            list(APPEND RMT_SOURCES MfcTypes.cpp MfcAudio.cpp MfcDialogStubs.cpp RmtMidiRt.cpp ${RMT_EMBEDDED_RESOURCES})
         endif()
     else()
         set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES})
@@ -656,6 +656,7 @@ if(RMT_CORE_TEST)
             MfcTypes.cpp
             MfcAudio.cpp
             MfcDialogStubs.cpp
+            RmtMidiRt.cpp
         )
     endif()
 
