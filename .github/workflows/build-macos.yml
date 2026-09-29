@@ -68,7 +68,7 @@ jobs:
           target: desktop
           arch: clang_64
           dir: ${{ runner.temp }}
-          setup-python: false
+          setup-python: true
 
       - name: Build PortAudio and RtMidi (x86_64)
         if: matrix.arch == 'x86_64'
