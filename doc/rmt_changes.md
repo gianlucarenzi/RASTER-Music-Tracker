@@ -17,7 +17,12 @@ Changes in RMT 2.00 (Planned)
 - Include the export settings in the file format instead of repeating the dialogs for user input on every export.
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
-Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
+Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
+- The Qt frontend moved to Qt6 (6.8.3 in the packages of 2.1): CMake takes
+  Qt6, or Qt 5.15 where Qt6 is not installed (-DRMT_QT_MAJOR=5|6 chooses).
+  The GitHub builds use Qt6 on Linux (official Qt, aqtinstall), Windows
+  (MSYS2) and macOS (official universal Qt); macOS 12 is now the minimum.
+  (2026-09-29)
 - Full menu bar added to the Qt5 frontend (branch feature/Qt-Side, 2026-09-28).
   All 7 top-level menus (File, Edit, Track, Block, Instrument, Song, View, Help)
   with nested submenus and keyboard shortcuts are built from the MFC

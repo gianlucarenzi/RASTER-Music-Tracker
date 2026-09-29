@@ -1,4 +1,4 @@
-// RmtQtFrontend.cpp - Qt5 frontend of RASTER Music Tracker (see RmtQtFrontend.h)
+// RmtQtFrontend.cpp - Qt6 frontend of RASTER Music Tracker (see RmtQtFrontend.h)
 
 #include "StdAfx.h"
 #include "resource.h"

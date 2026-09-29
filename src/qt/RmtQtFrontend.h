@@ -1,4 +1,4 @@
-// RmtQtFrontend.h - Qt5 frontend of RASTER Music Tracker
+// RmtQtFrontend.h - Qt6 frontend of RASTER Music Tracker
 //
 // The tracker GUI is the MFC one (CRmtView, CMainFrame, CRmtDoc) compiled
 // against the MfcTypes.h shim: RmtQtBridge (RmtQtFrontend.cpp) implements

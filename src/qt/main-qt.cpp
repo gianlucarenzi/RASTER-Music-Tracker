@@ -1,4 +1,4 @@
-// main-qt.cpp - RASTER Music Tracker, Qt5 frontend
+// main-qt.cpp - RASTER Music Tracker, Qt6 frontend
 //
 // The start-up of CRmtApp::InitInstance() (Rmt.cpp, MFC only), then the
 // main window. The first command line argument is a song to open.

@@ -1,28 +1,29 @@
 # Building RASTER Music Tracker with CMake
 
-The **official build is the Qt5 frontend on Linux / POSIX** (`RMT_USE_QT=ON`,
+The **official build is the Qt6 frontend on Linux / POSIX** (`RMT_USE_QT=ON`,
 the default there). On Windows the MFC GUI built with MSVC is still the
 default; MinGW builds the engine and the audio/MIDI backends only.
 
 | Platform | Build | GUI | Section |
 |----------|-------|-----|---------|
-| Linux / POSIX | `cmake -B build-qt` | Qt5 (**official**) | [Qt5 frontend](#official-build-qt5-frontend-linux--posix) |
+| Linux / POSIX | `cmake -B build-qt` | Qt6 (**official**) | [Qt6 frontend](#official-build-qt6-frontend-linux--posix) |
 | Windows | MSVC | MFC | [Windows with MSVC](#windows-with-msvc-mfc) |
 | Windows / Linux | MinGW | none (engine, backends, tests) | [MinGW](#mingw-engine-and-backends-only) |
 
 ---
 
-## Official build: Qt5 frontend (Linux / POSIX)
+## Official build: Qt6 frontend (Linux / POSIX)
 
 ### Prerequisites
 
 - CMake 3.25+ and a C++20 compiler (GCC 10 or later)
-- Qt 5.12 or later (Core, Widgets)
+- Qt 6 (Core, Widgets); Qt 5.15 still works where Qt6 is not installed
+  (`-DRMT_QT_MAJOR=5` or `6` chooses the version)
 - PortAudio, for sound (without it the tracker runs silent)
 - RtMidi, for MIDI input (without it there are no MIDI IN devices)
 
 ```bash
-sudo apt install cmake qtbase5-dev portaudio19-dev librtmidi-dev
+sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
 ```
 
 ### Build and run
@@ -251,7 +252,7 @@ GUI-shared drawing code) compiled against `src/MfcTypes.h`, a small
 replacement of the MFC classes it uses: a software device context (`CDC`,
 `CBitmap`, bitmaps of `src/res` compiled in by `cmake/EmbedResources.cmake`),
 message maps that build a real command table, and `CWnd`/`CView` whose window
-operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
+operations go to an `IRmtHost`. `src/qt/` implements that host with Qt6:
 
 | File | |
 |------|---|
@@ -296,7 +297,7 @@ cmake --build . --config Release
 Output: `out\Rmt.exe`
 
 On Windows `RMT_USE_QT` is OFF by default and the MFC GUI is built.
-`-DRMT_USE_QT=ON` selects the Qt5 frontend there too, but that is not tested
+`-DRMT_USE_QT=ON` selects the Qt6 frontend there too, but that is not tested
 yet (see [Remaining work](#remaining-work-on-the-qt-frontend)).
 
 ---
@@ -306,8 +307,8 @@ yet (see [Remaining work](#remaining-work-on-the-qt-frontend)).
 **What builds with MinGW:** the RMT engine and the audio/MIDI backends.
 **What does not:** the full tracker. Its MFC GUI (Rmt.cpp, MainFrm.cpp,
 RmtView.cpp, RmtDoc.cpp and the dialogs, 18 files) exists only for MSVC:
-no MinGW toolchain provides `afxwin.h`. The Qt5 frontend (`-DRMT_USE_QT=ON`)
-needs a Qt5 built for MinGW, not tested yet. For the full MFC tracker use MSVC.
+no MinGW toolchain provides `afxwin.h`. The Qt6 frontend (`-DRMT_USE_QT=ON`)
+needs a Qt6 built for MinGW (MSYS2 has one, used by the GitHub build). For the full MFC tracker use MSVC.
 
 Prerequisites:
 - MinGW-w64 x86_64 compiler (Linux: `sudo apt install cmake mingw-w64`)
@@ -409,7 +410,8 @@ The last release is `v2.0`; `RMT_BASE_VERSION` is `"2.1"`.
 
 ## CMake Options
 
-- `-DRMT_USE_QT=ON|OFF` - Qt5 frontend (default ON on Linux/POSIX, OFF on Windows)
+- `-DRMT_USE_QT=ON|OFF` - Qt6 frontend (default ON on Linux/POSIX, OFF on Windows)
+- `-DRMT_QT_MAJOR=6|5` - Qt version of the frontend (default: Qt6, else Qt 5.15)
 - `-DRMT_BUILD_CORE_ONLY=ON` - Build the engine and backends only, no GUI
 - `-DRMT_CORE_TEST=ON` - Also build `RmtCoreTest` (with `RMT_BUILD_CORE_ONLY`)
 - `-DCMAKE_BUILD_TYPE=Release` - Build optimized release version
@@ -420,9 +422,9 @@ The last release is `v2.0`; `RMT_BASE_VERSION` is `"2.1"`.
 
 ## Troubleshooting
 
-### Qt5 not found
-Install the Qt5 development package: `sudo apt install qtbase5-dev`, or point
-CMake at another Qt5 with `-DCMAKE_PREFIX_PATH=/path/to/Qt5`.
+### Qt6 not found
+Install the Qt6 development package: `sudo apt install qt6-base-dev`, or point
+CMake at another Qt6 with `-DCMAKE_PREFIX_PATH=/path/to/Qt6`.
 
 ### No sound with the Qt frontend
 PortAudio was not found at configure time: `sudo apt install portaudio19-dev`,
@@ -443,7 +445,7 @@ Check that all prerequisites are installed and in PATH.
 
 ## Output Artifacts
 
-- **Linux / POSIX (Qt5, official):** `build-qt/out/rmt` and the versioned
+- **Linux / POSIX (Qt6, official):** `build-qt/out/rmt` and the versioned
   `rmt-<version>`, with `resources/` next to them
 - **Windows, MSVC:** `build-msvc/out/Rmt.exe` (the full MFC tracker)
 - **MinGW:** `build-mingw-core/out/RmtCoreTest.exe`, `Rmt.exe` (audio test),
@@ -456,7 +458,7 @@ All output binaries are in `out/` subdirectory of the build folder.
 ## Linux, Windows and macOS builds on GitHub Actions
 
 Pushing a tag `v*` (`scripts/push.sh` → `v2.1-rcN`, `scripts/release.sh` →
-`v2.1`...) builds the Qt5 frontend on GitHub and publishes the packages as
+`v2.1`...) builds the Qt6 frontend on GitHub and publishes the packages as
 assets of the release of that tag (a pre-release for the `-rc` tags); every
 job also uploads its package and an offscreen screenshot of gemx.rmt (the
 smoke test) as a workflow artifact. They can also be started by hand, to
@@ -465,9 +467,9 @@ are only the artifacts, no release:
 
 | Workflow | Runner | Toolchain and libraries | Package |
 |----------|--------|-------------------------|---------|
-| `.github/workflows/build-linux.yml` | `ubuntu-latest`, container `ubuntu:20.04` (glibc 2.31, as Debian 11) | GCC 10, `portaudio19-dev`, `librtmidi-dev` (ALSA) of Ubuntu 20.04, the official Qt 5.15.2 (`aqtinstall`; Ubuntu 20.04 has 5.12) | `RMT-Linux-x86_64.AppImage` (`linuxdeploy` + Qt plugin): runs on Debian 11 / Ubuntu 20.04 and newer, the build checks that no file in it needs a glibc after 2.31 |
-| `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt5-base`, `portaudio`, `rtmidi` (WinMM) | `RMT-Windows-x64.zip`: `Rmt.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
-| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | arm64: Apple Clang, Homebrew `qt@5`, `portaudio`, `rtmidi` (CoreMIDI). x86_64: the official Qt 5.15.2 `clang_64` (Intel only; Homebrew no longer installs on Intel), PortAudio 19.7.0 and RtMidi 6.0.0 built from source for x86_64 | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Macs, or Apple Silicon through Rosetta 2): `RMT.app` with the Qt frameworks and the libraries inside (`macdeployqt`, checked with the load commands of `otool -l`) |
+| `.github/workflows/build-linux.yml` | `ubuntu-latest`, container `ubuntu:20.04` (glibc 2.31, as Debian 11) | GCC 10, `portaudio19-dev`, `librtmidi-dev` (ALSA) of Ubuntu 20.04, the official Qt 6.8.3 (`aqtinstall` in a Python 3.9 venv; Ubuntu 20.04 has no Qt6) | `RMT-Linux-x86_64.AppImage` (`linuxdeploy` + Qt plugin): runs on Debian 11 / Ubuntu 20.04 and newer, the build checks that no file in it needs a glibc after 2.31 |
+| `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt6-base`, `portaudio`, `rtmidi` (WinMM) | `RMT-Windows-x64.zip`: `Rmt.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
+| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | Apple Clang, the official Qt 6.8.3 `clang_64` (universal) for both. arm64: Homebrew `portaudio`, `rtmidi` (CoreMIDI). x86_64: PortAudio 19.7.0 and RtMidi 6.0.0 built from source for x86_64 (Homebrew no longer installs on Intel). Minimum macOS 12, as Qt 6.8 | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Macs, or Apple Silicon through Rosetta 2): `RMT.app` with the Qt frameworks and the libraries inside (`macdeployqt`, checked with the load commands of `otool -l`) |
 
 `RMT.app` needs nothing installed. It is signed ad hoc, not notarized, so
 macOS asks to open it with right click → Open the first time. Its
@@ -494,7 +496,7 @@ MSVC, `-DRMT_USE_QT=ON` no longer turns MFC on.
 
 ## Remaining work on the Qt frontend
 
-The Qt5 frontend is the official build on Linux/POSIX and the development
+The Qt6 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
 1. **Windows and macOS** — run the GitHub builds (first tag push) and fix
@@ -505,7 +507,7 @@ track for the 2.x series. Remaining work:
 
 ## Test Results
 
-Linux native GCC 10: the Qt5 frontend builds without warnings, shows the main
+Linux native GCC 10: the Qt frontend builds without warnings, shows the main
 screen with a song, keys move the cursor, all 81 menu actions are verified via
 `RMT_QT_MENU_TEST` (checked offscreen with `RMT_QT_GRAB` / `RMT_QT_KEYS`).
 `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` builds without warnings and
@@ -517,6 +519,6 @@ MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 |---------------|--------|
 | `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` | ✅ `RmtCoreTest.exe`, `Rmt.exe`, `RmtMidiTest.exe` build (not run: needs Windows or Wine) |
 | default (full MFC GUI) | ❌ 18 MFC files: `afxwin.h` not available with MinGW |
-| `-DRMT_USE_QT=ON` | ❌ no Qt5 for MinGW installed |
+| `-DRMT_USE_QT=ON` | ❌ no Qt6 for MinGW installed (the MSYS2 build on GitHub has it) |
 
 MSVC builds: not tested here.

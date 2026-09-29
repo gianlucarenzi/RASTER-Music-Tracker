@@ -1,4 +1,4 @@
-# RASTER Music Tracker 2.0 - the Qt port
+# RASTER Music Tracker 2.1 - the Qt port
 
 ### About
 
@@ -7,8 +7,9 @@ for the POKEY sound chip. RMT uses the Atari XL/XE music routines created by
 Radek Štěrba from 2002 to 2009. It was a small revolution for all Atari
 musicians and fans.
 
-**RMT 2.0 is a port of RMT to Qt5, so that it runs natively on Linux,
+**RMT 2.x is a port of RMT to Qt6, so that it runs natively on Linux,
 Windows and macOS** (Intel and Apple Silicon), and not only on Windows.
+(RMT 2.0 was built with Qt5, 2.1 moved to Qt6.)
 
 The heart of the program is **the original RMT code**: the tracker, the
 editor, the Atari 6502 music routines, the POKEY emulation, the file formats,
@@ -17,7 +18,7 @@ Peter Dell (JAC!), itself the continuation of the original RMT 1.28 by Radek
 Štěrba (Raster/C.P.U.) and of RMT 1.34 by Vin Samuel (VinsCool). The port
 replaces only what tied RMT to Windows:
 
-- the MFC windows, menus, toolbars and dialogs are now Qt5 (the tracker
+- the MFC windows, menus, toolbars and dialogs are now Qt6 (the tracker
   screen itself is drawn by the original code, pixel for pixel)
 - the sound goes out through PortAudio, MIDI IN comes in through RtMidi
   (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS)
@@ -70,15 +71,15 @@ different from the Windows version you know?
 
 ### Download
 
-[**RMT 2.0**](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/tag/v2.0)
+[**RMT 2.1**](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/tag/v2.1)
 ([all releases](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases)):
 
 | System | Package | How to start it |
 |--------|---------|-----------------|
-| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
-| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
-| macOS, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
-| macOS, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
+| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
+| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
+| macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
+| macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
 
 Everything the program needs is inside each package. The configuration is
 kept in `~/.config/raster-atari.org/rmt.conf` on Linux, in the registry
@@ -112,7 +113,7 @@ need testing on real machines, sound and MIDI in particular.
 On Linux:
 
 ```bash
-sudo apt install cmake qtbase5-dev portaudio19-dev librtmidi-dev
+sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
 cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
 cmake --build build-qt -j
 ./build-qt/out/rmt song.rmt
