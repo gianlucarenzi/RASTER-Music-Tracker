@@ -38,39 +38,48 @@
 // EffectsDlg.h
 // ---------------------------------------------------------------------------
 
-CEffectsDlg::CEffectsDlg(CWnd*) {}
+// Song and track dialogs: shown by the Qt frontend (src/qt/RmtQtDialogs.cpp);
+// same defaults as effectsdlg.cpp, the callers set the other members
+CEffectsDlg::CEffectsDlg(CWnd* pParent) : CDialog(CEffectsDlg::IDD, pParent) {}
 void CEffectsDlg::DoDataExchange(CDataExchange*) {}
 BOOL CEffectsDlg::OnInitDialog() { return TRUE; }
 void CEffectsDlg::OnOK() {}
 void CEffectsDlg::OnCancel() {}
 
-COctaveSelectDlg::COctaveSelectDlg(CWnd*) {}
+COctaveSelectDlg::COctaveSelectDlg(CWnd* pParent) : CDialog(COctaveSelectDlg::IDD, pParent) {}
 BOOL COctaveSelectDlg::PreTranslateMessage(MSG*) { return FALSE; }
 void COctaveSelectDlg::DoDataExchange(CDataExchange*) {}
 void COctaveSelectDlg::OnOK() {}
 BOOL COctaveSelectDlg::OnInitDialog() { return TRUE; }
 
-CVolumeSelectDlg::CVolumeSelectDlg(CWnd*) {}
+CVolumeSelectDlg::CVolumeSelectDlg(CWnd* pParent) : CDialog(CVolumeSelectDlg::IDD, pParent)
+{
+    m_respectvolume = FALSE;
+}
 BOOL CVolumeSelectDlg::PreTranslateMessage(MSG*) { return FALSE; }
 void CVolumeSelectDlg::DoDataExchange(CDataExchange*) {}
 BOOL CVolumeSelectDlg::OnInitDialog() { return TRUE; }
 void CVolumeSelectDlg::OnOK() {}
 
-CInstrumentSelectDlg::CInstrumentSelectDlg(CWnd*) {}
+CInstrumentSelectDlg::CInstrumentSelectDlg(CWnd* pParent) : CDialog(CInstrumentSelectDlg::IDD, pParent) {}
 BOOL CInstrumentSelectDlg::PreTranslateMessage(MSG*) { return FALSE; }
 void CInstrumentSelectDlg::DoDataExchange(CDataExchange*) {}
 BOOL CInstrumentSelectDlg::OnInitDialog() { return TRUE; }
 
-CSongTracksOrderDlg::CSongTracksOrderDlg(CWnd*) {}
+CSongTracksOrderDlg::CSongTracksOrderDlg(CWnd* pParent) : CDialog(CSongTracksOrderDlg::IDD, pParent) {}
 void CSongTracksOrderDlg::DoDataExchange(CDataExchange*) {}
 BOOL CSongTracksOrderDlg::OnInitDialog() { return TRUE; }
 
-CInstrumentChangeDlg::CInstrumentChangeDlg(CWnd*) {}
+CInstrumentChangeDlg::CInstrumentChangeDlg(CWnd* pParent) : CDialog(CInstrumentChangeDlg::IDD, pParent)
+{
+    m_combo1 = m_combo2 = m_combo3 = m_combo4 = m_combo5 = m_combo6 = -1;
+    m_combo7 = m_combo8 = m_combo9 = m_combo10 = m_combo11 = m_combo12 = -1;
+}
 void CInstrumentChangeDlg::DoDataExchange(CDataExchange*) {}
 BOOL CInstrumentChangeDlg::OnInitDialog() { return TRUE; }
 void CInstrumentChangeDlg::OnOK() {}
 
-CInsertCopyOrCloneOfSongLinesDlg::CInsertCopyOrCloneOfSongLinesDlg(CWnd*) {}
+CInsertCopyOrCloneOfSongLinesDlg::CInsertCopyOrCloneOfSongLinesDlg(CWnd* pParent) : CDialog(CInsertCopyOrCloneOfSongLinesDlg::IDD, pParent) {}
 void CInsertCopyOrCloneOfSongLinesDlg::DoDataExchange(CDataExchange*) {}
 BOOL CInsertCopyOrCloneOfSongLinesDlg::OnInitDialog() { return TRUE; }
 void CInsertCopyOrCloneOfSongLinesDlg::OnOK() {}
@@ -116,7 +125,11 @@ CImportTmcFinishedDlg::CImportTmcFinishedDlg(CWnd* pParent) : CDialog(CImportTmc
 void CImportTmcFinishedDlg::DoDataExchange(CDataExchange*) {}
 BOOL CImportTmcFinishedDlg::OnInitDialog() { return TRUE; }
 
-CTracksLoadDlg::CTracksLoadDlg(CWnd*) {}
+// Shown by the Qt frontend (src/qt/RmtQtDialogs.cpp)
+CTracksLoadDlg::CTracksLoadDlg(CWnd* pParent) : CDialog(CTracksLoadDlg::IDD, pParent)
+{
+    m_radio = 0;
+}
 void CTracksLoadDlg::DoDataExchange(CDataExchange*) {}
 void CTracksLoadDlg::OnOK() {}
 BOOL CTracksLoadDlg::OnInitDialog() { return TRUE; }
@@ -248,8 +261,7 @@ CRmtMidi::~CRmtMidi() {}
 
 // ---------------------------------------------------------------------------
 // Dialogs opened by the view (RmtView.cpp), and the message maps of all the
-// stubbed dialogs (DECLARE_MESSAGE_MAP in their headers). The Qt frontend
-// replaces these dialogs one by one in later phases.
+// stubbed dialogs (DECLARE_MESSAGE_MAP in their headers)
 // ---------------------------------------------------------------------------
 
 // Shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same defaults as ConfigDlg.cpp
@@ -282,7 +294,14 @@ void CConfigDlg::OnOK() {}
 void CConfigDlg::OnMidiTouchResponseClicked() {}
 void CConfigDlg::OnPaths() {}
 
-TuningDlg::TuningDlg(CWnd*) {}
+// Tuning, track length and renumber dialogs: shown by the Qt frontend
+// (src/qt/RmtQtDialogs.cpp); same defaults as TuningDlg.cpp, filenewdlg.cpp
+// and effectsdlg.cpp
+TuningDlg::TuningDlg(CWnd* pParent) : CDialog(TuningDlg::IDD, pParent)
+{
+    m_tuningSettings = {};
+    m_tuningRatios = {};
+}
 void TuningDlg::DoDataExchange(CDataExchange*) {}
 BOOL TuningDlg::OnInitDialog() { return TRUE; }
 void TuningDlg::OnOK() {}
@@ -290,15 +309,24 @@ void TuningDlg::OnClickedIdtestnow() {}
 void TuningDlg::OnClickedIdreset() {}
 void TuningDlg::OnBnClickedCancel() {}
 
-CChangeMaxtracklenDlg::CChangeMaxtracklenDlg(CWnd*) {}
+CChangeMaxtracklenDlg::CChangeMaxtracklenDlg(CWnd* pParent) : CDialog(CChangeMaxtracklenDlg::IDD, pParent)
+{
+    m_maxtracklen = 0;
+}
 void CChangeMaxtracklenDlg::DoDataExchange(CDataExchange*) {}
 
-CRenumberTracksDlg::CRenumberTracksDlg(CWnd*) {}
+CRenumberTracksDlg::CRenumberTracksDlg(CWnd* pParent) : CDialog(CRenumberTracksDlg::IDD, pParent)
+{
+    m_radio = 0;
+}
 void CRenumberTracksDlg::DoDataExchange(CDataExchange*) {}
 BOOL CRenumberTracksDlg::OnInitDialog() { return TRUE; }
 void CRenumberTracksDlg::OnOK() {}
 
-CRenumberInstrumentsDlg::CRenumberInstrumentsDlg(CWnd*) {}
+CRenumberInstrumentsDlg::CRenumberInstrumentsDlg(CWnd* pParent) : CDialog(CRenumberInstrumentsDlg::IDD, pParent)
+{
+    m_radio = 0;
+}
 void CRenumberInstrumentsDlg::DoDataExchange(CDataExchange*) {}
 BOOL CRenumberInstrumentsDlg::OnInitDialog() { return TRUE; }
 void CRenumberInstrumentsDlg::OnOK() {}

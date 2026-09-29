@@ -109,9 +109,13 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
 - ✅ View → Configuration (`IDD_CONFIG`) with its Paths... dialog
   (`IDD_PATHS`, folder choice with `QFileDialog`); the MIDI device list only
   has "--- none ---" until MIDI input is wired
-- ⚠️  other dialogs: the MFC dialogs are stubs that answer "cancel"
-  (`MfcDialogStubs.cpp`); they must still be rewritten in Qt (tuning,
-  song/track/instrument info, effects...)
+- ✅ the other dialogs: block effects (`IDD_EFFECTS`, Try / Restore /
+  Play/Stop), song columns' order (`IDD_SONGTRACKSORDER`), change of all the
+  instrument occurrences (`IDD_INSTRCHANGE` with `IDD_CHANNELSSELECT`), insert
+  copy or clone of song lines, maximal track length, renumber tracks /
+  instruments, tracks loading, tuning (`IDD_TUNING`, Test now / Reset), and the
+  octave, volume and instrument popups of the info line; all MFC dialogs of
+  the tracker are now in Qt
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
@@ -214,7 +218,7 @@ operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
 | `qt/main-qt.cpp` | start-up and main window; `RMT_QT_GRAB` / `RMT_QT_MENU_TEST` test hooks |
 | `qt/RmtQtFrontend.cpp` | `RmtMainWindow` (menu bar, `QtCCmdUI`), `RmtViewWidget` (view, keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
 | `qt/RmtQtKeys.cpp` | key events → Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
-| `qt/RmtQtDialogs.cpp` | the MFC dialogs rewritten with Qt: `CDialog::DoModal()` → `IRmtHost::DoModal()` → the dialog of `m_nIDTemplate` (`IDD_*`), which reads and writes the dialog's data members; not rewritten yet: cancelled |
+| `qt/RmtQtDialogs.cpp` | the MFC dialogs rewritten with Qt: `CDialog::DoModal()` → `IRmtHost::DoModal()` → the dialog of `m_nIDTemplate` (`IDD_*`), which reads and writes the dialog's data members; an unknown `IDD` is cancelled |
 | `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
 
 ### Built-in 6502 and POKEY (`src/emu`)
@@ -413,14 +417,9 @@ All output binaries are in `out/` subdirectory of the build folder.
 The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
-1. **Native Qt dialogs** — rewrite the `MfcDialogStubs.cpp` dialogs in Qt
-   (file dialogs, File → New, Import, Export As and Configuration are done):
-   tuning, song/track/instrument info, effects. A new dialog is a
-   case in `RmtQtRunDialog()` (`qt/RmtQtDialogs.cpp`) plus the `IDD` in the
-   stub's constructor
-2. **MIDI input** — wire `RtMidiBackend` to the Qt event loop
-3. **Toolbars** — recreate the MFC rebars as Qt toolbars
-4. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
+1. **MIDI input** — wire `RtMidiBackend` to the Qt event loop
+2. **Toolbars** — recreate the MFC rebars as Qt toolbars
+3. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
    `-DRMT_USE_QT=ON` on Windows, so Qt can become the default there too
 
 ---

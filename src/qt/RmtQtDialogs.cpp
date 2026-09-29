@@ -13,11 +13,19 @@
 #include "ConfigDlg.h"
 #include "ASMFileExporter.h"
 #include "Notes.h"
+#include "EffectsDlg.h"
+#include "TuningDlg.h"
+#include "Tuning.h"
+#include "Tracks.h"
+#include "Instruments.h"
+#include "IOHelpers.h"
+#include "GuiHelpers.h"
 
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QClipboard>
 #include <QComboBox>
+#include <QCursor>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFileDialog>
@@ -30,6 +38,8 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QPainter>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QRadioButton>
@@ -40,7 +50,12 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include <array>
 #include <functional>
+
+extern CSong g_Song;
+extern CInstruments g_Instruments;
+extern CTuning g_Tuning;
 
 // Run a dialog. Test runs (RMT_QT_GRAB) show no modal dialogs: they are
 // cancelled, unless RMT_QT_DIALOG=file.png is set, then the dialog is shown,
@@ -913,6 +928,1057 @@ static INT_PTR RunConfig(QWidget* parent, CConfigDlg* dlg)
 }
 
 // ---------------------------------------------------------------------------
+// Song, track and instrument dialogs (effectsdlg.cpp, filenewdlg.cpp,
+// importdlgs.cpp, TuningDlg.cpp)
+// ---------------------------------------------------------------------------
+
+// A hex number edit (ES_UPPERCASE), read with Hexstr() like the MFC dialogs
+static QLineEdit* HexEdit(int value)
+{
+    auto* edit = UpperCaseEdit(QString::asprintf("%02X", value));
+    edit->setMaximumWidth(40);
+    return edit;
+}
+
+static int HexValue(QLineEdit* edit, int len)
+{
+    QByteArray text = edit->text().toLatin1();
+    return Hexstr(text.data(), len);
+}
+
+static int IntValue(QLineEdit* edit) { return atoi(edit->text().toLatin1().constData()); }
+
+// A choice between radio buttons ("Are you sure?"); choice gets the id of the
+// chosen one: first, first + 1...
+static INT_PTR RunChoice(QWidget* parent, const char* title, const QString& heading, const QStringList& options, int first, int& choice)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle(title);
+    auto* layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(heading));
+    auto* group = new QButtonGroup(&dialog);
+    for (int i = 0; i < options.size(); i++) {
+        auto* radio = new QRadioButton(options[i]);
+        group->addButton(radio, first + i);
+        layout->addWidget(radio);
+    }
+    group->button(first)->setChecked(true);         // OnInitDialog: the first one
+    layout->addWidget(new QLabel("Are you sure?"));
+
+    auto* buttons = AddOkCancel(dialog, layout);
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return IDCANCEL;
+    choice = group->checkedId();
+    return IDOK;
+}
+
+// IDD_CHANGEMAXTRACKLEN - CChangeMaxtracklenDlg
+static INT_PTR RunChangeMaxTrackLen(QWidget* parent, CChangeMaxtracklenDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Change maximal length of tracks");
+    auto* layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel("Change maximal length of tracks"));
+    layout->addWidget(new QLabel(FromCString(dlg->m_info)));
+
+    auto* length = new QSpinBox;
+    length->setRange(1, TRACKLEN);                  // DDV_MinMaxInt(1, TRACKLEN)
+    length->setValue(dlg->m_maxtracklen);
+    auto* row = new QHBoxLayout;
+    row->addStretch();
+    row->addWidget(new QLabel("New maximal length of tracks"));
+    row->addWidget(length);
+    row->addStretch();
+    layout->addLayout(row);
+
+    auto* warning = new QLabel("Warning: All tracks will be prolonged or truncated!");
+    warning->setAlignment(Qt::AlignCenter);
+    layout->addWidget(warning);
+
+    auto* buttons = AddOkCancel(dialog, layout);
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return IDCANCEL;
+    dlg->m_maxtracklen = length->value();
+    return IDOK;
+}
+
+// IDD_SONGINSERTCOPYORCLONEOFSONGLINES - CInsertCopyOrCloneOfSongLinesDlg
+static INT_PTR RunInsertSongLines(QWidget* parent, CInsertCopyOrCloneOfSongLinesDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Insert copy or clone of song line(s) into song");
+    auto* layout = new QVBoxLayout(&dialog);
+
+    auto* from = HexEdit(dlg->m_linefrom);
+    auto* to = HexEdit(dlg->m_lineto);
+    auto* lineRow = new QHBoxLayout;
+    lineRow->addWidget(new QLabel("Source songline(s): From line $"));
+    lineRow->addWidget(from);
+    lineRow->addWidget(new QLabel("to $"));
+    lineRow->addWidget(to);
+    lineRow->addStretch();
+    layout->addLayout(lineRow);
+
+    auto* info = new QLabel;
+    info->setAlignment(Qt::AlignCenter);
+    layout->addWidget(info);
+
+    auto* clone = new QCheckBox("Cl&one tracks");
+    clone->setChecked(dlg->m_clone);
+    layout->addWidget(clone);
+    auto* text1 = new QLabel("Tuning (+/- halftones):");
+    auto* text2 = new QLabel("Volume (%):");
+    auto* tuning = UpperCaseEdit(QString::number(dlg->m_tuning));
+    auto* volume = UpperCaseEdit(QString::number(dlg->m_volumep));
+    tuning->setMaximumWidth(40);
+    volume->setMaximumWidth(40);
+    auto* cloneRow = new QHBoxLayout;
+    cloneRow->addStretch();
+    cloneRow->addWidget(text1);
+    cloneRow->addWidget(tuning);
+    cloneRow->addSpacing(8);
+    cloneRow->addWidget(text2);
+    cloneRow->addWidget(volume);
+    layout->addLayout(cloneRow);
+
+    // OnChangeSonglinerange()
+    auto changeRange = [&] {
+        int f = HexValue(from, 4);
+        int t = HexValue(to, 4);
+        if (t < f) t = f;
+        int n = t - f + 1;
+        info->setText(n > 1 ? QString::asprintf("%i lines will be inserted into $%02X song line.", n, dlg->m_lineinto)
+            : QString::asprintf("1 line will be inserted into $%02X song line.", dlg->m_lineinto));
+    };
+    // ValuesTest(): the values are corrected, false if one needed it
+    auto valuesTest = [&] {
+        bool r = true;
+        bool c = clone->isChecked();
+        dlg->m_clone = c;
+        for (QWidget* w : std::initializer_list<QWidget*>{ text1, text2, tuning, volume }) w->setEnabled(c);
+
+        int v = HexValue(from, 4);
+        if (v < 0) { v = 0; r = false; }
+        else if (v >= SONGLEN) { v = SONGLEN - 1; r = false; }
+        dlg->m_linefrom = v;
+        from->setText(QString::asprintf("%02X", v));
+
+        v = HexValue(to, 4);
+        if (v < 0) { v = 0; r = false; }
+        else if (v >= SONGLEN) { v = SONGLEN - 1; r = false; }
+        if (v < dlg->m_linefrom) { v = dlg->m_linefrom; r = false; }    // it can't be smaller
+        dlg->m_lineto = v;
+        to->setText(QString::asprintf("%02X", v));
+
+        changeRange();
+        dlg->m_tuning = IntValue(tuning);
+
+        v = IntValue(volume);
+        if (v < 0) { v = 0; r = false; }
+        else if (v >= 1600) { v = 1600; r = false; }
+        dlg->m_volumep = v;
+        volume->setText(QString::number(v));
+        return r;
+    };
+    QObject::connect(from, &QLineEdit::textChanged, &dialog, changeRange);
+    QObject::connect(to, &QLineEdit::textChanged, &dialog, changeRange);
+    QObject::connect(clone, &QCheckBox::clicked, &dialog, valuesTest);
+    valuesTest();
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    auto ok = [&] {
+        if (!valuesTest()) {
+            MessageBox(g_hwnd, "Some parameters need to be corrected.\nPlease re-verify their values.", "Warning", MB_ICONWARNING);
+            return;
+        }
+        dialog.accept();
+    };
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, ok);
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+    return ExecDialog(dialog, ok) ? IDOK : IDCANCEL;
+}
+
+// IDD_OCTAVESELECT, IDD_VOLUMESELECT, IDD_INSTRUMENTSELECT - the small tool
+// windows of the info line. The MFC ones are placed at m_pos, the click point
+// moved left by dx and up by 7; here from the mouse position, which is the
+// click point on the screen
+static void PlacePopup(QDialog& dialog, int dx)
+{
+    dialog.setWindowFlags(Qt::Tool | Qt::WindowTitleHint | Qt::WindowCloseButtonHint);    // WS_EX_TOOLWINDOW
+    QPoint pos = QCursor::pos() - QPoint(dx, 7);
+    dialog.move(std::max(0, pos.x()), std::max(0, pos.y()));
+}
+
+// COctaveSelectDlg: a button for each octave, the current one has the focus
+static INT_PTR RunOctaveSelect(QWidget* parent, COctaveSelectDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Octave");
+    PlacePopup(dialog, 64 + 9);
+    auto* layout = new QVBoxLayout(&dialog);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(0);
+    QPushButton* current = nullptr;
+    for (int octave = 4; octave >= 0; octave--) {
+        auto* button = new QPushButton(QString("%1 - %2").arg(octave + 1).arg(octave + 2));
+        QObject::connect(button, &QPushButton::clicked, &dialog, [&dialog, dlg, octave] {   // OnOctave()
+            dlg->m_octave = octave;
+            dialog.accept();
+        });
+        layout->addWidget(button);
+        if (octave == dlg->m_octave) current = button;
+    }
+    if (current) current->setFocus();
+    return ExecDialog(dialog, [current, &dialog] { if (current) current->click(); else dialog.accept(); }) ? IDOK : IDCANCEL;
+}
+
+// CVolumeSelectDlg: a click on a volume chooses it
+static INT_PTR RunVolumeSelect(QWidget* parent, CVolumeSelectDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Volume");
+    PlacePopup(dialog, 64 + 9);
+    auto* layout = new QVBoxLayout(&dialog);
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setSpacing(2);
+
+    auto* list = new QListWidget;
+    list->setFont(MonoFont());
+    for (int volume = 15; volume >= 0; volume--)
+        list->addItem(QString::asprintf("%X  ", volume) + QString(volume, '|'));
+    list->setCurrentRow(15 - dlg->m_volume);
+    list->setMinimumHeight(list->sizeHintForRow(0) * 16 + 2 * list->frameWidth());
+    list->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    layout->addWidget(list);
+    auto* respect = new QCheckBox("respect vol.");
+    respect->setChecked(dlg->m_respectvolume);
+    layout->addWidget(respect);
+    auto* ok = new QPushButton("OK");
+    ok->setDefault(true);
+    layout->addWidget(ok);
+
+    QObject::connect(list, &QListWidget::itemClicked, &dialog, &QDialog::accept);     // OnSelchangeList1()
+    QObject::connect(list, &QListWidget::itemActivated, &dialog, &QDialog::accept);
+    QObject::connect(ok, &QPushButton::clicked, &dialog, &QDialog::accept);
+    list->setFocus();
+    if (!ExecDialog(dialog, [ok] { ok->click(); })) return IDCANCEL;
+
+    dlg->m_volume = 15 - list->currentRow();
+    dlg->m_respectvolume = respect->isChecked();
+    return IDOK;
+}
+
+// CInstrumentSelectDlg: a click on an instrument chooses it
+static INT_PTR RunInstrumentSelect(QWidget* parent, CInstrumentSelectDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Instrument");
+    PlacePopup(dialog, 64 + 82);
+    auto* layout = new QVBoxLayout(&dialog);
+    layout->setContentsMargins(0, 0, 0, 0);
+
+    auto* list = new QListWidget;
+    QFont font = MonoFont();
+    font.setBold(true);
+    list->setFont(font);
+    for (int i = 0; i < INSTRSNUM; i++)
+        list->addItem(QString::asprintf("%02X: ", i) + QString::fromLocal8Bit(g_Instruments.GetName(i)));
+    QFontMetrics fm(font);
+    list->setMinimumSize(fm.horizontalAdvance(QString(4 + INSTRUMENT_NAME_MAX_LEN, '0')) + 32, fm.lineSpacing() * 32);
+    layout->addWidget(list);
+    list->setCurrentRow(dlg->m_selected);
+    list->scrollToItem(list->currentItem(), QAbstractItemView::PositionAtCenter);
+
+    QObject::connect(list, &QListWidget::itemClicked, &dialog, &QDialog::accept);     // OnSelchangeList1()
+    QObject::connect(list, &QListWidget::itemActivated, &dialog, &QDialog::accept);
+    list->setFocus();
+    if (!ExecDialog(dialog, [&dialog] { dialog.accept(); })) return IDCANCEL;
+
+    dlg->m_selected = list->currentRow();
+    return IDOK;
+}
+
+// IDD_SONGTRACKSORDER - CSongTracksOrderDlg: the columns of the song are
+// chosen by clicking a "From" button and then the "To" buttons; a line shows
+// where each column comes from (CSongTracksOrderDlg::OnPaint())
+class TracksOrderArea : public QWidget
+{
+public:
+    QPushButton* m_from[8] = {};
+    QPushButton* m_to[8] = {};
+    int m_order[8] = {};
+
+protected:
+    void paintEvent(QPaintEvent*) override {
+        QPainter painter(this);
+        painter.setPen(QPen(palette().color(QPalette::WindowText), 1));
+        for (int i = 0; i < g_tracks4_8; i++) {
+            int z = m_order[i];
+            if (z < 0) continue;
+            QRect s = m_from[z]->geometry(), d = m_to[i]->geometry();
+            painter.drawLine(s.center().x(), s.bottom(), d.center().x(), d.top());
+        }
+    }
+};
+
+static INT_PTR RunSongTracksOrder(QWidget* parent, CSongTracksOrderDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Song columns' order change/copy/clear");
+    auto* layout = new QVBoxLayout(&dialog);
+
+    static const char* names[8] = { "L1","L2","L3","L4","R1","R2","R3","R4" };
+    auto* area = new TracksOrderArea;
+    auto* grid = new QGridLayout(area);
+    grid->setContentsMargins(0, 0, 0, 0);
+    grid->addWidget(new QLabel("From:"), 0, 0);
+    grid->addWidget(new QLabel("To:"), 2, 0);
+    grid->setRowMinimumHeight(1, 60);
+    grid->setColumnMinimumWidth(5, 12);
+    auto* fromGroup = new QButtonGroup(&dialog);    // the checked one is m_fromtrack
+    int fontWidth = QFontMetrics(dialog.font()).horizontalAdvance("R4");
+    for (int i = 0; i < 8; i++) {
+        int column = 1 + i + (i >= 4);
+        auto* from = new QPushButton(names[i]);
+        auto* to = new QPushButton(names[i]);
+        for (QPushButton* b : { from, to }) b->setFixedWidth(fontWidth + 20);
+        from->setCheckable(true);
+        fromGroup->addButton(from, i);
+        grid->addWidget(from, 0, column);
+        grid->addWidget(to, 2, column);
+        area->m_from[i] = from;
+        area->m_to[i] = to;
+        QObject::connect(to, &QPushButton::clicked, area, [area, fromGroup, i] {  // OnL1R4()
+            area->m_order[i] = fromGroup->checkedId() < 8 ? fromGroup->checkedId() : -1;
+            area->update();
+        });
+    }
+    auto* nothing = new QPushButton("Nothing");     // OnNothing(): the "To" buttons clear
+    nothing->setCheckable(true);
+    nothing->setChecked(true);                      // m_fromtrack = -1
+    fromGroup->addButton(nothing, 8);
+    grid->addWidget(nothing, 0, 11);
+    grid->setColumnStretch(12, 1);
+    layout->addWidget(area);
+
+    auto setOrder = [area](std::function<int(int)> order) {
+        for (int i = 0; i < 8; i++) area->m_order[i] = order(i);
+        area->update();
+    };
+    auto* tools = new QGridLayout;
+    auto addTool = [&](const char* text, int row, int column, std::function<int(int)> order) {
+        auto* button = new QPushButton(text);
+        QObject::connect(button, &QPushButton::clicked, area, [setOrder, order] { setOrder(order); });
+        tools->addWidget(button, row, column);
+        return button;
+    };
+    static const int monoStereo[8] = { 0,3,4,7, 1,2,5,6 };
+    static const int stereoMono[8] = { 0,4,5,1, 2,6,7,3 };
+    auto* toStereo = addTool("Mono-->stereo", 0, 0, [](int i) { return monoStereo[i]; });  // OnMonostereo()
+    auto* toMono = addTool("Mono<--stereo", 1, 0, [](int i) { return stereoMono[i]; });    // OnStereomono()
+    addTool("Default", 2, 0, [](int i) { return i; });                                      // OnDefault()
+    auto* copyRight = addTool("Copy left-->right", 0, 1, [](int i) { return i % 4; });      // OnCopyleftright()
+    auto* copyLeft = addTool("Copy left<--right", 1, 1, [](int i) { return i % 4 + 4; });   // OnCopyrightleft()
+    addTool("Clear all", 2, 1, [](int) { return -1; });                                     // OnClearall()
+    auto* from = UpperCaseEdit(FromCString(dlg->m_songlinefrom));
+    auto* to = UpperCaseEdit(FromCString(dlg->m_songlineto));
+    for (QLineEdit* edit : { from, to }) edit->setMaximumWidth(40);
+    auto* fromLabel = new QLabel("From songline: $");
+    auto* toLabel = new QLabel("To songline: $");
+    fromLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    toLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    tools->addWidget(fromLabel, 0, 2);
+    tools->addWidget(from, 0, 3);
+    tools->addWidget(toLabel, 1, 2);
+    tools->addWidget(to, 1, 3);
+    tools->setColumnStretch(2, 1);
+    layout->addLayout(tools);
+    setOrder([](int i) { return i; });              // OnInitDialog(): OnDefault()
+
+    // Mono songs: no right channels
+    if (g_tracks4_8 <= 4) {
+        for (int i = 4; i < 8; i++) {
+            area->m_from[i]->setEnabled(false);
+            area->m_to[i]->setEnabled(false);
+        }
+        for (QPushButton* b : { toStereo, toMono, copyRight, copyLeft }) b->setEnabled(false);
+    }
+
+    auto* buttons = AddOkCancel(dialog, layout);
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return IDCANCEL;
+
+    for (int i = 0; i < 8; i++) dlg->m_tracksorder[i] = area->m_order[i];
+    dlg->m_songlinefrom = ToCString(from->text());
+    dlg->m_songlineto = ToCString(to->text());
+    return IDOK;
+}
+
+// IDD_CHANNELSSELECT - CChannelsSelectionDlg: bit i of the result for channel
+// i (L1-L4, R1-R4), -1 when cancelled
+static int RunChannelsSelection(QWidget* parent)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Channels selection");
+    auto* layout = new QVBoxLayout(&dialog);
+    auto* row = new QHBoxLayout;
+    QCheckBox* checks[8];
+    static const char* names[8] = { "L1","L2","L3","L4","R1","R2","R3","R4" };
+    for (int side = 0; side < 2; side++) {
+        auto* box = new QGroupBox(side ? "Right" : "Left");
+        auto* boxLayout = new QHBoxLayout(box);
+        for (int i = side * 4; i < side * 4 + 4; i++) {
+            checks[i] = new QCheckBox(names[i]);
+            checks[i]->setEnabled(i < 4 || g_tracks4_8 > 4);
+            boxLayout->addWidget(checks[i]);
+        }
+        row->addWidget(box);
+    }
+    layout->addLayout(row);
+    auto* buttons = AddOkCancel(dialog, layout);
+    if (!ExecDialog(dialog, [&checks, buttons] { checks[0]->setChecked(true); ClickOk(buttons); })) return -1;
+
+    int channels = 0;
+    for (int i = 0; i < 8; i++)
+        if (checks[i]->isChecked()) channels |= 1 << i;
+    return channels;
+}
+
+// IDD_INSTRCHANGE - CInstrumentChangeDlg: the instrument, note and volume
+// ranges of the condition (combos 11, 12, 1-4) and of the change (9, 10, 5-8)
+static INT_PTR RunInstrumentChange(QWidget* parent, CInstrumentChangeDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Change all the instrument occurences");
+    auto* layout = new QVBoxLayout(&dialog);
+    auto* title = new QLabel;
+    auto* title2 = new QLabel;
+    layout->addWidget(title);
+    layout->addWidget(title2);
+
+    // c[i] is IDC_COMBO<i+1>; the "---" items are one past the last value
+    QComboBox* c[12];
+    for (auto& combo : c) combo = new QComboBox;
+    for (int i = 0; i < CNotes::NOTESNUM; i++) {
+        const char* note = CNotes::GetNote(i);
+        for (int k : { 0, 1, 4, 5 }) c[k]->addItem(note);
+    }
+    c[5]->addItem("---");
+    for (int i = 0; i <= 15; i++)
+        for (int k : { 2, 3, 6, 7 }) c[k]->addItem(QString::asprintf("%X", i));
+    c[7]->addItem("---");
+    for (int i = 0; i < INSTRSNUM; i++)
+        for (int k : { 8, 9, 10, 11 }) c[k]->addItem(QString::asprintf("%02X", i));
+    c[9]->addItem("---");
+
+    auto addRanges = [&](const char* text, std::initializer_list<int> combos) {
+        auto* box = new QGroupBox(text);
+        auto* form = new QFormLayout(box);
+        form->setLabelAlignment(Qt::AlignRight);
+        const char* labels[6] = { "From instr", "To instr", "From note", "To note", "Min volume", "Max volume" };
+        int i = 0;
+        for (int k : combos) form->addRow(labels[i++], c[k]);
+        return box;
+    };
+    auto* ranges = new QHBoxLayout;
+    ranges->addWidget(addRanges("Condition", { 10, 11, 0, 1, 2, 3 }));
+    ranges->addWidget(addRanges("If true, change to", { 8, 9, 4, 5, 6, 7 }));
+    layout->addLayout(ranges);
+
+    auto* options = new QGridLayout;
+    auto* oneInstr = new QCheckBox("One instrument only");
+    auto* check4 = new QCheckBox("Only in current track");
+    auto* check5 = new QCheckBox("Only in some channels");
+    auto* check6 = new QCheckBox("Only in songlines");
+    auto* check3 = new QCheckBox("The same instrument range");
+    auto* check1 = new QCheckBox("The same note range");
+    auto* check2 = new QCheckBox("The same volume range");
+    options->addWidget(oneInstr, 0, 0);
+    options->addWidget(check4, 1, 0);
+    options->addWidget(check5, 2, 0);
+    options->addWidget(check6, 3, 0);
+    options->addWidget(check3, 0, 1);
+    options->addWidget(check1, 1, 1);
+    options->addWidget(check2, 2, 1);
+    auto* edit1 = HexEdit(dlg->m_onlysonglinefrom);
+    auto* edit2 = HexEdit(dlg->m_onlysonglineto);
+    edit1->setEnabled(false);
+    edit2->setEnabled(false);
+    auto* songlines = new QHBoxLayout;
+    songlines->addSpacing(16);
+    songlines->addWidget(new QLabel("from $"));
+    songlines->addWidget(edit1);
+    songlines->addWidget(new QLabel("to $"));
+    songlines->addWidget(edit2);
+    songlines->addStretch();
+    options->addLayout(songlines, 4, 0);
+    layout->addLayout(options);
+
+    if (dlg->m_onlytrack >= 0) check4->setText(QString::asprintf("Only in current track ($%02X)", dlg->m_onlytrack));
+    else check4->setEnabled(false);
+    dlg->m_onlychannels = -1;
+    oneInstr->setChecked(true);
+    int initial[12] = { dlg->m_combo1, dlg->m_combo2, dlg->m_combo3, dlg->m_combo4, dlg->m_combo5, dlg->m_combo6,
+        dlg->m_combo7, dlg->m_combo8, dlg->m_combo9, dlg->m_combo10, dlg->m_combo11, dlg->m_combo12 };
+    for (int i = 0; i < 12; i++) c[i]->setCurrentIndex(initial[i]);
+
+    // SelChangeComboX(): the "to" values are not below the "from" ones, and
+    // the ranges of the change follow the ones of the condition if asked
+    auto selChangeComboX = [&] {
+        int v[12];
+        for (int i = 0; i < 12; i++) v[i] = c[i]->currentIndex();
+        if (v[1] < v[0]) v[1] = v[0];
+        if (v[3] < v[2]) v[3] = v[2];
+        if (v[5] < v[4]) v[5] = v[4];
+        if (v[7] < v[6]) v[7] = v[6];
+        if (v[9] < v[8]) v[9] = v[8];
+        if (v[11] < v[10]) v[11] = v[10];
+        if (check1->isChecked()) v[5] = std::min(v[1] - v[0] + v[4], (int)CNotes::NOTESNUM);   // or "---"
+        if (check2->isChecked()) v[7] = std::min(v[3] - v[2] + v[6], 16);
+        if (check3->isChecked() || oneInstr->isChecked()) {
+            if (oneInstr->isChecked()) v[11] = v[10];
+            v[9] = std::min(v[11] - v[10] + v[8], (int)INSTRSNUM);
+        }
+        c[5]->setEnabled(!check1->isChecked());
+        c[7]->setEnabled(!check2->isChecked());
+        c[9]->setEnabled(!check3->isChecked() && !oneInstr->isChecked());
+        c[11]->setEnabled(!oneInstr->isChecked());
+        check3->setEnabled(!oneInstr->isChecked());
+        for (int i = 0; i < 12; i++) c[i]->setCurrentIndex(v[i]);
+    };
+
+    // OnDefault(): the ranges in use by the instruments of the condition
+    auto setDefault = [&] {
+        int instrfrom = c[10]->currentIndex();
+        int instrto = c[11]->currentIndex();
+        if (oneInstr->isChecked() || instrto < instrfrom) instrto = instrfrom;
+
+        TInstrInfo iinfo;
+        g_Song.InstrInfo(instrfrom, &iinfo, instrto);
+        if (!iinfo.count) {
+            iinfo.minnote = 0;
+            iinfo.maxnote = CNotes::NOTESNUM - 1;
+            iinfo.minvol = 0;
+            iinfo.maxvol = MAXVOLUME;
+        }
+        if (instrfrom == instrto)
+            title->setText(QString::asprintf("Instrument: %02X\tName: ", instrfrom) + QString::fromLocal8Bit(g_Instruments.GetName(instrfrom)));
+        else
+            title->setText(QString::asprintf("Instruments %02X-%02X (%u)", instrfrom, instrto, instrto - instrfrom + 1));
+        title2->setText(QString::asprintf("Used in %u tracks, globally %u times.", iinfo.usedintracks, iinfo.count));
+
+        check1->setChecked(true);
+        check2->setChecked(true);
+        check3->setChecked(true);
+        int v[12] = { iinfo.minnote, iinfo.maxnote, iinfo.minvol, iinfo.maxvol, iinfo.minnote, iinfo.maxnote,
+            iinfo.minvol, iinfo.maxvol, instrfrom, instrto, instrfrom, instrto };
+        for (int i = 0; i < 12; i++) c[i]->setCurrentIndex(v[i]);
+        selChangeComboX();
+    };
+
+    // OnFullRanges(): all the instruments in use
+    auto fullRanges = [&] {
+        check1->setChecked(true);
+        check2->setChecked(true);
+        check3->setChecked(true);
+        oneInstr->setChecked(false);
+        TInstrInfo iinfo;
+        g_Song.InstrInfo(0, &iinfo, INSTRSNUM - 1);
+        if (!iinfo.count) {
+            int v[12] = { 0, CNotes::NOTESNUM - 1, 0, 15, 0, CNotes::NOTESNUM - 1, 0, 15, 0, INSTRSNUM - 1, 0, INSTRSNUM - 1 };
+            for (int i = 0; i < 12; i++) c[i]->setCurrentIndex(v[i]);
+        }
+        else {
+            c[10]->setCurrentIndex(iinfo.instrfrom);
+            c[11]->setCurrentIndex(iinfo.instrto);
+        }
+        setDefault();
+    };
+
+    // Only the user's choices, like CBN_SELCHANGE and BN_CLICKED
+    for (int i = 0; i < 12; i++)
+        QObject::connect(c[i], QOverload<int>::of(&QComboBox::activated), &dialog, i >= 10 ? std::function<void()>(setDefault) : std::function<void()>(selChangeComboX));
+    for (QCheckBox* check : { check1, check2, check3 })
+        QObject::connect(check, &QCheckBox::clicked, &dialog, selChangeComboX);
+    QObject::connect(oneInstr, &QCheckBox::clicked, &dialog, [&](bool on) {     // OnCheckoneinstrument()
+        if (on) setDefault();
+        else selChangeComboX();
+    });
+    // Only in current track excludes only in some channels / songlines
+    QObject::connect(check4, &QCheckBox::clicked, &dialog, [&](bool on) {       // OnCheckTrackOnly()
+        if (!on) return;
+        check5->setChecked(false);
+        check5->setText("Only in some channels");
+        dlg->m_onlychannels = -1;
+        check6->setChecked(false);
+        edit1->setEnabled(false);
+        edit2->setEnabled(false);
+    });
+    QObject::connect(check5, &QCheckBox::clicked, &dialog, [&](bool on) {       // OnCheckSomeChannelsOnly()
+        if (on) {
+            check4->setChecked(false);
+            int channels = RunChannelsSelection(&dialog);
+            if (channels > 0) {
+                dlg->m_onlychannels = channels;
+                QStringList names;
+                static const char* cnames[8] = { "L1","L2","L3","L4","R1","R2","R3","R4" };
+                for (int i = 0; i < g_tracks4_8; i++)
+                    if (channels & (1 << i)) names << cnames[i];
+                check5->setText("Only in " + names.join(','));
+            }
+            else
+                check5->setChecked(false);
+        }
+        if (!check5->isChecked()) {
+            check5->setText("Only in some channels");
+            dlg->m_onlychannels = -1;
+        }
+    });
+    QObject::connect(check6, &QCheckBox::clicked, &dialog, [&](bool on) {       // OnCheckSomeSonglinesOnly()
+        if (on) check4->setChecked(false);
+        edit1->setEnabled(on);
+        edit2->setEnabled(on);
+    });
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* defaultRanges = buttons->addButton("Default ranges", QDialogButtonBox::ResetRole);
+    QPushButton* allInstruments = buttons->addButton("All instruments", QDialogButtonBox::ResetRole);
+    QObject::connect(defaultRanges, &QPushButton::clicked, &dialog, setDefault);
+    QObject::connect(allInstruments, &QPushButton::clicked, &dialog, fullRanges);
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+    setDefault();
+
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return IDCANCEL;
+
+    // CInstrumentChangeDlg::OnOK() and its DDX
+    if (!check4->isChecked()) dlg->m_onlytrack = -1;
+    if (!check5->isChecked()) dlg->m_onlychannels = -1;
+    if (check6->isChecked()) {
+        dlg->m_onlysonglinefrom = HexValue(edit1, 4);
+        dlg->m_onlysonglineto = HexValue(edit2, 4);
+    }
+    else
+        dlg->m_onlysonglinefrom = dlg->m_onlysonglineto = -1;
+    int* combos[12] = { &dlg->m_combo1, &dlg->m_combo2, &dlg->m_combo3, &dlg->m_combo4, &dlg->m_combo5, &dlg->m_combo6,
+        &dlg->m_combo7, &dlg->m_combo8, &dlg->m_combo9, &dlg->m_combo10, &dlg->m_combo11, &dlg->m_combo12 };
+    for (int i = 0; i < 12; i++) *combos[i] = c[i]->currentIndex();
+    return IDOK;
+}
+
+// IDD_EFFECTS - CEffectsDlg: effects on the selected block of a track. Try
+// applies them to the track (from its original data), Restore and Cancel put
+// the original data back
+struct TEffect {
+    const char* name;
+    const char* p[3];       // parameter texts ("" = not used)
+    const char* e[3];       // default values
+};
+
+static const TEffect s_effects[] = {
+    { "Fade in/out", { "Initial volume level, 0-100 (%)", "Final volume level, 0-100 (%)", "Line step" }, { "100", "100", "1" } },
+    { "Modify notes, instruments and volume values", { "Notes tuning (+- semitones)", "Instruments used (+- offset value)", "Volume changes (%)" }, { "0", "0", "100" } },
+    { "Echo", { "Delay (lines)", "Fade out level 0-100 (%), or V1-V15 for linear volume subtraction", "Minimal volume 0-15, or !0-!15 for ending echo on minimal volume" }, { "3", "20", "1" } },
+    { "Expand/shrink lines", { "From step (negative values for bottom-up way)", "To step (negative values for bottom-up way)", "" }, { "1", "2", "" } },
+    { "Volume humanize", { "Random level 0-100 (%)", "Minimal volume 0-15", "Line step" }, { "30", "1", "1" } },
+    { "Volume set/remove", { "Volume range - minimum 0-15", "Volume range - maximum 0-15", "Set volume to 0-15, or 'X' to remove whole note events" }, { "0", "15", "15" } },
+};
+static const int NUMBEROFEFFECTS = sizeof(s_effects) / sizeof(s_effects[0]);
+
+static int s_effectIndex = 0;                       // g_effai: the last effect used
+static QString s_effectParams[NUMBEROFEFFECTS][3];  // eff_ed: the last parameters of each effect
+
+// ZpracujChPar(): "15", "-5", "E10", "E -5", "X"... split into the first
+// letter (upper case) and the number
+static void ProcessChPar(const QString& text, char& ch, int& par)
+{
+    QByteArray s = text.toLatin1();
+    ch = 0;
+    par = 0;
+    for (int i = 0; i < s.size(); i++) {
+        char a = s[i];
+        if (a >= 'a' && a <= 'z') a -= 'a' - 'A';
+        if ((a >= '0' && a <= '9') || a == '-') {
+            par = atoi(s.constData() + i);
+            return;
+        }
+        if (ch == 0 && a != ' ') ch = a;
+    }
+}
+
+// CEffectsDlg::PerformEffect()
+static void PerformEffect(CEffectsDlg* dlg, int effect, const QString params[3])
+{
+    int i, j, h;
+    int bfro = dlg->m_bfro;
+    int bto = dlg->m_bto;
+    int p1, p2, p3;
+    char ch1, ch2, ch3;
+    ProcessChPar(params[0], ch1, p1);
+    ProcessChPar(params[1], ch2, p2);
+    ProcessChPar(params[2], ch3, p3);
+    (void)ch1;
+
+    TTrack td;
+    memcpy(&td, dlg->m_trackorig, sizeof(TTrack));
+
+    float fvolume[TRACKLEN];                        // volume in real numbers
+    for (i = bfro; i <= bto; i++) fvolume[i] = (float)td.volume[i];
+
+    int continstr[TRACKLEN];                        // the instrument numbers are continuous
+    int lasti = -1;
+    for (i = 0; i <= bto; i++) {
+        if (td.instr[i] >= 0) lasti = td.instr[i];
+        if (i >= bfro) continstr[i] = lasti;
+    }
+
+    TTrack tempt;                                   // auxiliary empty track
+    for (i = 0; i < TRACKLEN; i++) tempt.note[i] = tempt.instr[i] = tempt.volume[i] = tempt.speed[i] = -1;
+
+    switch (effect) {
+    case 0:     // fade in/out: initial volume level %, final vol.level %, line step
+        if (p3 <= 0) break;
+        for (i = bfro; i <= bto; i += p3) {
+            if (!dlg->m_all && dlg->m_ainstr != continstr[i]) continue;
+            if (td.volume[i] < 0) continue;         // never without volume
+            float proc = (float)p1 / 100;
+            if (i > 0) proc += (float)(p2 - p1) / (bto - bfro) * (i - bfro) / 100;
+            h = (int)(proc * td.volume[i] + 0.5);   // volume change (rounded)
+            if (h < 0) h = 0;
+            else if (h > 15) h = 15;
+            td.volume[i] = h;
+        }
+        break;
+
+    case 1:     // change notes, instruments and volumes: note+-, instr+-, volume%
+        g_Tracks.ModifyTrack(&td, bfro, bto, dlg->m_all ? -1 : dlg->m_ainstr, p1, p2, p3);
+        break;
+
+    case 2: {   // echo: delay, fadeout level %, minimal volume 0..15 or !1..!15 echo ending volume
+        float dvol = 0;
+        if (ch2 == 'V') {                           // linear calculations
+            if (p2 < -15) p2 = -15;
+            if (p2 > 15) p2 = 15;
+        }
+        else {                                      // percentage calculations
+            dvol = (1 - ((float)p2 / 100));
+            if (dvol < -15) dvol = -15;
+            if (dvol > 15) dvol = 15;
+        }
+        for (i = bfro; i <= bto; i++) {
+            if (td.note[i] < 0) continue;           // there is no note
+            if (!dlg->m_all && td.instr[i] != dlg->m_ainstr) continue;
+            j = i + p1;                             // echo for p1
+            if (j < bfro || j > bto) continue;      // echo is coming out of the block
+            if (td.note[j] >= 0) continue;          // there is already a note in the final place
+
+            float nv = (ch2 == 'V') ? fvolume[i] - p2 : fvolume[i] * dvol;
+            int ph = (int)(fvolume[i] + 0.5);       // original volume (rounded to the nearest)
+            h = (int)(nv + 0.5);                    // new volume (rounded to the nearest)
+            if (ch3 == '!' && ph <= p3) continue;   // ending volume
+            if (h < p3) h = p3;                     // minimal volume p3
+            if (h < 0) h = 0;
+            else if (h > 15) h = 15;
+
+            fvolume[j] = nv;
+            td.note[j] = td.note[i];
+            td.instr[j] = td.instr[i];
+            td.volume[j] = h;
+        }
+        break;
+    }
+
+    case 3: {   // expand/shrink lines: from step, to step
+        if (p1 == 0 && p2 == 0) break;
+        int lenb = bto - bfro;
+        for (i = (p1 >= 0) ? 0 : lenb, j = (p2 >= 0) ? 0 : lenb; i >= 0 && i <= lenb && j >= 0 && j <= lenb; i += p1, j += p2) {
+            if (!dlg->m_all && td.instr[bfro + i] != dlg->m_ainstr) continue;
+            tempt.note[j] = td.note[bfro + i];
+            tempt.instr[j] = td.instr[bfro + i];
+            tempt.volume[j] = td.volume[bfro + i];
+            tempt.speed[j] = td.speed[bfro + i];
+        }
+        for (i = 0; i <= lenb; i++) {
+            td.note[bfro + i] = tempt.note[i];
+            td.instr[bfro + i] = tempt.instr[i];
+            td.volume[bfro + i] = tempt.volume[i];
+            td.speed[bfro + i] = tempt.speed[i];
+        }
+        break;
+    }
+
+    case 4:     // volume humanize: random level %, minimal volume, line step
+        if (p1 < 0) p1 = 0;
+        if (p1 > 100) p1 = 100;
+        if (p2 < 0) p2 = 0;
+        if (p3 <= 0) break;
+        for (i = bfro; i <= bto; i += p3) {
+            int vol = td.volume[i];
+            if (!dlg->m_all && dlg->m_ainstr != continstr[i]) continue;
+            if (vol < 0) continue;                  // if there is no volume
+
+            float dol = (vol - (float)p1 / 100 * 15);
+            if (dol < p2) dol = (float)p2;
+            dol -= 0.5;
+            float hor = (vol + (float)p1 / 100 * 15);
+            if (hor > 15) hor = 15;
+            hor += 0.5;
+            if (hor <= dol) continue;
+
+            int nv = (int)(0.5 + dol + (float)((hor - dol) * (((float)(rand() % 1000)) / 1000)));
+            if (nv < p2) nv = p2;
+            if (nv > 15) nv = 15;
+            td.volume[i] = nv;
+        }
+        break;
+
+    case 5:     // volume set / remove (ch3 == 'X')
+        if (p1 < 0) p1 = 0;
+        if (p1 > 15) p1 = 15;
+        if (p2 < 0) p2 = 0;
+        if (p2 > 15) p2 = 15;
+        if (p3 < 0) p3 = 0;
+        if (p3 > 15) p3 = 15;
+        for (i = bfro; i <= bto; i++) {
+            int vol = td.volume[i];
+            if (!dlg->m_all && dlg->m_ainstr != continstr[i]) continue;
+            if (vol < 0) continue;
+            if (p1 <= vol && vol <= p2) {
+                if (ch3 == 'X') td.note[i] = td.instr[i] = td.volume[i] = -1;
+                else td.volume[i] = p3;
+            }
+        }
+        break;
+    }
+
+    memcpy(dlg->m_trackptr, &td, sizeof(TTrack));   // copies to the actual track
+    SCREENUPDATE;
+}
+
+static INT_PTR RunEffects(QWidget* parent, CEffectsDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Effects/tools");
+    dialog.setMinimumWidth(460);
+    auto* layout = new QVBoxLayout(&dialog);
+    layout->addWidget(new QLabel(FromCString(dlg->m_info)));
+
+    auto* combo = new QComboBox;
+    for (const TEffect& effect : s_effects) combo->addItem(effect.name);
+    layout->addWidget(combo);
+    QLabel* label[3];
+    QLineEdit* edit[3];
+    for (int i = 0; i < 3; i++) {
+        label[i] = new QLabel;
+        edit[i] = UpperCaseEdit("");
+        edit[i]->setMaximumWidth(80);
+        layout->addWidget(label[i]);
+        layout->addWidget(edit[i]);
+    }
+
+    memcpy(dlg->m_trackorig, dlg->m_trackptr, sizeof(TTrack));     // OnInitDialog()
+    int effect = s_effectIndex;
+
+    auto setDefault = [&] {                         // OnDefault()
+        for (int i = 0; i < 3; i++) {
+            edit[i]->setText(s_effects[effect].e[i]);
+            s_effectParams[effect][i] = s_effects[effect].e[i];
+        }
+    };
+    auto changeEffect = [&](int index) {            // OnSelchangeEffCombo()
+        effect = index;
+        for (int i = 0; i < 3; i++) {
+            label[i]->setText(s_effects[effect].p[i]);
+            edit[i]->setEnabled(i == 0 || s_effects[effect].p[i][0] != 0);
+        }
+        if (s_effectParams[effect][0].isEmpty()) setDefault();   // P1 empty: all defaults
+        else
+            for (int i = 0; i < 3; i++) edit[i]->setText(s_effectParams[effect][i]);
+    };
+    auto perform = [&] {
+        for (int i = 0; i < 3; i++) s_effectParams[effect][i] = edit[i]->text();
+        PerformEffect(dlg, effect, s_effectParams[effect]);
+    };
+    auto restore = [dlg] {                          // OnRestore()
+        memcpy(dlg->m_trackptr, dlg->m_trackorig, sizeof(TTrack));
+        SCREENUPDATE;
+    };
+    combo->setCurrentIndex(effect);
+    changeEffect(effect);
+    QObject::connect(combo, QOverload<int>::of(&QComboBox::activated), &dialog, changeEffect);
+
+    auto* defaultButton = new QPushButton("Default");
+    QObject::connect(defaultButton, &QPushButton::clicked, &dialog, setDefault);
+    layout->addWidget(defaultButton, 0, Qt::AlignRight);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* tryButton = buttons->addButton("&Try", QDialogButtonBox::ActionRole);
+    QPushButton* restoreButton = buttons->addButton("&Restore", QDialogButtonBox::ActionRole);
+    QPushButton* playButton = buttons->addButton("&Play/Stop", QDialogButtonBox::ActionRole);
+    QObject::connect(tryButton, &QPushButton::clicked, &dialog, perform);
+    QObject::connect(restoreButton, &QPushButton::clicked, &dialog, restore);
+    QObject::connect(playButton, &QPushButton::clicked, &dialog, [] {           // OnPlaystop()
+        if (g_Song.GetPlayMode()) g_Song.Stop();
+        else g_Song.Play(PLAY_BLOCK, g_Song.GetFollowPlayMode());
+    });
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) {
+        restore();                                  // OnCancel()
+        return IDCANCEL;
+    }
+    perform();                                      // OnOK()
+    s_effectIndex = effect;
+    return IDOK;
+}
+
+// IDD_TUNING - TuningDlg: Test now applies the values, Reset puts back the
+// ones the dialog was opened with, which Cancel also does
+static INT_PTR RunTuning(QWidget* parent, TuningDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Tuning configuration");
+    auto* layout = new QVBoxLayout(&dialog);
+
+    const TTuningSettings settingsBackup = g_tuning;
+    const TTuningRatios ratiosBackup = g_tuningRatios;
+
+    auto* general = new QGroupBox("General");
+    auto* generalLayout = new QGridLayout(general);
+    auto* baseTuning = new QLineEdit;
+    auto* baseNote = new QComboBox;
+    baseNote->addItems({ "C-", "B-", "A#", "A-", "G#", "G-", "F#", "F-", "E-", "D#", "D-", "C#" });  // index = basenote
+    auto* temperament = new QComboBox;
+    temperament->addItems({ "Equal Temperament (Default)",
+        "Thomas Young 1799's Well Temperament no.1",
+        "Thomas Young 1799's Well Temperament no.2",
+        "Thomas Young 1807's Well Temperament",
+        "Andreas Werckmeister's Temperament III (1681)",
+        "Tempérament Égal a Quintes Justes",
+        "d'Alembert and Rousseau Tempérament Ordinaire (1752/1767)",
+        "Aron - Neidhardt Equal Beating Well Temperament",
+        "Atom Schisma Scale",
+        "12-TET Approximation with Minimal Order 17 Beats",
+        "Paul Bailey's Modern Well Temperament (2002)",
+        "John Barnes' Temperament (1977) Made After Analysis of Wohltemperierte Klavier",
+        "Bethisy Tempérament Ordinaire",
+        "Big Gulp",
+        "12 Tone Scale by Bohlen Generated from the 4:7 : 10 Triad, Acustica 39/2/1978",
+        "This Scale May Also be Called the \"Wedding Cake\"",
+        "Upside Down Wedding Cake (Divorce Cake)",
+        "12 Tone Pythagorean Scale",
+        "Robert Schneider, Scale of Log(4) ..Log(16)",
+        "Zarlino Tempérament Extraordinaire",
+        "Fokker's 7-Limit 12-Tone Just Scale",
+        "Bach Temperament, A- = 400hz",
+        "Vallotti & Young Scale (Vallotti Version), Also Known as Tartini-Vallotti (1754)",
+        "Vallotti-Young and Werckmeister III, 10 Cents 5-Limit Lesfip Scale",
+        "Optimally Consonant Major Pentatonic, John deLaubenfels (2001)",
+        "Ancient Greek Aeolic, Also Tritriaic Scale of the 54:64 : 81 Triad",
+        "African Bapare Xylophone (Idiophone, Loose Log)",
+        "African Yaswa Xylophone (Idiophone, Calbas Resonators with Membrane)",
+        "19-EDO Generated Using Scale Workshop",
+        "Custom Temperament with RA/TIO" });    // index = temperament (IDD_TUNING DLGINIT)
+    temperament->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    temperament->setMinimumContentsLength(40);
+    baseTuning->setMaximumWidth(160);
+    generalLayout->addWidget(new QLabel("Base tuning (Hz)"), 0, 0);
+    generalLayout->addWidget(baseTuning, 0, 1);
+    generalLayout->addWidget(new QLabel("Base note"), 0, 2);
+    generalLayout->addWidget(baseNote, 0, 3);
+    generalLayout->addWidget(new QLabel("eg: 440, 440.83751645933, 432, 443.9, 444.895778867913, etc"), 1, 0, 1, 4);
+    generalLayout->addWidget(new QLabel("Temperament"), 2, 0);
+    generalLayout->addWidget(temperament, 2, 1, 1, 3);
+    layout->addWidget(general);
+
+    // The 13 ratios, numerator / denominator (ES_NUMBER)
+    static const char* intervals[13] = { "Unison", "Minor 2nd", "Major 2nd", "Minor 3rd", "Major 3rd", "Perfect 4th",
+        "Tritone", "Perfect 5th", "Minor 6th", "Major 6th", "Minor 7th", "Major 7th", "Octave" };
+    auto ratioList = [](TTuningRatios& r) {
+        return std::array<CFraction*, 13>{ &r.UNISON, &r.MIN_2ND, &r.MAJ_2ND, &r.MIN_3RD, &r.MAJ_3RD, &r.PERF_4TH,
+            &r.TRITONE, &r.PERF_5TH, &r.MIN_6TH, &r.MAJ_6TH, &r.MIN_7TH, &r.MAJ_7TH, &r.OCTAVE };
+    };
+    auto* ratios = new QGroupBox("RA/TIO");
+    auto* ratiosLayout = new QGridLayout(ratios);
+    QLineEdit* numerator[13];
+    QLineEdit* denominator[13];
+    for (int i = 0; i < 13; i++) {
+        numerator[i] = new QLineEdit;
+        denominator[i] = new QLineEdit;
+        for (QLineEdit* edit : { numerator[i], denominator[i] }) {
+            edit->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,9}"), edit));
+            edit->setMaximumWidth(60);
+        }
+        ratiosLayout->addWidget(new QLabel(intervals[i]), i, 0);
+        ratiosLayout->addWidget(numerator[i], i, 1);
+        ratiosLayout->addWidget(new QLabel("/"), i, 2);
+        ratiosLayout->addWidget(denominator[i], i, 3);
+    }
+    ratiosLayout->setColumnStretch(4, 1);
+    layout->addWidget(ratios);
+
+    auto show = [&](const TTuningSettings& settings, TTuningRatios r) {
+        baseTuning->setText(QString::number(settings.basetuning, 'g', 15));
+        baseNote->setCurrentIndex(settings.basenote);
+        temperament->setCurrentIndex(settings.temperament);
+        auto list = ratioList(r);
+        for (int i = 0; i < 13; i++) {
+            numerator[i]->setText(QString::number(list[i]->numerator));
+            denominator[i]->setText(QString::number(list[i]->denominator));
+        }
+    };
+    show(dlg->m_tuningSettings, dlg->m_tuningRatios);
+
+    // OnClickedIdtestnow(): the values of the dialog (DDV_MinMaxDouble for the
+    // base tuning) become the tuning in use
+    auto testNow = [&] {
+        bool ok = false;
+        double tuning = baseTuning->text().toDouble(&ok);
+        if (!ok || tuning < 6.875 || tuning > 7040) {
+            MessageBox(g_hwnd, "Please enter a number between 6.875 and 7040.", "Tuning configuration", MB_ICONEXCLAMATION);
+            baseTuning->setFocus();
+            return false;
+        }
+        dlg->m_tuningSettings.basetuning = tuning;
+        dlg->m_tuningSettings.basenote = baseNote->currentIndex();
+        dlg->m_tuningSettings.temperament = temperament->currentIndex();
+        auto list = ratioList(dlg->m_tuningRatios);
+        for (int i = 0; i < 13; i++) {
+            list[i]->numerator = IntValue(numerator[i]);
+            list[i]->denominator = IntValue(denominator[i]);
+        }
+        g_tuning = dlg->m_tuningSettings;
+        g_tuningRatios = dlg->m_tuningRatios;
+        g_Tuning.InitTuning();
+        return true;
+    };
+    // OnClickedIdreset(): the values the dialog was opened with, also shown
+    auto reset = [&] {
+        g_tuning = settingsBackup;
+        g_tuningRatios = ratiosBackup;
+        g_Tuning.InitTuning();
+        show(settingsBackup, ratiosBackup);
+    };
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* test = buttons->addButton("Test now", QDialogButtonBox::ActionRole);
+    QPushButton* resetButton = buttons->addButton("Reset", QDialogButtonBox::ResetRole);
+    QObject::connect(test, &QPushButton::clicked, &dialog, testNow);
+    QObject::connect(resetButton, &QPushButton::clicked, &dialog, reset);
+    auto ok = [&] { if (testNow()) dialog.accept(); };                          // OnOK()
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, ok);
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (!ExecDialog(dialog, ok)) {
+        reset();                                    // OnBnClickedCancel()
+        return IDCANCEL;
+    }
+    return IDOK;
+}
+
+// ---------------------------------------------------------------------------
 
 INT_PTR RmtQtRunDialog(QWidget* parent, CDialog* dlg)
 {
@@ -934,6 +2000,32 @@ INT_PTR RmtQtRunDialog(QWidget* parent, CDialog* dlg)
         return RunImportFinished(parent, "Import Theta Music Composer module", static_cast<CImportTmcFinishedDlg*>(dlg)->m_info,
             "Please, now you have to look over all the instuments and whole song and check if it's all right, otherwise you must correct it manually (some special instrument effects aren't converted automatically). Also some stereo and AUDCTL events may be wrong, because of different stereo and AUDCTL conception in TMC and RMT.",
             g_importTmcUnderstood);
-    default: return IDCANCEL;                       // not rewritten in Qt yet
+    case IDD_EFFECTS: return RunEffects(parent, static_cast<CEffectsDlg*>(dlg));
+    case IDD_OCTAVESELECT: return RunOctaveSelect(parent, static_cast<COctaveSelectDlg*>(dlg));
+    case IDD_VOLUMESELECT: return RunVolumeSelect(parent, static_cast<CVolumeSelectDlg*>(dlg));
+    case IDD_INSTRUMENTSELECT: return RunInstrumentSelect(parent, static_cast<CInstrumentSelectDlg*>(dlg));
+    case IDD_SONGTRACKSORDER: return RunSongTracksOrder(parent, static_cast<CSongTracksOrderDlg*>(dlg));
+    case IDD_INSTRCHANGE: return RunInstrumentChange(parent, static_cast<CInstrumentChangeDlg*>(dlg));
+    case IDD_SONGINSERTCOPYORCLONEOFSONGLINES: return RunInsertSongLines(parent, static_cast<CInsertCopyOrCloneOfSongLinesDlg*>(dlg));
+    case IDD_CHANGEMAXTRACKLEN: return RunChangeMaxTrackLen(parent, static_cast<CChangeMaxtracklenDlg*>(dlg));
+    case IDD_TUNING: return RunTuning(parent, static_cast<TuningDlg*>(dlg));
+    case IDD_RENUMBERTRACKS: {
+        auto* d = static_cast<CRenumberTracksDlg*>(dlg);
+        return RunChoice(parent, "Renumber all tracks", "Renumber all tracks:",
+            { "Order by songcolumns at first.", "Order by songlines at first." }, 1, d->m_radio);
+    }
+    case IDD_RENUMBERINSTRUMENTS: {
+        auto* d = static_cast<CRenumberInstrumentsDlg*>(dlg);
+        return RunChoice(parent, "Renumber all instruments", "Renumber all instruments:",
+            { "No order change. Remove gaps between instrument slots.", "Order by use in tracks.",
+              "Order by instrument names (alphabetical)." }, 1, d->m_radio);
+    }
+    case IDD_TRACKSLOAD: {
+        auto* d = static_cast<CTracksLoadDlg*>(dlg);
+        return RunChoice(parent, "Tracks loading", QString::asprintf("There are %u tracks in TXT file.", d->m_tracknum),
+            { QString::asprintf("Load tracks to $%02X-$%02X.", d->m_trackfrom, d->m_trackfrom + d->m_tracknum - 1),
+              "Load tracks to their original places stored in TXT file." }, 0, d->m_radio);
+    }
+    default: return IDCANCEL;
     }
 }
