@@ -116,6 +116,9 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   - The timer routine kept playing and rendering on its own thread during
     the WAV rendering (same Atari memory and POKEY emulation); it is now
     bypassed as during the stream dump (CSong::SetStreamRendering()).
+  - After an export through the POKEY stream (LZSS, SAP-R, SAP, WAV) all
+    channels stayed muted: CSongContainer now ends the dump with
+    FinishedRecording(), which switches them back on.
 - Fixed the stripped RMT export writing one byte more than the module (the
   end address given to SaveBinaryBlock, which is inclusive, was the first
   byte after the module), and writing an empty file for a module ending at

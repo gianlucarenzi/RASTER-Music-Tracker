@@ -14,6 +14,11 @@ CSongContainer::CSongContainer(CSong& song) {
 }
 
 CSongContainer::~CSongContainer() {
+    // The dump switched all channels off: FinishedRecording() switches them
+    // back on, resets the tracker driver and frees the stream buffer
+    if (m_pokeyStreamReady) {
+        m_pokeyStream.FinishedRecording();
+    }
 }
 
 CSong& CSongContainer::GetSong() {
