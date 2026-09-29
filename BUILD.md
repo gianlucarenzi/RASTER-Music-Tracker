@@ -465,12 +465,18 @@ are only the artifacts, no release:
 | Workflow | Runner | Toolchain and libraries | Package |
 |----------|--------|-------------------------|---------|
 | `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt5-base`, `portaudio`, `rtmidi` (WinMM) | `RMT-Windows-x64.zip`: `Rmt.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
-| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | Apple Clang, Homebrew `qt@5`, `portaudio`, `rtmidi` (CoreMIDI) | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Homebrew in `/usr/local` through Rosetta 2; Intel Macs, or Apple Silicon through Rosetta): `RMT.app` with the Qt frameworks and Homebrew libraries inside (`macdeployqt`) |
+| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | arm64: Apple Clang, Homebrew `qt@5`, `portaudio`, `rtmidi` (CoreMIDI). x86_64: the official Qt 5.15.2 `clang_64` (Intel only; Homebrew no longer installs on Intel), PortAudio 19.7.0 and RtMidi 6.0.0 built from source for x86_64 | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Macs, or Apple Silicon through Rosetta 2): `RMT.app` with the Qt frameworks and the libraries inside (`macdeployqt`, checked with the load commands of `otool -l`) |
 
 `RMT.app` needs nothing installed. It is signed ad hoc, not notarized, so
 macOS asks to open it with right click → Open the first time. Its
 `resources/` are in `Contents/MacOS`, next to the program (as in `out/`);
 the configuration is in the user's preferences, so a new DMG keeps it.
+
+On the runners there is no sound card: the smoke tests print "cannot open the
+audio output (PortAudio)" and go on silent, as RMT does anywhere without one.
+The Windows screenshot has no menu texts: the `offscreen` platform finds no
+fonts there (the tracker draws with its own bitmap font); the real `windows`
+platform has them.
 
 PortAudio and RtMidi are used by every build without MFC, on Windows too;
 the MFC build keeps DirectSound and the winmm MIDI of `RmtMidi.cpp`. With
