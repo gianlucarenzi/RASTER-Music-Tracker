@@ -49,6 +49,10 @@ CRmtApp g_app;
 
 IRmtHost* g_rmtHost = nullptr;
 
+INT_PTR CDialog::DoModal() {
+    return g_rmtHost ? g_rmtHost->DoModal(this) : IDCANCEL;
+}
+
 INT_PTR CFileDialog::DoModal() {
     if (!g_rmtHost) return IDCANCEL;
     const char* fileName = m_ofn.lpstrFile && *m_ofn.lpstrFile ? m_ofn.lpstrFile : m_fileName.GetString();

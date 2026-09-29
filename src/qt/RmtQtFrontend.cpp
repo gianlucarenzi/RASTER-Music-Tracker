@@ -11,6 +11,7 @@
 
 #include "RmtQtFrontend.h"
 #include "RmtQtKeys.h"
+#include "RmtQtDialogs.h"
 
 #include <QAction>
 #include <QCloseEvent>
@@ -558,6 +559,12 @@ public:
         int selected = filters.indexOf(dlg.selectedNameFilter());
         filterIndex = selected >= 0 ? selected + 1 : index;
         return true;
+    }
+
+    INT_PTR DoModal(CDialog* dlg) override {
+        INT_PTR result = RmtQtRunDialog(m_win, dlg);
+        m_widget->setFocus();
+        return result;
     }
 };
 

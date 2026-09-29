@@ -647,6 +647,7 @@ typedef CREATESTRUCT* LPCREATESTRUCT;
 struct MINMAXINFO;
 
 class CWnd;
+class CDialog;
 class CControlBar;
 class CFrameWnd;
 typedef intptr_t LRESULT;
@@ -681,6 +682,10 @@ struct IRmtHost {
     // when cancelled.
     virtual bool FileDialog(bool open, const char* title, const char* initialDir, const char* fileName,
                             const char* filter, DWORD flags, int& filterIndex, CString& path) = 0;
+    // CDialog::DoModal: the frontend shows the dialog of dlg->m_nIDTemplate
+    // (IDD_* of resource.h), reads and writes the dialog's data members and
+    // returns IDOK / IDCANCEL; dialogs it does not know are cancelled.
+    virtual INT_PTR DoModal(CDialog* dlg) = 0;
 };
 extern IRmtHost* g_rmtHost;
 
@@ -895,16 +900,19 @@ public:
 class CScrollBar : public CWnd {};
 class CFont : public CWnd {};
 
-// CDialog - never rendered in this build (headless engine target); DoModal()
-// always reports "cancelled" which is exactly the code path every call site
-// already has to handle for the "user dismissed the dialog" case.
+// CDialog - DoModal() asks the frontend (IRmtHost::DoModal), which shows the
+// dialog of m_nIDTemplate if it has one; otherwise, and with no frontend
+// (headless RmtCoreTest), it reports "cancelled", the code path every call
+// site already has to handle for the "user dismissed the dialog" case.
 class CDialog : public CWnd {
 public:
     CDialog() = default;
-    explicit CDialog(UINT /*nIDTemplate*/, CWnd* /*pParentWnd*/ = nullptr) {}
+    explicit CDialog(UINT nIDTemplate, CWnd* /*pParentWnd*/ = nullptr) : m_nIDTemplate(nIDTemplate) {}
     virtual ~CDialog() = default;
 
-    virtual INT_PTR DoModal() { return IDCANCEL; }
+    UINT m_nIDTemplate = 0;         // IDD_* of the dialog
+
+    virtual INT_PTR DoModal();
     virtual void DoDataExchange(CDataExchange*) {}
     virtual BOOL OnInitDialog() { return TRUE; }
     virtual void OnOK() {}

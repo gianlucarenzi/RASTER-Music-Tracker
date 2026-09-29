@@ -86,6 +86,18 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   affected. (2026-09-29)
 - Qt test hooks RMT_QT_COMMANDS (trigger menu commands) and
   RMT_QT_FILEDIALOG (answer file dialogs) added. (2026-09-29)
+- Qt frontend: File -> New works (dialog "New RMT module": track length and
+  mono/stereo, confirmation above 64 lines). CDialog::DoModal() now asks the
+  frontend via IRmtHost::DoModal, which picks the Qt dialog by its IDD
+  (src/qt/RmtQtDialogs.cpp); the other dialogs are still cancelled. Test
+  hook RMT_QT_DIALOG shows, saves and confirms dialogs in test runs.
+  (2026-09-29)
+- Qt frontend: File -> Import works. The ProTracker (MOD) and Theta Music
+  Composer (TMC) import options and the "Import of module finished" dialogs
+  are rewritten in Qt with the MFC defaults and behaviour (all options on,
+  Fourier disabled, "I understand" needed for OK and remembered). Checked
+  with the samples rmt/imports/axel_f.mod (MOD) and 404_Error.tmc (TMC).
+  (2026-09-29)
 
 
 Changes in RMT 1.35 (Planned)

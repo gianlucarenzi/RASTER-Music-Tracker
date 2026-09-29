@@ -199,6 +199,8 @@ else()
         qt/RmtQtFrontend.cpp
         qt/RmtQtFrontend.h
         qt/RmtQtKeys.cpp
+        qt/RmtQtDialogs.cpp
+        qt/RmtQtDialogs.h
         qt/QtMainFrame.cpp
         RmtView.cpp
         RmtDoc.cpp

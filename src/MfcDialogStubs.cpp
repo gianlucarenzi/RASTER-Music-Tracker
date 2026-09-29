@@ -79,7 +79,12 @@ void CInsertCopyOrCloneOfSongLinesDlg::OnOK() {}
 // filenewdlg.h
 // ---------------------------------------------------------------------------
 
-CFileNewDlg::CFileNewDlg(CWnd*) {}
+// Shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same defaults as filenewdlg.cpp
+CFileNewDlg::CFileNewDlg(CWnd* pParent) : CDialog(CFileNewDlg::IDD, pParent)
+{
+    m_maxTrackLength = 64;
+    m_comboMonoOrStereo = 1;		// 0 = mono 4 tracks, 1 = stereo 8 tracks
+}
 void CFileNewDlg::DoDataExchange(CDataExchange*) {}
 void CFileNewDlg::OnOK() {}
 
@@ -87,20 +92,27 @@ void CFileNewDlg::OnOK() {}
 // importdlgs.h
 // ---------------------------------------------------------------------------
 
-CImportModDlg::CImportModDlg(CWnd*) {}
+// Import dialogs: shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same defaults as importdlgs.cpp
+CImportModDlg::CImportModDlg(CWnd* pParent) : CDialog(CImportModDlg::IDD, pParent)
+{
+    m_check1 = m_check2 = m_check3 = m_check4 = m_check5 = m_check6 = m_check7 = m_check8 = FALSE;
+}
 void CImportModDlg::DoDataExchange(CDataExchange*) {}
 BOOL CImportModDlg::OnInitDialog() { return TRUE; }
 void CImportModDlg::OnOK() {}
 
-CImportModFinishedDlg::CImportModFinishedDlg(CWnd*) {}
+CImportModFinishedDlg::CImportModFinishedDlg(CWnd* pParent) : CDialog(CImportModFinishedDlg::IDD, pParent) {}
 void CImportModFinishedDlg::DoDataExchange(CDataExchange*) {}
 BOOL CImportModFinishedDlg::OnInitDialog() { return TRUE; }
 
-CImportTmcDlg::CImportTmcDlg(CWnd*) {}
+CImportTmcDlg::CImportTmcDlg(CWnd* pParent) : CDialog(CImportTmcDlg::IDD, pParent)
+{
+    m_check1 = m_check6 = m_check7 = FALSE;
+}
 void CImportTmcDlg::DoDataExchange(CDataExchange*) {}
 BOOL CImportTmcDlg::OnInitDialog() { return TRUE; }
 
-CImportTmcFinishedDlg::CImportTmcFinishedDlg(CWnd*) {}
+CImportTmcFinishedDlg::CImportTmcFinishedDlg(CWnd* pParent) : CDialog(CImportTmcFinishedDlg::IDD, pParent) {}
 void CImportTmcFinishedDlg::DoDataExchange(CDataExchange*) {}
 BOOL CImportTmcFinishedDlg::OnInitDialog() { return TRUE; }
 

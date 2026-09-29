@@ -52,9 +52,9 @@ unchanged. They work for songs (Load, Save, Save As: RMT, TXT, RMW),
 instruments (RTI) and tracks (TXT), keep the last folder, propose the current
 file name and return the chosen file type as with MFC. The filters match
 upper case extensions too (`*.rmt *.RMT`), and a name typed without extension
-gets the one of the chosen type. Import and Export As show their file dialog,
-but most of them then stop at an options dialog that is still a stub (see
-[Status](#status)).
+gets the one of the chosen type. Import works for MOD and TMC; Export As
+shows its file dialog, but most formats then stop at an options dialog that
+is still a stub (see [Status](#status)).
 
 At start-up a message box may say that `tuning.ini` is missing; the default
 tuning is used and the message is harmless.
@@ -91,10 +91,15 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
 - ✅ full menu bar (7 menus, 81 actions, all with handlers; auto-tested)
 - ✅ file dialogs (Load / Save / Save As, instrument and track load/save,
   the file choice of Import and Export As), `QFileDialog`
+- ✅ File → New (`IDD_FILENEW`): track length 1-256 and mono/stereo, with the
+  confirmation for tracks longer than 64 lines
+- ✅ File → Import: the MOD and TMC options (`IDD_IMPORTMOD`, `IDD_IMPORTTMC`)
+  and the "Import of module finished" dialogs (`IDD_IMPORTMODFINISHED`,
+  `IDD_IMPORTTMCFINISHED`); checked with `rmt/imports/axel_f.mod`
+  (ProTracker) and `rmt/imports/404_Error.tmc` (Theta Music Composer)
 - ⚠️  other dialogs: the MFC dialogs are stubs that answer "cancel"
   (`MfcDialogStubs.cpp`); they must still be rewritten in Qt. This stops
-  File → New, the import options (MOD/TMC) and the export options (all
-  formats but LZSS)
+  the export options (all formats but LZSS)
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
@@ -142,7 +147,21 @@ QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_GRAB_MS=3000 \
 cmp gemx.rmt /tmp/g2.rmt     # identical
 ```
 
-`ID_FILE_OPEN` = `0xE101`, `ID_FILE_SAVE_AS` = `0xE104`, `ID_FILE_IMPORT` =
+`RMT_QT_DIALOG=dialog.png` shows the other dialogs too (without it they are
+cancelled in test runs): each is saved after 0.5 s (the first to
+`dialog.png`, the next ones to `dialog-2.png`, `dialog-3.png`...) and
+confirmed the way a user does it (for the import result: check "I
+understand", then OK), through the same checks as a click on OK:
+
+```bash
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png RMT_QT_GRAB_MS=3000 \
+    RMT_QT_COMMANDS=0xE100 RMT_QT_DIALOG=new.png ./build-qt/out/rmt song.rmt
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png RMT_QT_GRAB_MS=5000 \
+    RMT_QT_COMMANDS=32856 RMT_QT_FILEDIALOG=rmt/imports/axel_f.mod \
+    RMT_QT_DIALOG=import.png ./build-qt/out/rmt      # import.png, import-2.png
+```
+
+`ID_FILE_NEW` = `0xE100`, `ID_FILE_OPEN` = `0xE101`, `ID_FILE_SAVE_AS` = `0xE104`, `ID_FILE_IMPORT` =
 32856, `ID_FILE_EXPORT_AS` = 32773, `ID_INSTR_LOAD` / `ID_INSTR_SAVE` = 32772
 / 32771, `ID_TRACK_LOAD` / `ID_TRACK_SAVE` = 32888 / 32889.
 
@@ -181,6 +200,7 @@ operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
 | `qt/main-qt.cpp` | start-up and main window; `RMT_QT_GRAB` / `RMT_QT_MENU_TEST` test hooks |
 | `qt/RmtQtFrontend.cpp` | `RmtMainWindow` (menu bar, `QtCCmdUI`), `RmtViewWidget` (view, keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
 | `qt/RmtQtKeys.cpp` | key events → Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
+| `qt/RmtQtDialogs.cpp` | the MFC dialogs rewritten with Qt: `CDialog::DoModal()` → `IRmtHost::DoModal()` → the dialog of `m_nIDTemplate` (`IDD_*`), which reads and writes the dialog's data members; not rewritten yet: cancelled |
 | `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
 
 ### Built-in 6502 and POKEY (`src/emu`)
@@ -380,8 +400,10 @@ The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
 1. **Native Qt dialogs** — rewrite the `MfcDialogStubs.cpp` dialogs in Qt
-   (the file dialogs are done): File → New, import and export options,
-   configuration, tuning, song/track/instrument info
+   (file dialogs, File → New and Import are done): export options,
+   configuration, tuning, song/track/instrument info. A new dialog is a
+   case in `RmtQtRunDialog()` (`qt/RmtQtDialogs.cpp`) plus the `IDD` in the
+   stub's constructor
 2. **MIDI input** — wire `RtMidiBackend` to the Qt event loop
 3. **Toolbars** — recreate the MFC rebars as Qt toolbars
 4. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
