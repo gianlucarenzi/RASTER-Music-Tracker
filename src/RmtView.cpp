@@ -9,6 +9,7 @@
 #include <chrono>
 #include "Clipboard.h"
 #include <iomanip>
+#include <sstream>
 #include "Fraction.h"
 #include "RmtView.h"
 #include "MainFrm.h"
@@ -430,21 +431,55 @@ CRmtDoc* CRmtView::GetDocument() // non-debug version is inline
 /////////////////////////////////////////////////////////////////////////////
 // CRmtView message handlers
 
+// Where the text of the configuration (CONFIG_FILENAME) and of the tuning
+// (TUNING_FILENAME) is kept: "NAME = value" lines. The Qt frontend keeps it
+// in QSettings (qt/RmtQtSettings.cpp), the other builds in the files next to
+// the program.
+#ifdef RMT_QT_GUI
+bool RmtLoadConfigText(const char* fileName, std::string& text);	// false: nothing saved yet
+bool RmtSaveConfigText(const char* fileName, const std::string& text);
+CString RmtConfigTextLocation(const char* fileName);
+#else
+static bool RmtLoadConfigText(const char* fileName, std::string& text)
+{
+    std::ifstream in(GetResourceFilePath(std::filesystem::path(""), fileName));
+    if (!in) return false;
+    std::ostringstream all;
+    all << in.rdbuf();
+    text = all.str();
+    return true;
+}
+
+static bool RmtSaveConfigText(const char* fileName, const std::string& text)
+{
+    std::ofstream ou(GetResourceFilePath(std::filesystem::path(""), fileName));
+    if (!ou) return false;
+    ou << text;
+    return (bool)ou;
+}
+
+static CString RmtConfigTextLocation(const char* fileName)
+{
+    return GetResourceFilePath(std::filesystem::path(""), fileName);
+}
+#endif
+
 void CRmtView::ReadRMTConfig()
 {
 #define NAME(a)	(strcmp(a,name)==0)
 
-    auto filePath = GetResourceFilePath(std::filesystem::path(""), CONFIG_FILENAME);
-
     char line[1024];
     char* tmp, * name, * value;
-    std::ifstream in(filePath);
-    if (!in)
+    std::string text;
+    if (!RmtLoadConfigText(CONFIG_FILENAME, text))
     {
-        MessageBox("Could not find: '" + filePath + "'\n\nRMT will use the default configuration.\n", "RMT", MB_ICONEXCLAMATION);
+#ifndef RMT_QT_GUI	// QSettings: nothing saved yet is the first start, not an error
+        MessageBox("Could not find: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nRMT will use the default configuration.\n", "RMT", MB_ICONEXCLAMATION);
+#endif
         ResetRMTConfig();	// In order to save the default configuration file 
         return;
     }
+    std::istringstream in(text);
 
     // Parse individual lines until the end of the file is reached 
     while (!in.eof())
@@ -502,18 +537,11 @@ void CRmtView::ReadRMTConfig()
         if (NAME("SMOOTH_SCROLL")) { g_view.smoothScrolling = atoi(value); continue; }
         if (NAME("VIEW_DEBUGDISPLAY")) { g_view.debugDisplay = atoi(value); continue; }
     }
-    in.close();
 }
 
 void CRmtView::WriteRMTConfig()
 {
-    auto s = GetResourceFilePath(std::filesystem::path(""), CONFIG_FILENAME);
-    std::ofstream ou(s);
-    if (!ou)
-    {
-        MessageBox("Could not create: '" + s + "'\n\nThe RMT configuration won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
-        return;
-    }
+    std::ostringstream ou;
 
     ou << "# RMT CONFIGURATION FILE" << std::endl;
     CString version;
@@ -564,7 +592,8 @@ void CRmtView::WriteRMTConfig()
     ou << "SMOOTH_SCROLL = " << g_view.smoothScrolling << std::endl;
     ou << "VIEW_DEBUGDISPLAY = " << g_view.debugDisplay << std::endl;
 
-    ou.close();
+    if (!RmtSaveConfigText(CONFIG_FILENAME, ou.str()))
+        MessageBox("Could not create: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nThe RMT configuration won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
 }
 
 void CRmtView::ResetRMTConfig()
@@ -627,18 +656,20 @@ void CRmtView::ReadTuningConfig()
 {
 #define NAME(a)	(strcmp(a,name)==0)
 
-    auto filePath = GetResourceFilePath(std::filesystem::path(""), TUNING_FILENAME);
     char line[1024];
     char* tmp, * div, * name, * value;
     const char* value2;
-    std::ifstream in(filePath);
-    if (!in)
+    std::string text;
+    if (!RmtLoadConfigText(TUNING_FILENAME, text))
     {
-        MessageBox("Could not find: '" + filePath + "'\n\nRMT will use the default Tuning parameters.\n", "RMT", MB_ICONEXCLAMATION);
+#ifndef RMT_QT_GUI	// QSettings: nothing saved yet is the first start, not an error
+        MessageBox("Could not find: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nRMT will use the default Tuning parameters.\n", "RMT", MB_ICONEXCLAMATION);
+#endif
         g_Song.ResetTuningVariables();
         WriteTuningConfig();	// In order to save the default Tuning configuration file 
         return;
     }
+    std::istringstream in(text);
 
     // Parse individual lines until the end of the file is reached 
     while (!in.eof())
@@ -677,7 +708,6 @@ void CRmtView::ReadTuningConfig()
         if (ReadFraction(name, value, value2, "OCTAVE", g_tuningRatios.OCTAVE)) { continue; }
 
     }
-    in.close();
 }
 
 void WriteFraction(std::ostream& os, const char* id, const CFraction& fraction) {
@@ -686,13 +716,7 @@ void WriteFraction(std::ostream& os, const char* id, const CFraction& fraction) 
 
 void CRmtView::WriteTuningConfig()
 {
-    auto filePath = GetResourceFilePath(std::filesystem::path(""), TUNING_FILENAME);
-    std::ofstream os(filePath);
-    if (!os)
-    {
-        MessageBox("Could not create: '" + filePath + "'\n\nThe Tuning parameters won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
-        return;
-    }
+    std::ostringstream os;
 
     os << "# RMT CONFIGURATION FILE" << std::endl;
     CString version;
@@ -720,7 +744,8 @@ void CRmtView::WriteTuningConfig()
     WriteFraction(os, "MAJ_7TH", g_tuningRatios.MAJ_7TH);
     WriteFraction(os, "OCTAVE", g_tuningRatios.OCTAVE);
 
-    os.close();
+    if (!RmtSaveConfigText(TUNING_FILENAME, os.str()))
+        MessageBox("Could not create: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nThe Tuning parameters won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
 }
 
 void CRmtView::OnViewConfiguration()

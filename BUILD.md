@@ -55,8 +55,23 @@ upper case extensions too (`*.rmt *.RMT`), and a name typed without extension
 gets the one of the chosen type. Import works for MOD and TMC, Export As
 for all formats (see [Status](#status)).
 
-At start-up a message box may say that `tuning.ini` is missing; the default
-tuning is used and the message is harmless.
+### Configuration
+
+The configuration and the tuning (`rmt.ini` and `tuning.ini` of the MFC
+build, next to the program) are kept by the Qt frontend in `QSettings`
+(`qt/RmtQtSettings.cpp`), one key per line of those files in the groups
+`rmt` and `tuning`. They belong to the user, not to the program folder, so
+updating or reinstalling RMT keeps them:
+
+| System | Where |
+|--------|-------|
+| Linux | `~/.config/raster-atari.org/rmt.conf` (`$XDG_CONFIG_HOME`) |
+| Windows | registry, `HKEY_CURRENT_USER\Software\raster-atari.org\rmt` |
+| macOS | `~/Library/Preferences/org.raster-atari.rmt.plist` |
+
+The first start with nothing saved takes over the `rmt.ini` / `tuning.ini`
+of an earlier version next to the program, if there are any, else it saves
+the defaults (without the "Could not find" messages of the MFC build).
 
 ### Menu bar
 
@@ -150,7 +165,8 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   Ctrl+numpad +/-); the buttons are checked and enabled by their
   `ON_UPDATE_COMMAND_UI` handlers every 100 ms (MFC does it when idle), the
   icons follow the interface size. View → Main toolbar / Block toolbar /
-  Status Bar show and hide them (`ShowControlBar()`), kept in `rmt.ini`
+  Status Bar show and hide them (`ShowControlBar()`), kept in the
+  configuration
 
 ### Testing without a display
 
@@ -198,9 +214,12 @@ QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png RMT_QT_GRAB_MS=5000 \
 32856, `ID_FILE_EXPORT_AS` = 32773, `ID_INSTR_LOAD` / `ID_INSTR_SAVE` = 32772
 / 32771, `ID_TRACK_LOAD` / `ID_TRACK_SAVE` = 32888 / 32889.
 
+Test runs change the configuration like the user does: give them their own
+with `XDG_CONFIG_HOME=/tmp/rmt-test` (Linux) to keep yours as it is.
+
 MIDI input through the ALSA "Midi Through" port (client 14, module
-`snd-seq-dummy`) with `MIDI_IN = Midi Through:Midi Through Port-0` in
-`rmt.ini`: while the tracker runs, `aplaymidi -p 14:0 notes.mid` plays a MIDI
+`snd-seq-dummy`) with `MIDI_IN=Midi Through:Midi Through Port-0` in the
+`[rmt]` group of `rmt.conf`: while the tracker runs, `aplaymidi -p 14:0 notes.mid` plays a MIDI
 file into it (notes on channel 16 are recorded in edit mode, `aconnect -l`
 shows the `RMT` client connected to 14:0).
 
@@ -448,8 +467,8 @@ smoke test) as a workflow artifact:
 
 `RMT.app` needs nothing installed. It is signed ad hoc, not notarized, so
 macOS asks to open it with right click → Open the first time. Its
-`resources/` and `rmt.ini` are in `Contents/MacOS`, next to the program (as
-in `out/`).
+`resources/` are in `Contents/MacOS`, next to the program (as in `out/`);
+the configuration is in the user's preferences, so a new DMG keeps it.
 
 PortAudio and RtMidi are used by every build without MFC, on Windows too;
 the MFC build keeps DirectSound and the winmm MIDI of `RmtMidi.cpp`. With
@@ -462,8 +481,7 @@ track for the 2.x series. Remaining work:
 
 1. **Windows and macOS** — run the GitHub builds (first tag push) and fix
    what they find; then test the packages on real machines (sound, MIDI),
-   keep the macOS configuration in `~/Library/Application Support` instead
-   of inside `RMT.app`, and make Qt the default on Windows too
+   and make Qt the default on Windows too
 
 ---
 

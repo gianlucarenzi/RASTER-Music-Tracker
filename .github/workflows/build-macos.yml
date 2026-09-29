@@ -9,8 +9,9 @@ name: Build RMT on macOS
 # frameworks and the Homebrew libraries into the bundle, so nothing has to be
 # installed to run it; the bundle is signed ad hoc (not notarized: the first
 # time it is opened with right click -> Open). The program finds its
-# resources/ next to itself (Contents/MacOS), like out/ of the build, and
-# writes rmt.ini there. A tag v* builds and publishes both DMGs.
+# resources/ next to itself (Contents/MacOS), like out/ of the build; the
+# configuration is in the user's preferences (QSettings), so a new DMG keeps
+# it. A tag v* builds and publishes both DMGs.
 
 on:
   push:

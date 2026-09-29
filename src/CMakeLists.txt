@@ -200,6 +200,7 @@ else()
         qt/RmtQtFrontend.h
         qt/RmtQtKeys.cpp
         qt/RmtQtDialogs.cpp
+        qt/RmtQtSettings.cpp
         qt/RmtQtDialogs.h
         qt/QtMainFrame.cpp
         RmtView.cpp
