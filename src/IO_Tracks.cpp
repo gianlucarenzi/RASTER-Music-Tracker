@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "Notes.h"
 
@@ -52,6 +52,8 @@ int CTracks::SaveTrack(TrackNumber track, std::ofstream& ou, SongIOType iotype)
 		}
 		ou << s << std::endl;
 		return 1;
+	default:
+		break;
 	}
 
 	return 0;
@@ -68,7 +70,7 @@ int CTracks::LoadTrack(TrackNumber track, std::ifstream& in, SongIOType iotype)
 	switch (iotype)
 	{
 	case SongIOType::RMW:
-		if (at = GetTrack(track))
+		if ((at = GetTrack(track)))
 		{
 			ClearTrack(track);	// Clear before filling with data
 			in.read((char*)&at->len, sizeof(at->len));
@@ -95,7 +97,7 @@ int CTracks::LoadTrack(TrackNumber track, std::ifstream& in, SongIOType iotype)
 			return 1;
 		}
 
-		if (at = GetTrack(track))
+		if ((at = GetTrack(track)))
 		{
 			// Clear the track before it is filled with new data
 			ClearTrack(track);
@@ -161,6 +163,9 @@ int CTracks::LoadTrack(TrackNumber track, std::ifstream& in, SongIOType iotype)
 			return 1;
 		}
 		break;
+
+	default:
+		break;
 	}
 
 	return 0;
@@ -189,6 +194,8 @@ int CTracks::SaveAll(std::ofstream& ou, SongIOType iotype)
 			}
 		}
 		break;
+		default:
+			break;
 	}
 	return 1;
 }
@@ -445,7 +452,7 @@ BOOL CTracks::AtaToTrack(unsigned char* mem, int trackLength, TrackNumber trackN
 		data = mem[src] & 0x3f;
 
 		// Have Note, Instrument and volume data on this line
-		if (data >= 0 && data <= 60)
+		if (data <= 60)
 		{
 			tr->note[line] = data;
 			tr->instr[line] = ((mem[src + 1] & 0xfc) >> 2);		//11111100

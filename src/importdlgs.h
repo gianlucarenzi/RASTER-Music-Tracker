@@ -1,7 +1,7 @@
 #if !defined(AFX_IMPORTDLGS_H__75C2CF47_F291_11D7_BEB0_00600854AFCA__INCLUDED_)
 #define AFX_IMPORTDLGS_H__75C2CF47_F291_11D7_BEB0_00600854AFCA__INCLUDED_
 
-#include "Resource.h"
+#include "resource.h"
 
 #if _MSC_VER > 1000
 #pragma once

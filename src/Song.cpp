@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include <fstream>
 
 #include "GuiHelpers.h"
@@ -6,7 +6,7 @@
 
 #include "Notes.h"
 
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 #include "EffectsDlg.h"
 #include "MainFrm.h"
 
@@ -142,13 +142,16 @@ void CSong::ClearSong(int numOfTracks)
 
     g_playtime = 0;
     m_followplay = 1;
-    m_mainSpeed = m_speed = m_speeda = 16;
+    m_mainSpeed = 16;
+    m_speed = 16;
+    m_speeda = 16;
     m_instrumentSpeed = 1;
 
     g_activepart = g_active_ti = Part::PART_TRACKS;
 
     m_songplayline = m_songactiveline = 0;
-    m_trackactiveline = m_trackplayline = 0;
+    m_trackactiveline = 0;
+    m_trackplayline = 0;
     m_trackactivecol = m_trackactivecur = 0;
     m_activeinstr = 0;
     m_octave = 0;
@@ -312,7 +315,7 @@ int CSong::MakeTuningBlock(unsigned char* mem, int addr)
     mem[addr + 0x05] = g_trackLineSecondaryHighlight;//track secondary line highlight
     // 6 - 0xf is unused
 
-        /** TODO: Currently unused, so save the effort for adaptation for now.
+        // TODO: Currently unused, so save the effort for adaptation for now.
 
     // 64 bytes
     memcpy((mem + addr + 0x10), &g_tuning.basetuning, 8);	//base tuning frequency, double type uses 8 bytes in memory
@@ -365,7 +368,7 @@ int CSong::DecodeTuningBlock(unsigned char* mem, int addr, int endAddr)
     g_trackLineSecondaryHighlight = mem[addr + 0x05];
     if (!g_trackLineSecondaryHighlight) g_trackLineSecondaryHighlight = 4;	//default
 
-    /** TODO: Currently unused, so save the effort for adaptation for now.
+    // TODO: Currently unused, so save the effort for adaptation for now.
     memcpy(&g_tuning.basetuning, (mem + addr + 0x10), 8);
 
     memcpy(&g_tuningRatios.UNISON, (mem + addr + 0x18), 2);
@@ -437,7 +440,7 @@ int CSong::MakeModule(unsigned char* mem, int addr, SongIOType iotype, BYTE* ins
     // 5: Song speed
     // 6: Instrument speed
     // 7: RMT version (1 for now)
-    strncpy((char*)(mem + addr), "RMT", 3);
+    memcpy(mem + addr, "RMT", 3);
     mem[addr + 3] = g_tracks4_8 + '0';			// 4 or 8
     mem[addr + 4] = g_Tracks.GetMaxTrackLength() & 0xff;
     mem[addr + 5] = m_mainSpeed & 0xff;
@@ -3112,7 +3115,9 @@ BOOL CSong::Play(PlayMode mode, BOOL follow, int special)
         else if (!m_followplay) Stop(); //is playing and wants to play from edited pos. but not followplay
     }
 
-    m_quantization_note = m_quantization_instr = m_quantization_vol = -1;
+    m_quantization_note = -1;
+    m_quantization_instr = -1;
+    m_quantization_vol = -1;
 
     switch (mode)
     {
@@ -3174,6 +3179,8 @@ BOOL CSong::Play(PlayMode mode, BOOL follow, int special)
         if (mode == PLAY_SEEK_PREV) mode = PLAY_FROM;
         break;
 
+    default:
+        break;
     }
 
     if (m_songgo[m_songplayline] >= 0)	//there is a goto
@@ -3191,7 +3198,7 @@ BOOL CSong::Play(PlayMode mode, BOOL follow, int special)
     g_SongTimer.WaitForTimerRoutineProcessed();
     m_followplay = follow;
     PlayBeat();						//sets m_speeda
-    m_speeda++;						//(Original comment by Raster, April 27, 2003) adds 1 to m_speed, for what the real thing will take place in Init
+    m_speeda = m_speeda + 1;		//(Original comment by Raster, April 27, 2003) adds 1 to m_speed, for what the real thing will take place in Init
     if (m_followplay)	//cursor following the player
     {
         m_trackactiveline = m_trackplayline;
@@ -3212,7 +3219,9 @@ void CSong::Stop()
     {
         SetPlayMode(PLAY_STOP);
         g_Undo.Separator();
-        m_quantization_note = m_quantization_instr = m_quantization_vol = -1;
+        m_quantization_note = -1;
+        m_quantization_instr = -1;
+        m_quantization_vol = -1;
         SetPlayPressedTonesSilence();
         g_SongTimer.WaitForTimerRoutineProcessed(); // The Timer Routine will run at least once
     }
@@ -3225,7 +3234,7 @@ BOOL CSong::SongPlayNextLine()
     // Normal play, play from current position, or play from bookmark => shift to the next line  
     if (m_play == PLAY_SONG || m_play == PLAY_FROM || m_play == PLAY_BOOKMARK)
     {
-        m_songplayline++;		// Increment the song line by 1
+        m_songplayline = m_songplayline + 1;		// Increment the song line by 1
         if (m_songplayline > 255)
             m_songplayline = 0;	// Above 255, roll over to 0
     }
@@ -3288,7 +3297,8 @@ TrackLine:
     }
 
     //only now is the changed speed set
-    m_speeda = m_speed = speed;
+    m_speed = speed;
+    m_speeda = speed;
 
     //active note, instrument and volume settings
     for (t = 0; t < g_tracks4_8; t++)
@@ -3326,10 +3336,10 @@ BOOL CSong::PlayVBI()
 {
     if (!m_play) { return 0; }	//not playing
 
-    m_speeda--;
+    m_speeda = m_speeda - 1;
     if (m_speeda > 0) { return 0; }	//too soon to update
 
-    m_trackplayline++;
+    m_trackplayline = m_trackplayline + 1;
 
     //m_play mode 4 => only plays range in block
     if (m_play == PLAY_BLOCK && m_trackplayline > m_trackplayblockend) { m_trackplayline = m_trackplayblockstart; }

@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Clipboard.h"
 #include "Song.h"
 #include "EffectsDlg.h"

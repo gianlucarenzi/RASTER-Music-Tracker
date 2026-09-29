@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "AtariIO.h"
 
@@ -232,7 +232,8 @@ int CSong::ImportTMC(std::ifstream& in)
     int speco = 0;			//speedcorrection
 
     //speeds
-    m_mainSpeed = m_speed = mem[bfrom + 30] + 1;
+    m_mainSpeed = mem[bfrom + 30] + 1;
+    m_speed = m_mainSpeed;
     m_instrumentSpeed = mem[bfrom + 31];
     if (m_instrumentSpeed > 4)
     {
@@ -389,8 +390,6 @@ int CSong::ImportTMC(std::ifstream& in)
         int c1, c2, c3;
         BOOL anyrightvolisntzero = 0;
         BOOL filteru = 0;					//is it using the filter?
-        int lasttmccmd = -1;				//last command
-        int lasttmcpar = 0;				//last parameter
         int cmd1_2 = 0;					//for command sequence 1 and 2
         int par1_2 = 0;					//parameter for adding frequency for command sequence 1 and 2
         int cmd2_2 = 0;					//sequence 2 and 2
@@ -529,8 +528,6 @@ int CSong::ImportTMC(std::ifstream& in)
             ai->envelope[j][ENV_X] = (rmtpar >> 4) & 0x0f;
             ai->envelope[j][ENV_Y] = rmtpar & 0x0f;
 
-            lasttmccmd = tmccmd;
-            lasttmcpar = tmcpar;
             if (cmd1_2 > 0) cmd1_2--;		//read
             if (cmd2_2 > 0) cmd2_2--;		//read
             if (cmd6_6 > 0) cmd6_6--;		//read
@@ -575,10 +572,11 @@ int CSong::ImportTMC(std::ifstream& in)
         //volume slide
         BYTE t1vslide = mem[adr_p + 3];
         //speco is the correction when the instrument decelerates from 5 and more to 4
-        BYTE t2vslide = (t1vslide < 1) ? 0 : (BYTE)((double)15 / lastvol * (double)255 / ((double)t1vslide * (1 - ((double)speco) / 4)) + 0.5);
-        if (t2vslide > 255) t2vslide = 255;
+        double v2vslide = (t1vslide < 1) ? 0 : ((double)15 / lastvol * (double)255 / ((double)t1vslide * (1 - ((double)speco) / 4)) + 0.5);
+        if (v2vslide > 255) v2vslide = 255;
         else
-            if (t2vslide < 0) t2vslide = 0;
+            if (v2vslide < 0) v2vslide = 0;
+        BYTE t2vslide = (BYTE)v2vslide;
         ai->parameters[PAR_VOL_FADEOUT] = t2vslide;
         ai->parameters[PAR_VOL_MIN] = 0;
 
@@ -1080,7 +1078,7 @@ int CSong::ImportMOD(std::ifstream& in)
     BOOL x_decreaseinstrument = importdlg.m_check4;
     BOOL x_optimizeloops = importdlg.m_check6;
     BOOL x_truncateunusedparts = importdlg.m_check7;
-    BOOL x_fourier = importdlg.m_check8;
+    [[maybe_unused]] BOOL x_fourier = importdlg.m_check8;	// Fourier code below is disabled
 
     SetTracks(rmttype); //produce RMT4 or RMT8
 
@@ -1088,7 +1086,8 @@ int CSong::ImportMOD(std::ifstream& in)
     for (j = 0; j < 20 && (a = mem[j]); j++) m_songname[j] = a;
 
     //speeds
-    m_mainSpeed = m_speed = 6;			//default speed
+    m_mainSpeed = 6;			//default speed
+    m_speed = 6;
     m_instrumentSpeed = 1;
 
     int maxsmplen = 0;			//maximum sample length
@@ -1601,7 +1600,6 @@ int CSong::ImportMOD(std::ifstream& in)
     } //pass=0/1
 
     //corrects the jumps in the song
-    int nog = 0;
     for (i = 0; i < dsline; i++)
     {
         int k;
@@ -1742,7 +1740,7 @@ int CSong::ImportMOD(std::ifstream& in)
             //and divides the end of the instrument according to the length of the loop
             int lopend = (int)((double)(im->reppoint + im->replen) / blocksize + 0.5);
             if (lopend > ix - 1) lopend = ix - 1;
-            rmti->parameters[PAR_ENV_LENGTH];
+            rmti->parameters[PAR_ENV_LENGTH] = lopend;
         }
         else
         {

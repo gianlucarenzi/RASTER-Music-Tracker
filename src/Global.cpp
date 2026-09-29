@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Global.h"
 #include "PokeyRederer.h"
 #include "RmtMidi.h"
@@ -111,7 +111,8 @@ void SetProgramFolderPath(const CString& folderPath) {
 
 CString GetResourceFolderPath(const CString& folderName) {
     std::filesystem::path path;
-    return path.append(g_prgpath.GetString()).append(folderName.GetString()).c_str();;
+    // .string(): on Windows path::c_str() is a wchar_t string
+    return path.append(g_prgpath.GetString()).append(folderName.GetString()).string().c_str();
 
 }
 
@@ -120,7 +121,7 @@ CString GetResourceFilePath(const std::filesystem::path& relativeFolderPath, con
     path.append(g_prgpath.GetString());
     path.append(relativeFolderPath.c_str());
     path.append(fileName.GetString());
-    return path.c_str();
+    return path.string().c_str();
 }
 
 

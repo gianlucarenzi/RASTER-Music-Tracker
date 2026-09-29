@@ -1,7 +1,7 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "ASMFile.h"
 #include "ASMFileExporter.h"
-#include "ExportDlgs.h"
+#include "exportdlgs.h"
 #include "ASMFileBuilder.h"
 
 
@@ -408,7 +408,7 @@ BOOL CASMFileExporter::BuildRelocatableAsm(
     // ?localvar	|   __localvar
 
     // Assembler type setup
-    BOOL hasDotLocal = 0;
+    [[maybe_unused]] BOOL hasDotLocal = 0;
     const char* _byte = "dta";
     if (assemblerFormat == ATASM)
     {

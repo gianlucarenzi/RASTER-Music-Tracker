@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 // Central definition of 8-bit memory related types and constants
 
 typedef unsigned short MemoryWord;

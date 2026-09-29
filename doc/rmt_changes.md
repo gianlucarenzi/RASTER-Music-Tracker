@@ -17,6 +17,64 @@ Changes in RMT 2.00 (Planned)
 - Include the export settings in the file format instead of repeating the dialogs for user input on every export.
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
+Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
+- Full menu bar added to the Qt5 frontend (branch feature/Qt-Side, 2026-09-28).
+  All 7 top-level menus (File, Edit, Track, Block, Instrument, Song, View, Help)
+  with nested submenus and keyboard shortcuts are built from the MFC
+  IDR_MAINFRAME MENU resource structure. Menu item enabled/checked state is
+  updated automatically via ON_UPDATE_COMMAND_UI handlers (QtCCmdUI bridge).
+  All 81 leaf actions have registered handlers; verified by the RMT_QT_MENU_TEST
+  headless test hook (QT_QPA_PLATFORM=offscreen, exit code 0).
+  Help commands (ID_HELP_HELP_TOPICS, ID_HELP_ONLINE_HELP, ID_HELP_ABOUT_APP)
+  are handled directly in the Qt Dispatch() layer since CRmtApp is MFC-only.
+- Version string unified: derived at CMake configure time from the nearest git
+  tag (v2.0-rc1 → "2.0-rc1", between tags → "2.0-rc1+dev", no tag → "2.0-dev").
+  Single source of truth via src/RmtVersion.h.in / generated RmtVersion.h;
+  no hardcoded version strings in C++ source. (2026-09-28)
+- Release scripts added: scripts/push.sh auto-increments v2.0-rcN and pushes
+  branch + tag; scripts/release.sh creates a plain v2.X release tag. (2026-09-28)
+- Fixed the Qt frontend using 100% of all CPU cores. (2026-09-28)
+  The song timer (MfcAudio.cpp, timeSetEvent) re-created from its own tick
+  could start its callback while the previous one was still running, whenever
+  the timer fell behind by more than one tick: CSongTimer then kept two live
+  timers, their number doubled at every stall, and CSong::TimerRoutine() ran
+  concurrently (corrupted 6502 state, thousands of threads, abort). A
+  re-created timer now waits for the tick that created it, and a timer more
+  than 200 ms late restarts from now instead of catching up.
+- Fixed a segfault on exit of the Qt frontend: the song timer kept ticking while
+  g_Song was destroyed. CSongTimer::StopTimer() now runs on every exit, and a
+  lock plus a "stopped" flag keep a running tick from creating a new timer.
+- Qt frontend redraw made cheaper (idle CPU about 50% of one core, was 78%):
+  the widget shows the view's bitmap directly (no full-screen copy per frame,
+  scaling done by QPainter), and CDC::BitBlt / StretchBlt of the non-MFC
+  builds clip once and copy whole rows. The 60 fps screen refresh and the
+  50/60 Hz song timer (VBI) are unchanged and independent of each other.
+- All compiler warnings fixed: the Qt and core-only builds (GCC 10, -Wall
+  -Wextra) went from 191 warnings to none. (2026-09-29)
+  Real bugs found among them:
+  - Undo: event data was freed with delete[] on a void*; it is now freed with
+    the type it was allocated with.
+  - CInstruments / CTracks: the constructors tested m_instr / m_track before
+    they were initialised, and the destructors used delete instead of delete[].
+  - Loading Atari binaries: `!sizeRead == size` never detected a short read,
+    now `sizeRead != size`.
+  - POKEY registers view: a 2-byte buffer received the register number via
+    sprintf (overflow); several values could be read uninitialised.
+  - Tuning file: a ratio line without '/' used an uninitialised denominator,
+    it now defaults to 1.
+  - MOD import: the envelope length of looped instruments was computed but
+    never assigned (statement with no effect); it is now set.
+  - TMC import: the volume fade-out was clamped to 0..255 after the conversion
+    to BYTE, so the clamp did nothing; it is now clamped before.
+  Cleanups: missing default cases in switch statements, [[fallthrough]] on
+  intended fall-throughs, C++20 volatile deprecations, strncpy replaced by
+  memcpy for unterminated copies, unused variables, a nested comment, and the
+  empty src/import.cpp removed.
+- The Qt5 frontend is now the official build on Linux/POSIX and was merged into
+  master. BUILD.md starts with it, README.md has a "Building" section. Windows
+  keeps the MFC GUI built with MSVC by default (RMT_USE_QT=OFF) until the Qt
+  frontend is tested there. (2026-09-29)
+
 
 Changes in RMT 1.35 (Planned)
 -----------------------------

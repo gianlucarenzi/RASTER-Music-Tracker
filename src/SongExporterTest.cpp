@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include <ctime> 
 #include "SongExporterTest.h"
 
@@ -38,7 +38,7 @@ CString GetFileNameWithoutExtension(const CString& fileName) {
 
 static   time_t startTimestamp;
 
-bool OpenOutputStream(const CString filePath, const int mode, std::ofstream& os) {
+bool OpenOutputStream(const CString filePath, const std::ios_base::openmode mode, std::ofstream& os) {
     SendInfoMessage("Opening '" + filePath + "' for output.");
     os.open(filePath, mode);
     if (os.fail()) {
@@ -99,7 +99,7 @@ void CSongExporterTest::Test(CSong& song) {
     bool XEX_LZSS = true;
     bool SAP_B_LZSS = false;
     bool SAP_R = true;
-    bool SAP_R_LZSS = false;
+    [[maybe_unused]] bool SAP_R_LZSS = false;	// not exported by this test yet
     bool WAV = false;
 
     if (LZSS) {

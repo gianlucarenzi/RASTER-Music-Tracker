@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "AtariIO.h"
 #include <fstream>
 
@@ -72,7 +72,7 @@ int CAtariIO::LoadDataAsBinaryFile(unsigned char* data, MemorySize size, byte* m
     MemoryAddress bfrom, bto;
 
     minadr = 0xffff; maxadr = 0; //the opposite limits of the minimum and maximum address
-    while (akp < size)
+    while ((MemorySize)akp < size)
     {
         bfrom = data[akp] | (data[akp + 1] << 8);
         akp += 2;

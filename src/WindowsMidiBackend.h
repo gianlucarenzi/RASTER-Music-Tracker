@@ -14,6 +14,7 @@
 #include <vector>
 
 #ifdef _WIN32
+    #include <windows.h>     // mmsystem.h needs the Windows base types (MinGW)
     #include <mmsystem.h>
 #endif
 

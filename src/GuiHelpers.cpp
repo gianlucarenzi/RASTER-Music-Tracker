@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "General.h"
 
 #include "GuiHelpers.h"
@@ -214,7 +214,7 @@ void TextXY(const char* txt, int x, int y, TextColor color)
 {
     char charToDraw;
     auto colorY = GetColorY(color);
-    for (int i = 0; charToDraw = (txt[i]); i++, x += 8)
+    for (int i = 0; (charToDraw = txt[i]); i++, x += 8)
     {
         if (charToDraw == 32) { continue; } // Don't draw the space
         BitBltText(x, y, 8, 16, (charToDraw & 0x7f) << 3, colorY);
@@ -224,7 +224,7 @@ void TextXY(const char* txt, int x, int y, TextColor color)
 void TextXYFull(const char* txt, int& x, int& y)
 {
     auto color = TextColor::WHITE;
-    int ori_x = x, ori_y = y;
+    int ori_x = x;
 
     for (int i = 0; char charToDraw = (txt[i]); i++)
     {
@@ -268,7 +268,7 @@ void TextXYCol(const char* txt, int x, int y, int acu, TextColor color)
 {
     auto colorY = GetColorY(color);
 
-    int num = 0, curnum = 0, curoff = 0;
+    int num = 0;
     auto col = GetColorY(g_prove ? LogicalTextColor::SELECTED_PROVE : LogicalTextColor::SELECTED);
     auto cur = GetColorY(LogicalTextColor::HOVERED);
 
@@ -294,7 +294,7 @@ void TextDownXY(const char* txt, int x, int y, TextColor color)
 {
     char charToDraw;
     auto colorY = GetColorY(color);
-    for (int i = 0; charToDraw = (txt[i]); i++, y += 16)
+    for (int i = 0; (charToDraw = txt[i]); i++, y += 16)
     {
         BitBltText(x, y, 8, 16, (charToDraw & 0x7f) << 3, colorY);
     }
@@ -311,7 +311,7 @@ void TextMiniXY(const char* txt, int x, int y, TextMiniColor color)
 {
     char charToDraw;
     auto colorY = 112 + GetColorY(color);
-    for (int i = 0; charToDraw = (txt[i]); i++, x += 8)
+    for (int i = 0; (charToDraw = txt[i]); i++, x += 8)
     {
         if (charToDraw == 32) { continue; } // Don't draw the space
         BitBltText(x, y, 8, 8, (charToDraw & 0x7f) << 3, colorY);

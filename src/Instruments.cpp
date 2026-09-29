@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "AtariTrackerDriver.h"
 #include "Instruments.h"
@@ -63,7 +63,6 @@ const Tshenv shenv[ENVROWS] =
 /// </summary>
 CInstruments::CInstruments()
 {
-    if (m_instr) delete m_instr;
     m_instr = new TInstrument[INSTRSNUM];
 }
 
@@ -74,7 +73,7 @@ CInstruments::CInstruments()
 /// </summary>
 CInstruments::~CInstruments()
 {
-    if (m_instr) delete m_instr;
+    delete[] m_instr;
     m_instr = NULL;
 }
 

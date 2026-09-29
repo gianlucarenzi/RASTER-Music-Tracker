@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 extern HINSTANCE g_c6502_dll;
 extern BOOL volatile g_is6502;

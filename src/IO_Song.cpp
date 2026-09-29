@@ -1,11 +1,11 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "Song.h"
 #include "Memory.h"
 
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 
-#include "ImportDlgs.h"
+#include "importdlgs.h"
 
 #include "AtariTrackerDriver.h"
 #include "AtariIO.h"
@@ -81,7 +81,7 @@ BOOL CSong::AtaToSong(unsigned char* sour, int len, int adr)
     while (i < len)
     {
         b = sour[i];
-        if (b >= 0 && b < TRACKSNUM)
+        if (b < TRACKSNUM)
         {
             m_song[line][col] = b;
         }
@@ -302,6 +302,8 @@ void CSong::FileSave()
         // It is only saved when the instrument is changed and could change the octave or volume before saving without subsequently changing the current instrument
         g_Instruments.MemorizeOctaveAndVolume(m_activeinstr, m_octave, m_volume);
         saveResult = SaveRMW(out);
+        break;
+    default:
         break;
     }
 
@@ -1079,7 +1081,7 @@ bool CSong::LoadTxt(std::ifstream& in)
                         memset(m_songname, ' ', SONG_NAME_MAX_LEN);
                         int lname = SONG_NAME_MAX_LEN;
                         if (strlen(value) <= SONG_NAME_MAX_LEN) lname = (int)strlen(value);
-                        strncpy(m_songname, value, lname);
+                        memcpy(m_songname, value, lname);
                     }
                     else
                         if (strcmp(line, "MAXTRACKLEN:") == 0)
@@ -1328,6 +1330,8 @@ bool CSong::ExportV2(CSong& song, std::ofstream& ou, SongIOType iotype, LPCTSTR 
     case SongIOType::LZSS_SAP: return songExporter.ExportSAP_B_LZSS(songExport, ou);
     case SongIOType::LZSS_XEX: return songExporter.ExportXEX_LZSS(songExport, ou);
     case SongIOType::WAV: return songExporter.ExportWAV(songExport, ou, g_Pokey, g_Atari.GetMemoryAt(0));
+    default:
+        break;
     }
 
     return false;	// Failed

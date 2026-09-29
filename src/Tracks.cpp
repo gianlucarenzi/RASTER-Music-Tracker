@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 
 #include "Undo.h"
 
@@ -10,13 +10,12 @@
 CTracks::CTracks()
 {
     m_maxTrackLength = 64;			// Default value
-    if (m_track) delete m_track;
     m_track = new TTrack[TRACKSNUM];
 }
 
 CTracks::~CTracks()
 {
-    if (m_track) delete m_track;
+    delete[] m_track;
     m_track = NULL;
 }
 

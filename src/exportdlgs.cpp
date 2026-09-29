@@ -3,7 +3,7 @@
 
 #include "StdAfx.h"
 #include "Song.h"
-#include "ExportDlgs.h"
+#include "exportdlgs.h"
 #include "ASMFileExporter.h"
 
 

@@ -1,5 +1,5 @@
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "WaveFile.h"
 
 bool CWaveFile::OpenFile(LPTSTR Filename, int SampleRate, int SampleSize, int Channels)

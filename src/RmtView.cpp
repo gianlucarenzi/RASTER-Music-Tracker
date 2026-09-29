@@ -13,7 +13,7 @@
 #include "RmtView.h"
 #include "MainFrm.h"
 #include "ConfigDlg.h"
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 #include "TuningDlg.h"
 #include "Atari.h"
 #include "PokeyRederer.h"
@@ -28,7 +28,9 @@
 #include "Undo.h"
 #include "Song.h"
 #include "Tuning.h"
-#include "Rmt.h"
+#ifdef RMT_HAS_MFC
+#include "Rmt.h"        // outside MFC, CRmtApp/g_app come from MfcTypes.h
+#endif
 
 
 
@@ -274,7 +276,7 @@ void CRmtView::OnDestroy()
     if (m_timerDisplay)
     {
         KillTimer(m_timerDisplay);
-        m_timerDisplay = NULL;
+        m_timerDisplay = 0;
     }
     CView::OnDestroy();
 }
@@ -627,7 +629,8 @@ void CRmtView::ReadTuningConfig()
 
     auto filePath = GetResourceFilePath(std::filesystem::path(""), TUNING_FILENAME);
     char line[1024];
-    char* tmp, * div, * name, * value, * value2;
+    char* tmp, * div, * name, * value;
+    const char* value2;
     std::ifstream in(filePath);
     if (!in)
     {
@@ -652,6 +655,7 @@ void CRmtView::ReadTuningConfig()
             div[-1] = 0;			// Same as above, offset by 1 to compensate the Space(s) 
             value2 = div + 2;
         }
+        else value2 = "1";			// No 2nd Ratio value: denominator 1
 
         // TUNING 
         if (NAME("TUNING")) { g_tuning.basetuning = atof(value); continue; }
@@ -968,7 +972,6 @@ int CRmtView::MouseAction(CPoint point, UINT mousebutt, short wheelzDelta = 0)
     StoreMouseInformation(point.x, point.y, mousebutt, wheelzDelta);
 
     //TODO: make those parameters global so they won't have to be re-initialised in multiple functions separately
-    int MINIMAL_WIDTH_TRACKS = (g_tracks4_8 > 4 && g_active_ti == Part::PART_TRACKS) ? 1420 : 960;
     int MINIMAL_WIDTH_INSTRUMENTS = (g_tracks4_8 > 4 && g_active_ti == Part::PART_INSTRUMENTS) ? 1220 : 1220;
     int WINDOW_OFFSET = (g_width < 1320 && g_tracks4_8 > 4 && g_active_ti == Part::PART_TRACKS) ? -250 : 0;	//test displacement with the window size
     int INSTRUMENT_OFFSET = (g_active_ti == Part::PART_INSTRUMENTS && g_tracks4_8 > 4) ? -250 : 0;
@@ -1639,7 +1642,7 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
     case VK_F11:
         g_Undo.Separator();	//respect volume
-        g_respectvolume ^= 1;
+        g_respectvolume = g_respectvolume ^ 1;
         break;
 
     case VK_F12:

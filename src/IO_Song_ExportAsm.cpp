@@ -1,7 +1,7 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Song.h"
 #include "AtariIO.h"
-#include "ExportDlgs.h"
+#include "exportdlgs.h"
 
 
 extern AssemblerFormat g_AsmFormat;
@@ -54,8 +54,6 @@ bool CSong::ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescripti
     if (dlg.DoModal() != IDOK) return false;
 
     // Save the configurations for later reuse
-    int targetAddrOfModule = dlg.m_exportAddr;
-
     g_rmtstripped_adr_module = dlg.m_exportAddr;
     g_rmtstripped_sfx = dlg.m_sfxSupport;
     g_rmtstripped_gvf = dlg.m_globalVolumeFade;

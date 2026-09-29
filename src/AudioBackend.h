@@ -14,7 +14,10 @@
 #include <memory>
 
 // Forward declarations
-struct WAVEFORMATEX;
+// Same declaration as <mmsystem.h> (a plain "struct WAVEFORMATEX;" clashes
+// with its typedef under MinGW)
+struct tWAVEFORMATEX;
+typedef struct tWAVEFORMATEX WAVEFORMATEX;
 
 /**
  * @brief Audio format descriptor (cross-platform compatible)

@@ -3,7 +3,7 @@
 
 #include "StdAfx.h"
 #include "SongTypes.h"
-#include "FileNewDlg.h"
+#include "filenewdlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

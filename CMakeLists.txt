@@ -3,10 +3,51 @@ cmake_minimum_required(VERSION 3.25)
 # Project definition
 project(
     Rmt
-    VERSION 1.35.0
+    VERSION 2.0.0
     DESCRIPTION "RASTER Music Tracker - Atari XL/XE music editor"
     LANGUAGES CXX C
 )
+
+# ---------------------------------------------------------------------------
+# Version string: derived from the nearest git tag (v2.0-rc1, v2.1, …).
+# RMT_BASE_VERSION is the numeric major.minor used by scripts/push.sh.
+# RMT_VERSION_FULL is the human-readable string baked into the binary.
+# ---------------------------------------------------------------------------
+set(RMT_BASE_VERSION "2.0")
+
+find_package(Git QUIET)
+if(Git_FOUND)
+    # Exact tag on current commit?
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" describe --tags --match "v[0-9]*" --exact-match
+        OUTPUT_VARIABLE _RMT_EXACT_TAG
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    )
+    if(_RMT_EXACT_TAG)
+        string(REGEX REPLACE "^v" "" RMT_VERSION_FULL "${_RMT_EXACT_TAG}")
+    else()
+        # Between tags: nearest tag + "+dev"
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" describe --tags --match "v[0-9]*" --abbrev=0
+            OUTPUT_VARIABLE _RMT_NEAREST_TAG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+        )
+        if(_RMT_NEAREST_TAG)
+            string(REGEX REPLACE "^v" "" _RMT_NEAREST_TAG "${_RMT_NEAREST_TAG}")
+            set(RMT_VERSION_FULL "${_RMT_NEAREST_TAG}+dev")
+        else()
+            set(RMT_VERSION_FULL "${RMT_BASE_VERSION}-dev")
+        endif()
+    endif()
+else()
+    set(RMT_VERSION_FULL "${RMT_BASE_VERSION}-dev")
+endif()
+
+message(STATUS "RMT version: ${RMT_VERSION_FULL}")
 
 # Platform detection EARLY
 if(WIN32)
@@ -24,18 +65,24 @@ if(RMT_BUILD_CORE_ONLY)
     message(STATUS "Building core components only (no UI) - for Phase 2 development")
 endif()
 
+
+# Qt5 native GUI frontend: the official build on Linux/POSIX (default ON there).
+# Windows keeps the MFC GUI by default; -DRMT_USE_QT=ON selects Qt there too.
+if(WINDOWS_PLATFORM)
+    option(RMT_USE_QT "Build the Qt5 native GUI frontend instead of MFC" OFF)
+else()
+    option(RMT_USE_QT "Build the Qt5 native GUI frontend (official build on this platform)" ON)
+endif()
+
 # Check if MFC is available
-if(NOT WINDOWS_PLATFORM AND NOT CMAKE_CROSSCOMPILING AND NOT RMT_BUILD_CORE_ONLY)
-    message(FATAL_ERROR 
-        "RASTER Music Tracker v1.35 currently requires Windows/MFC for full builds.\n"
-        "This is Phase 1 of the cross-platform migration.\n"
+if(NOT WINDOWS_PLATFORM AND NOT CMAKE_CROSSCOMPILING AND NOT RMT_BUILD_CORE_ONLY AND NOT RMT_USE_QT)
+    message(FATAL_ERROR
+        "The MFC GUI (RMT_USE_QT=OFF) can only be built on Windows with MSVC.\n"
         "\n"
         "To build on this system:\n"
-        "  - Use MinGW cross-compile from Linux: cmake -DCMAKE_TOOLCHAIN_FILE=mingw-toolchain.cmake\n"
-        "  - Or use Windows with MSVC/MinGW native\n"
+        "  - Build the Qt5 frontend, the official build here: cmake -DRMT_USE_QT=ON (the default)\n"
         "  - Or build core only: cmake -DRMT_BUILD_CORE_ONLY=ON (for testing)\n"
-        "\n"
-        "Phase 2 will add native Linux/macOS support (wxWidgets, PortAudio, RtMidi)."
+        "See BUILD.md.\n"
     )
 endif()
 
@@ -84,7 +131,7 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
     
     # Link time optimization for Release
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_VERSION VERSION_GREATER_EQUAL 11)
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER_EQUAL 11)
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto")
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto")
     endif()
@@ -93,13 +140,24 @@ endif()
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 
+# Runtime files next to the programs: the tracker drivers (rmt_driver_v*.obx)
+# and the other files RMT loads from <program folder>/resources
+file(COPY ${PROJECT_SOURCE_DIR}/rmt/resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+
+# Generate version header from git tag (used by MfcTypes.cpp and Qt frontend)
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/RmtVersion.h.in"
+    "${CMAKE_BINARY_DIR}/RmtVersion.h"
+    @ONLY
+)
+
 # Main source subdirectory
 add_subdirectory(src)
 
 # Print configuration summary
 message(STATUS "")
 message(STATUS "=== RMT CMake Configuration ===")
-message(STATUS "Version: ${PROJECT_VERSION}")
+message(STATUS "Version: ${RMT_VERSION_FULL}")
 message(STATUS "Platform: ${CMAKE_SYSTEM_NAME} ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION}")
 message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")

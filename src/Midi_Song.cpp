@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Song.h"
 #include "AtariTrackerDriver.h"
 #include "PokeyRederer.h"
@@ -78,7 +78,7 @@ void CSong::MidiEvent(DWORD dwParam)
 		else
 			if (cmd == 0xc0)
 			{
-				if (pr1 >= 0 && pr1 < INSTRSNUM)
+				if (pr1 < INSTRSNUM)
 				{
 					g_Midi.m_InstrumentOnChannel[1 + atc] = pr1;
 				}
@@ -299,7 +299,7 @@ void CSong::MidiEvent(DWORD dwParam)
 			if (cmd == 0x80) //key off
 			{
 				//key off
-				int note = pr1 - 36 + m_mod_wheel;		//from the 3rd octave + modulation wheel offset
+				//int note = pr1 - 36 + m_mod_wheel;		//from the 3rd octave + modulation wheel offset
 				//if (g_Midi.m_LastNoteOnChannel[atc] == note) //last key pressed on this midi channel
 				//{
 				m_heldkeys--;
@@ -468,13 +468,13 @@ void CSong::MidiEvent(DWORD dwParam)
 			midi_audctl = memory[0x3C69];
 
 			bool CLOCK_15 = midi_audctl & 0x01;
-			bool HPF_CH24 = midi_audctl & 0x02;
-			bool HPF_CH13 = midi_audctl & 0x04;
+			[[maybe_unused]] bool HPF_CH24 = midi_audctl & 0x02;
+			[[maybe_unused]] bool HPF_CH13 = midi_audctl & 0x04;
 			bool JOIN_34 = midi_audctl & 0x08;
 			bool JOIN_12 = midi_audctl & 0x10;
 			bool CH3_179 = midi_audctl & 0x20;
 			bool CH1_179 = midi_audctl & 0x40;
-			bool POLY9 = midi_audctl & 0x80;
+			[[maybe_unused]] bool POLY9 = midi_audctl & 0x80;
 			//bool TWO_TONE = (skctl == 0x8B) ? 1 : 0;
 
 			//combined modes for some special output...
@@ -652,7 +652,7 @@ void CSong::MidiEvent(DWORD dwParam)
 		if (cmd == 0xc0)
 		{
 			//prg change
-			if (pr1 >= 0 && pr1 < INSTRSNUM)
+			if (pr1 < INSTRSNUM)
 			{
 				ActiveInstrSet(pr1);
 			}

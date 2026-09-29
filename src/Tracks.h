@@ -1,5 +1,5 @@
 #pragma once
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include <fstream>
 
 #include "SongTypes.h"

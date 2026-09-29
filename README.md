@@ -32,6 +32,21 @@ Technical Documentation
 - Current [RMT Module File Format documentation](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_format.md) and discussion
 
 
+### Building
+
+The official build is the Qt5 frontend on Linux / POSIX:
+
+```bash
+sudo apt install cmake qtbase5-dev portaudio19-dev
+cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
+cmake --build build-qt -j
+./build-qt/out/rmt song.rmt
+```
+
+On Windows the MFC version is built with MSVC. See [BUILD.md](BUILD.md) for all
+platforms, options and the current state of the Qt frontend.
+
+
 ### Main features:
 
 Note that this is as of RMT 1.28 and not accurate for 1.34 and later!

@@ -2,9 +2,17 @@
 
 // TODO: Replace the plugin interface with a permanent emulation core
 
-#include "StdAfx.h"
+#include "PlatformTypes.h"
 #include "Pokey.h"
 #include "Atari.h"
+#include "emu/PokeySound.h"
+
+// the built-in POKEY (emu/PokeySound) in the apokeysnd.dll calling convention
+static int BuiltinGenerate(int cycles, byte buffer[], ASAP_SampleFormat format)
+{
+    return RmtBuiltin_APokeySound_Generate(cycles, buffer, (int)format);
+}
+static bool s_builtinPokey = false;
 
 extern HWND g_hwnd;
 
@@ -60,11 +68,12 @@ CString CPokey::GetAbout() const {
 //TODO: Add a method for letting the user chose which plugin they would like to use instead of the current default/fallback setup
 CPokey::SoundDriver CPokey::InitPokeyDll()
 {
+    s_builtinPokey = false;
 
     m_about = "";
 
     // apokeysnd.dll is first loaded, will be used in priority if it is found
-    if (m_pokey_dll = LoadLibrary("apokeysnd.dll"))
+    if ((m_pokey_dll = LoadLibrary("apokeysnd.dll")))
     {
         CString warningMessage = "";
 
@@ -98,7 +107,7 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
     }
 
     // sa_pokey.dll will be loaded next if apokeysnd.dll was not found or had an error, as a fallback
-    if (m_pokey_dll = LoadLibrary("sa_pokey.dll"))
+    if ((m_pokey_dll = LoadLibrary("sa_pokey.dll")))
     {
         CString warningMessage = "";
 
@@ -135,10 +144,19 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
         DeInitPokeyDll();
     }
 
-    // If no POKEY emulation plugin was found, no sound emulation will be output
-    MessageBox(g_hwnd, "Warning:\nNone of 'apokeysnd.dll' or 'sa_pokey.dll' found,\ntherefore the Pokey sound can't be performed.", "LoadLibrary error", MB_ICONEXCLAMATION);
-
-    return NONE;
+    // No POKEY plugin: the built-in POKEY, used through the apokeysnd entry points
+    APokeySound_Initialize = RmtBuiltin_APokeySound_Initialize;
+    APokeySound_PutByte = RmtBuiltin_APokeySound_PutByte;
+    APokeySound_GetRandom = RmtBuiltin_APokeySound_GetRandom;
+    APokeySound_Generate = BuiltinGenerate;
+    APokeySound_About = RmtBuiltin_APokeySound_About;
+    s_builtinPokey = true;
+    {
+        const char* name, * author, * description;
+        APokeySound_About(&name, &author, &description);
+        m_about.Format("%s\n%s\n%s", name, author, description);
+    }
+    return APOKEYSND;
 }
 
 void CPokey::DeInitPokeyDll() {
@@ -167,12 +185,17 @@ void CPokey::InitPokeys(const bool ntsc, const bool stereo, const DWORD samplesP
         {
         case CPokey::SoundDriver::APOKEYSND:
             APokeySound_Initialize(stereo);
+            if (s_builtinPokey) {
+                RmtBuiltin_APokeySound_SetMainClock(CAtari::GetClockFrequency(ntsc));   // apokeysnd.dll: PAL only
+            }
 
             break;
 
         case CPokey::SoundDriver::SA_POKEY:
             // Currently cast to WORD, because no rate avve 64kHz are supported.
             Pokey_SoundInit(CAtari::GetClockFrequency(ntsc), (WORD)samplesPerSec, stereo ? 2 : 1);
+            break;
+        default:
             break;
         }
 
@@ -194,6 +217,8 @@ void CPokey::PutByte(const byte address, const byte value) {
     case CPokey::SoundDriver::SA_POKEY:
 
         Pokey_PutByte(address, value);
+        break;
+    default:
         break;
     }
 }
