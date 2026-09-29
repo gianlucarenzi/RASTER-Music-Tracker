@@ -1,61 +1,125 @@
-# RASTER Music Tracker - RMT
+# RASTER Music Tracker 2.0 - the Qt port
 
 ### About
 
-RASTER Music Tracker (short RMT) is a cross-platform tool for making Atari XL/XE music on a Windows PC.
-RMT uses the Atari XL/XE music routines created by Radek Štěrba from 2002 to 2009.
-It was a small revolution for all Atari musicians and fans.
+RASTER Music Tracker (short RMT) is a tool for making Atari XL/XE music
+for the POKEY sound chip. RMT uses the Atari XL/XE music routines created by
+Radek Štěrba from 2002 to 2009. It was a small revolution for all Atari
+musicians and fans.
 
-This fork is the latest development branch of RMT, version 1.35.
-It is the continuation of the original version 1.28 of RMT by Štěrba and the version 1.34 of RMT by Vin Samuel.
+**RMT 2.0 is a port of RMT to Qt5, so that it runs natively on Linux,
+Windows and macOS** (Intel and Apple Silicon), and not only on Windows.
 
-The following versions are available for download:
-- [Latest daily build of 1.35 (constantly updated)](https://www.wudsn.com/productions/windows/rastermusictracker/rmt135-daily.zip)
+The heart of the program is **the original RMT code**: the tracker, the
+editor, the Atari 6502 music routines, the POKEY emulation, the file formats,
+the import and export are those of **RMT 1.35**, the development version by
+Peter Dell (JAC!), itself the continuation of the original RMT 1.28 by Radek
+Štěrba (Raster/C.P.U.) and of RMT 1.34 by Vin Samuel (VinsCool). The port
+replaces only what tied RMT to Windows:
+
+- the MFC windows, menus, toolbars and dialogs are now Qt5 (the tracker
+  screen itself is drawn by the original code, pixel for pixel)
+- the sound goes out through PortAudio, MIDI IN comes in through RtMidi
+  (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS)
+- the 6502 and POKEY emulation is built in, no `sa_c6502.dll` /
+  `apokeysnd.dll`
+- the configuration is kept per user (QSettings), so it survives updates
+
+Songs, instruments and tracks are the same files as in RMT 1.3x: you can
+move your work between the Windows version and this one.
+
+
+### Please try it and tell me what you think!
+
+This is the first release of the port. It has been used and tested mostly on
+Linux; the Windows and macOS packages are built automatically and pass a
+start-up test, but they have seen very little real use yet. **Any feedback is
+very welcome**: does it start, does it sound right, do your songs load and
+play as in RMT 1.3x, does MIDI work with your keyboard, is anything missing or
+different from the Windows version you know?
+
+- Open an [issue on GitHub](https://github.com/gianlucarenzi/RASTER-Music-Tracker/issues)
+  (bugs, differences from RMT 1.3x, ideas)
+- Please tell which package and system you used (e.g. "AppImage on Debian
+  12", "DMG x86_64 on macOS 13"), and attach the song if it is about a song
+
+
+### Download
+
+[**RMT 2.0**](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/tag/v2.0)
+([all releases](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases)):
+
+| System | Package | How to start it |
+|--------|---------|-----------------|
+| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
+| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
+| macOS, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
+| macOS, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.0/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
+
+Everything the program needs is inside each package. The configuration is
+kept in `~/.config/raster-atari.org/rmt.conf` on Linux, in the registry
+(`HKEY_CURRENT_USER\Software\raster-atari.org\rmt`) on Windows and in
+`~/Library/Preferences/org.raster-atari.rmt.plist` on macOS.
+
+The original Windows (MFC) versions of RMT are still available from the
+upstream project:
+- [Latest daily build of 1.35](https://www.wudsn.com/productions/windows/rastermusictracker/rmt135-daily.zip)
 - [Stable version 1.34 (2023-03-10)](https://www.wudsn.com/productions/windows/rastermusictracker/rmt134.00-stable.zip)
 - [Stable version 1.28 (2009-05-19)](https://www.wudsn.com/productions/windows/rastermusictracker/rmt128.zip)
 
-See the [change history](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_changes.md) for the differences between the [versions](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_versions.md).
 
-Please provide your feedback about the daily version via one of the following channels:
-- Send a [personal message](https://forums.atariage.com/messenger/compose/?to=17404) on AtariAge or create a post in the [AtariAge thread](https://forums.atariage.com/topic/328790-release-raster-music-tracker-v13400)
-- Send an e-mail to jac at wudsn.com
-- Create an issue or a feature request on [GitHub](https://github.com/raster-atari-org/RASTER-Music-Tracker/issues).
+### What is different in the port
+
+- Everything of the Windows version is there: all the menus, the dialogs
+  (configuration, tuning, export and import options, block effects, song and
+  instrument tools...), the two toolbars, MIDI IN with MIDI on/off, the
+  play modes and the keyboard shortcuts.
+- MIDI IN devices are the ones of the system (on Linux the ALSA sequencer
+  ports, e.g. a USB keyboard or a virtual port).
+- Settings of an earlier installation of the port (`rmt.ini` / `tuning.ini`
+  next to the program) are taken over at the first start.
+
+Known limits: the packages are not signed; the macOS and Windows versions
+need testing on real machines, sound and MIDI in particular.
+
+
+### Building from source
+
+On Linux:
+
+```bash
+sudo apt install cmake qtbase5-dev portaudio19-dev librtmidi-dev
+cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
+cmake --build build-qt -j
+./build-qt/out/rmt song.rmt
+```
+
+[BUILD.md](BUILD.md) has all the details: the other platforms, the
+AppImage (`scripts/build-appimage.sh`), the GitHub workflows that build the
+packages, the test hooks, and the state of every part of the Qt frontend.
+The original Windows MFC version still builds with MSVC.
 
 
 ### Documentation
 
-- Current [RMT 1.35 Documentation](https://html-preview.github.io/?url=https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_en.html)
+- Current [RMT 1.35 Documentation](https://html-preview.github.io/?url=https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_en.html) (it applies to the port too)
 - Original [RMT 1.28 documentation](https://html-preview.github.io/?url=https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_en_128.html)
+- The [change history](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_changes.md) and the [versions](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_versions.md) of RMT
 
 Technical Documentation
 - Current [RMT Tracker documentation](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_tracker.md) and discussion
 - Current [RMT Module File Format documentation](https://github.com/peterdell/RASTER-Music-Tracker/blob/dev/doc/rmt_format.md) and discussion
 
 
-### Building
-
-The official build is the Qt5 frontend on Linux / POSIX:
-
-```bash
-sudo apt install cmake qtbase5-dev portaudio19-dev
-cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
-cmake --build build-qt -j
-./build-qt/out/rmt song.rmt
-```
-
-On Windows the MFC version is built with MSVC. See [BUILD.md](BUILD.md) for all
-platforms, options and the current state of the Qt frontend.
-
-
-### Main features:
+### Main features
 
 Note that this is as of RMT 1.28 and not accurate for 1.34 and later!
 
 * Mono 4 tracks / stereo 8 tracks.
 * 254 tracks, each with its own length (256 beats max.) and with support for track loop.
 * 64 instruments (stereo, instrument table up to 32 steps - 2 types and 2 modes with loop,
-  instrument envelope up to 32 steps with loop, portamento, filter, 16bit bass, volume slide,
-  volume minimum, vibrato, frequency shifting, etc.).Fully automatic management of AUDCTL
+  instrument envelope up to 32 steps with loop, portamento, filter, 16bit bass, volume slide,
+  volume minimum, vibrato, frequency shifting, etc.).Fully automatic management of AUDCTL
   register (filters, 16bit basses) and/or manual AUDCTL settings.
 * Support for "volume only" forced output.
 * Note portamento up/down effect.
@@ -75,14 +139,15 @@ Note that this is as of RMT 1.28 and not accurate for 1.34 and later!
 * MIDI multitimbral playing possibilities.
   You can use the RMT like an Atari multitimbral MIDI instrument. 
   You have to send MIDI output from your MIDI sequencer or player 
-  to RMT MIDI input by means of some virtual MIDI cable (for example 
-  "MIDI Yoke" etc.). The MIDI implementation chart is in the midi.txt file.
+  to RMT MIDI input by means of some virtual MIDI cable (on Linux an ALSA
+  sequencer port, on Windows for example "loopMIDI", on macOS the IAC
+  driver). The MIDI implementation chart is in the [midi.txt](doc/midi.txt) file.
+
 
 ### Known Issues
 
-Issues are tracked on the [GitHub issue tracker](https://github.com/raster-atari-org/RASTER-Music-Tracker/issues).
-
-There are no more changes to the 1.34 version. If you find an issue in the stable version, please test the daily 1.35 version to see if it's already fixed.
+Issues of the Qt port are tracked on the [GitHub issue tracker of the port](https://github.com/gianlucarenzi/RASTER-Music-Tracker/issues).
+Issues of the original RMT are tracked on the [upstream issue tracker](https://github.com/raster-atari-org/RASTER-Music-Tracker/issues).
 
 
 ### Credits
@@ -91,7 +156,8 @@ There are no more changes to the 1.34 version. If you find an issue in the stabl
   Thank you for everything you did, we truly miss you <3.
 - Robert Petruzela, Bob!k/C.P.U. and - JirkaS/C.P.U.
 - [Vin Samuel](https://github.com/VinsCool), VinsCool, 2021-2024
-- [Peter Dell](www.wudsn.com), JAC!, 2024 to present
+- [Peter Dell](https://www.wudsn.com), JAC!, 2024 to present
+- [Gianluca Renzi](https://github.com/gianlucarenzi), 2026: the Qt port (Linux, Windows, macOS)
 
 #### Additional Credits
 - New features, bugfixes and improvements for RMT 1.31-1.34 by VinsCool
