@@ -31,7 +31,7 @@ sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
 ```bash
 cmake -B build-qt -DCMAKE_BUILD_TYPE=Release   # RMT_USE_QT is ON by default off Windows
 cmake --build build-qt -j
-./build-qt/out/rmt song.rmt                    # or the versioned binary: rmt-2.0.0
+./build-qt/out/rmt song.rmt
 ```
 
 The build is free of compiler warnings with GCC 10 (`-Wall -Wextra`).
@@ -445,8 +445,8 @@ Check that all prerequisites are installed and in PATH.
 
 ## Output Artifacts
 
-- **Linux / POSIX (Qt6, official):** `build-qt/out/rmt` and the versioned
-  `rmt-<version>`, with `resources/` next to them
+- **Linux / POSIX (Qt6, official):** `build-qt/out/rmt`, with `resources/` next to
+  it
 - **Windows, MSVC:** `build-msvc/out/Rmt.exe` (the full MFC tracker)
 - **MinGW:** `build-mingw-core/out/RmtCoreTest.exe`, `Rmt.exe` (audio test),
   `RmtMidiTest.exe` - engine and backends only, no tracker GUI (see above)
