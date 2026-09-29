@@ -79,8 +79,8 @@ bool CSong::ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescripti
         return false;	// if the module could not be created
     }
 
-    // And save the RMT module block
-    CAtariIO::SaveBinaryBlock(ou, exportTempDescription.mem, exportTempDescription.targetAddrOfModule, exportTempDescription.firstByteAfterModule, TRUE);
+    // And save the RMT module block (the end address is inclusive)
+    CAtariIO::SaveBinaryBlock(ou, exportTempDescription.mem, exportTempDescription.targetAddrOfModule, exportTempDescription.firstByteAfterModule - 1, TRUE);
 
     return true;		// Indicate that data was saved
 }

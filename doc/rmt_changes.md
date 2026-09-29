@@ -98,6 +98,10 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   Fourier disabled, "I understand" needed for OK and remembered). Checked
   with the samples rmt/imports/axel_f.mod (MOD) and 404_Error.tmc (TMC).
   (2026-09-29)
+- Fixed the stripped RMT export writing one byte more than the module (the
+  end address given to SaveBinaryBlock, which is inclusive, was the first
+  byte after the module), and writing an empty file for a module ending at
+  $FFFF (that end address wrapped to 0). (2026-09-29)
 
 
 Changes in RMT 1.35 (Planned)
