@@ -29,6 +29,25 @@ Songs, instruments and tracks are the same files as in RMT 1.3x: you can
 move your work between the Windows version and this one.
 
 
+### Screenshots
+
+*High Tide* by Born/LaResistance, a stereo song (8 tracks), playing on Linux:
+
+![RMT playing a stereo song on Linux](doc/screenshots/rmt-playing-linux.png)
+
+The instrument editor:
+
+![The instrument editor](doc/screenshots/rmt-instrument-editor.png)
+
+A dialog of RMT rewritten in Qt (song columns' order) and the Apple Silicon
+version on macOS, built by GitHub Actions:
+
+<p>
+  <img src="doc/screenshots/rmt-qt-dialog.png" alt="A Qt dialog: song columns' order" width="45%">
+  <img src="doc/screenshots/rmt-macos-arm64.png" alt="RMT on macOS (Apple Silicon)" width="52%">
+</p>
+
+
 ### Please try it and tell me what you think!
 
 This is the first release of the port. It has been used and tested mostly on
