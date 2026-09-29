@@ -39,6 +39,11 @@ The instrument editor:
 
 ![The instrument editor](doc/screenshots/rmt-instrument-editor.png)
 
+The Windows version, from the v2.0 zip, playing *gem'x* by Raster (here run
+under Wine on Linux):
+
+![RMT for Windows playing a song](doc/screenshots/rmt-windows-wine.png)
+
 A dialog of RMT rewritten in Qt (song columns' order) and the Apple Silicon
 version on macOS, built by GitHub Actions:
 
