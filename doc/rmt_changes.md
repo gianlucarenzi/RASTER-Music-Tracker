@@ -70,6 +70,10 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   intended fall-throughs, C++20 volatile deprecations, strncpy replaced by
   memcpy for unterminated copies, unused variables, a nested comment, and the
   empty src/import.cpp removed.
+- The Qt5 frontend is now the official build on Linux/POSIX and was merged into
+  master. BUILD.md starts with it, README.md has a "Building" section. Windows
+  keeps the MFC GUI built with MSVC by default (RMT_USE_QT=OFF) until the Qt
+  frontend is tested there. (2026-09-29)
 
 
 Changes in RMT 1.35 (Planned)

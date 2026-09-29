@@ -1,121 +1,39 @@
 # Building RASTER Music Tracker with CMake
 
-This guide covers building RMT on Windows (MSVC/MinGW) and Linux (MinGW cross-compile).
+The **official build is the Qt5 frontend on Linux / POSIX** (`RMT_USE_QT=ON`,
+the default there). On Windows the MFC GUI built with MSVC is still the
+default; MinGW builds the engine and the audio/MIDI backends only.
 
-## Prerequisites
-
-### Windows (MSVC)
-- Visual Studio 2022 or later
-- CMake 3.25+
-- Windows 10 SDK or later
-
-### Windows (MinGW native)
-- MinGW-w64 x86_64 compiler
-- CMake 3.25+
-
-### Linux (MinGW cross-compile → Windows)
-```bash
-sudo apt install cmake mingw-w64
-```
+| Platform | Build | GUI | Section |
+|----------|-------|-----|---------|
+| Linux / POSIX | `cmake -B build-qt` | Qt5 (**official**) | [Qt5 frontend](#official-build-qt5-frontend-linux--posix) |
+| Windows | MSVC | MFC | [Windows with MSVC](#windows-with-msvc-mfc) |
+| Windows / Linux | MinGW | none (engine, backends, tests) | [MinGW](#mingw-engine-and-backends-only) |
 
 ---
 
-## Building on Windows with MSVC
+## Official build: Qt5 frontend (Linux / POSIX)
+
+### Prerequisites
+
+- CMake 3.25+ and a C++20 compiler (GCC 10 or later)
+- Qt 5.12 or later (Core, Widgets)
+- PortAudio, for sound (without it the tracker runs silent)
+- RtMidi, optional (MIDI input is not wired to the Qt frontend yet)
 
 ```bash
-cd RASTER-Music-Tracker
-mkdir build-msvc
-cd build-msvc
-cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --config Release
+sudo apt install cmake qtbase5-dev portaudio19-dev
 ```
 
-Output: `out\Rmt.exe`
-
----
-
-## MinGW (Windows native or Linux cross-compile)
-
-**What builds with MinGW:** the RMT engine and the audio/MIDI backends.
-**What does not:** the full tracker. Its GUI (Rmt.cpp, MainFrm.cpp, RmtView.cpp,
-RmtDoc.cpp and the dialogs, 18 files) is MFC, and MFC exists only for MSVC:
-no MinGW toolchain provides `afxwin.h`. The Qt5 frontend (`-DRMT_USE_QT=ON`,
-see below) needs a Qt5 built for MinGW, not tested yet. For the full MFC
-tracker use MSVC.
-
-### Cross-compile from Linux
+### Build and run
 
 ```bash
-sudo apt install cmake mingw-w64
-cd RASTER-Music-Tracker
-cmake -B build-mingw-core -DCMAKE_TOOLCHAIN_FILE=mingw-toolchain.cmake \
-      -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
-cmake --build build-mingw-core -j
-```
-
-Output in `build-mingw-core/out/`:
-
-| File | Content |
-|------|---------|
-| `RmtCoreTest.exe` | the RMT engine (Song, Tracks, Instruments, C6502, Pokey, IO, SAP/ASM/WAV export) + the GUI-shared drawing code, without MFC |
-| `Rmt.exe` | audio backend test (`main-portaudio.cpp`) |
-| `RmtMidiTest.exe` | MIDI backend test (`main-midi.cpp`) |
-
-Notes:
-
-- `mingw-toolchain.cmake` picks `x86_64-w64-mingw32-g++-posix` when present.
-  On Debian/Ubuntu the plain `x86_64-w64-mingw32-g++` uses the "win32" thread
-  model, which has no `std::thread` / `std::this_thread` (used by the test
-  programs).
-- PortAudio is optional on Windows: when `portaudio.h` is not found the
-  PortAudio backend is left out (`RMT_NO_PORTAUDIO`) and the audio factory uses
-  DirectSound. DirectSound and WinMM come with MinGW.
-- Without `-DRMT_BUILD_CORE_ONLY=ON` the full MFC build is attempted and stops
-  on `afxwin.h` (see above).
-
-### Windows with MinGW native (MSYS2)
-
-Same targets, from an MSYS2 MinGW64 shell:
-
-```bash
-cmake -G "MinGW Makefiles" -B build-mingw-core -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
-cmake --build build-mingw-core
-```
-
-(Not tested on Windows; the sources are the same as the cross-compile.)
-
-### Linux native
-
-```bash
-cmake -B build-core-linux -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
-cmake --build build-core-linux
-./build-core-linux/out/RmtCoreTest
-```
-
----
-
-## Qt5 frontend (Linux / POSIX) - work in progress
-
-The tracker GUI is the MFC code itself (`RmtView.cpp`, `RmtDoc.cpp` and the
-GUI-shared drawing code) compiled against `src/MfcTypes.h`, a small
-replacement of the MFC classes it uses: a software device context (`CDC`,
-`CBitmap`, bitmaps of `src/res` compiled in by `cmake/EmbedResources.cmake`),
-message maps that build a real command table, and `CWnd`/`CView` whose window
-operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
-
-| File | |
-|------|---|
-| `qt/main-qt.cpp` | start-up and main window; `RMT_QT_GRAB` / `RMT_QT_MENU_TEST` test hooks |
-| `qt/RmtQtFrontend.cpp` | `RmtMainWindow` (menu bar, `QtCCmdUI`), `RmtViewWidget` (view, keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
-| `qt/RmtQtKeys.cpp` | key events → Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
-| `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
-
-```bash
-sudo apt install qtbase5-dev
-cmake -B build-qt                  # RMT_USE_QT is ON by default off Windows
+cmake -B build-qt -DCMAKE_BUILD_TYPE=Release   # RMT_USE_QT is ON by default off Windows
 cmake --build build-qt -j
-./build-qt/out/rmt song.rmt        # or the versioned binary: rmt-2.0.0
+./build-qt/out/rmt song.rmt                    # or the versioned binary: rmt-2.0.0
 ```
+
+The build is free of compiler warnings with GCC 10 (`-Wall -Wextra`).
 
 ### Loading and playing a song
 
@@ -177,26 +95,27 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   re-created from its own tick keeps the deadline, so the tempo does not
   drift) runs `CSong::TimerRoutine()`, and the DirectSound buffer the sound
   code streams to is played by PortAudio with real cursors (`MfcAudio.cpp`,
-  `RMT_HAVE_PORTAUDIO`, `sudo apt install portaudio19-dev`). A re-created
-  timer waits for the tick that created it to return, and a timer more than
-  200 ms late restarts from now instead of catching up: before, a stall of
-  more than one tick (window move, load, debugger) let two ticks run at once,
-  the timers doubled at every stall and the process ended at 100% on all
-  cores (thousands of threads, then an abort). `CSongTimer::StopTimer()` is
-  called on every exit (`main-qt.cpp`) and no tick can start a new timer once
-  it has run, so the song timer no longer runs into the destruction of
-  `g_Song` (segfault on exit)
+  `RMT_HAVE_PORTAUDIO`). A re-created timer waits for the tick that created
+  it to return, and a timer more than 200 ms late restarts from now instead
+  of catching up: before, a stall of more than one tick (window move, load,
+  debugger) let two ticks run at once, the timers doubled at every stall and
+  the process ended at 100% on all cores (thousands of threads, then an
+  abort). `CSongTimer::StopTimer()` is called on every exit (`main-qt.cpp`)
+  and no tick can start a new timer once it has run, so the song timer no
+  longer runs into the destruction of `g_Song` (segfault on exit)
 - ✅ CPU (offscreen, gemx.rmt): about 50% of one core idle and while playing
   (was 78% / 66%), almost all of it the 60 fps redraw; `CDC::BitBlt` copies
   clipped rows with `memmove`, `CDC::StretchBlt` precomputes its columns
 - ❌ MIDI input
 - ❌ toolbars (menu shortcuts are all present)
 
-Test without a display: `RMT_QT_GRAB=shot.png` saves the window after 1 s
-(`RMT_QT_GRAB_MS`) and quits, `RMT_QT_KEYS=108,106` first presses keys (Linux
-evdev codes, 63 = F5 play), message boxes are answered automatically;
-`RMT_AUDIO_DUMP=out.wav` replaces the sound card with a thread that takes the
-sound buffer in real time and writes it to a WAV file:
+### Testing without a display
+
+`RMT_QT_GRAB=shot.png` saves the window after 1 s (`RMT_QT_GRAB_MS`) and
+quits, `RMT_QT_KEYS=108,106` first presses keys (Linux evdev codes, 63 = F5
+play), message boxes are answered automatically; `RMT_AUDIO_DUMP=out.wav`
+replaces the sound card with a thread that takes the sound buffer in real time
+and writes it to a WAV file:
 
 ```bash
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
@@ -222,7 +141,24 @@ with `rmtplay`, with the same delay at the start and at the end (no drift).
 `RmtCoreTest --screenshot out.ppm [song.rmt]` draws the main screen without Qt;
 `RmtCoreTest --play song.rmt frames regs.txt [out.wav]` plays a song with the
 engine (one `CSong::TimerRoutine()` per frame), writes the POKEY registers of
-every frame and the sound of the built-in POKEY.
+every frame and the sound of the built-in POKEY (see
+[Linux native core build](#linux-native-core-build)).
+
+### How it works
+
+The tracker GUI is the MFC code itself (`RmtView.cpp`, `RmtDoc.cpp` and the
+GUI-shared drawing code) compiled against `src/MfcTypes.h`, a small
+replacement of the MFC classes it uses: a software device context (`CDC`,
+`CBitmap`, bitmaps of `src/res` compiled in by `cmake/EmbedResources.cmake`),
+message maps that build a real command table, and `CWnd`/`CView` whose window
+operations go to an `IRmtHost`. `src/qt/` implements that host with Qt5:
+
+| File | |
+|------|---|
+| `qt/main-qt.cpp` | start-up and main window; `RMT_QT_GRAB` / `RMT_QT_MENU_TEST` test hooks |
+| `qt/RmtQtFrontend.cpp` | `RmtMainWindow` (menu bar, `QtCCmdUI`), `RmtViewWidget` (view, keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
+| `qt/RmtQtKeys.cpp` | key events → Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
+| `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
 
 ### Built-in 6502 and POKEY (`src/emu`)
 
@@ -238,6 +174,92 @@ independent player and 6502 core): over 800 frames AUDC and AUDCTL are
 identical and AUDF within 1 (RMT recomputes its frequency tables from the
 tuning, rmtplay has the original tables); the sound correlates 0.98 (chroma)
 and 0.97 (loudness per frame).
+
+---
+
+## Windows with MSVC (MFC)
+
+Prerequisites:
+- Visual Studio 2022 or later
+- CMake 3.25+
+- Windows 10 SDK or later
+
+```bash
+cd RASTER-Music-Tracker
+mkdir build-msvc
+cd build-msvc
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --config Release
+```
+
+Output: `out\Rmt.exe`
+
+On Windows `RMT_USE_QT` is OFF by default and the MFC GUI is built.
+`-DRMT_USE_QT=ON` selects the Qt5 frontend there too, but that is not tested
+yet (see [Remaining work](#remaining-work-on-the-qt-frontend)).
+
+---
+
+## MinGW (engine and backends only)
+
+**What builds with MinGW:** the RMT engine and the audio/MIDI backends.
+**What does not:** the full tracker. Its MFC GUI (Rmt.cpp, MainFrm.cpp,
+RmtView.cpp, RmtDoc.cpp and the dialogs, 18 files) exists only for MSVC:
+no MinGW toolchain provides `afxwin.h`. The Qt5 frontend (`-DRMT_USE_QT=ON`)
+needs a Qt5 built for MinGW, not tested yet. For the full MFC tracker use MSVC.
+
+Prerequisites:
+- MinGW-w64 x86_64 compiler (Linux: `sudo apt install cmake mingw-w64`)
+- CMake 3.25+
+
+### Cross-compile from Linux
+
+```bash
+sudo apt install cmake mingw-w64
+cd RASTER-Music-Tracker
+cmake -B build-mingw-core -DCMAKE_TOOLCHAIN_FILE=mingw-toolchain.cmake \
+      -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
+cmake --build build-mingw-core -j
+```
+
+Output in `build-mingw-core/out/`:
+
+| File | Content |
+|------|---------|
+| `RmtCoreTest.exe` | the RMT engine (Song, Tracks, Instruments, C6502, Pokey, IO, SAP/ASM/WAV export) + the GUI-shared drawing code, without MFC |
+| `Rmt.exe` | audio backend test (`main-portaudio.cpp`) |
+| `RmtMidiTest.exe` | MIDI backend test (`main-midi.cpp`) |
+
+Notes:
+
+- `mingw-toolchain.cmake` picks `x86_64-w64-mingw32-g++-posix` when present.
+  On Debian/Ubuntu the plain `x86_64-w64-mingw32-g++` uses the "win32" thread
+  model, which has no `std::thread` / `std::this_thread` (used by the test
+  programs).
+- PortAudio is optional on Windows: when `portaudio.h` is not found the
+  PortAudio backend is left out (`RMT_NO_PORTAUDIO`) and the audio factory uses
+  DirectSound. DirectSound and WinMM come with MinGW.
+- Without `-DRMT_BUILD_CORE_ONLY=ON` the full MFC build is attempted and stops
+  on `afxwin.h` (see above).
+
+### Windows with MinGW native (MSYS2)
+
+Same targets, from an MSYS2 MinGW64 shell:
+
+```bash
+cmake -G "MinGW Makefiles" -B build-mingw-core -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
+cmake --build build-mingw-core
+```
+
+(Not tested on Windows; the sources are the same as the cross-compile.)
+
+### Linux native core build
+
+```bash
+cmake -B build-core-linux -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
+cmake --build build-core-linux
+./build-core-linux/out/RmtCoreTest
+```
 
 ---
 
@@ -285,6 +307,9 @@ development target (e.g. `"2.1"`) so subsequent RC tags follow the new series.
 
 ## CMake Options
 
+- `-DRMT_USE_QT=ON|OFF` - Qt5 frontend (default ON on Linux/POSIX, OFF on Windows)
+- `-DRMT_BUILD_CORE_ONLY=ON` - Build the engine and backends only, no GUI
+- `-DRMT_CORE_TEST=ON` - Also build `RmtCoreTest` (with `RMT_BUILD_CORE_ONLY`)
 - `-DCMAKE_BUILD_TYPE=Release` - Build optimized release version
 - `-DCMAKE_BUILD_TYPE=Debug` - Build with debug symbols
 - `-DCMAKE_TOOLCHAIN_FILE=mingw-toolchain.cmake` - Use MinGW toolchain (for cross-compile)
@@ -292,6 +317,14 @@ development target (e.g. `"2.1"`) so subsequent RC tags follow the new series.
 ---
 
 ## Troubleshooting
+
+### Qt5 not found
+Install the Qt5 development package: `sudo apt install qtbase5-dev`, or point
+CMake at another Qt5 with `-DCMAKE_PREFIX_PATH=/path/to/Qt5`.
+
+### No sound with the Qt frontend
+PortAudio was not found at configure time: `sudo apt install portaudio19-dev`,
+then configure again.
 
 ### DirectSound/WinMM not found (cross-compile)
 This is expected on Linux. The libraries are found in the MinGW sysroot:
@@ -308,8 +341,9 @@ Check that all prerequisites are installed and in PATH.
 
 ## Output Artifacts
 
-### Windows executable
-- **MSVC:** `build-msvc/out/Rmt.exe` (the full tracker)
+- **Linux / POSIX (Qt5, official):** `build-qt/out/rmt` and the versioned
+  `rmt-<version>`, with `resources/` next to them
+- **Windows, MSVC:** `build-msvc/out/Rmt.exe` (the full MFC tracker)
 - **MinGW:** `build-mingw-core/out/RmtCoreTest.exe`, `Rmt.exe` (audio test),
   `RmtMidiTest.exe` - engine and backends only, no tracker GUI (see above)
 
@@ -317,24 +351,28 @@ All output binaries are in `out/` subdirectory of the build folder.
 
 ---
 
-## Next Steps: Phase 2 (POSIX / Qt)
+## Remaining work on the Qt frontend
 
-The Qt5 frontend (`-DRMT_USE_QT=ON`, default on Linux) is the active
-development track for the 2.x series. Remaining work:
+The Qt5 frontend is the official build on Linux/POSIX and the development
+track for the 2.x series. Remaining work:
 
 1. **Native Qt dialogs** — rewrite `MfcDialogStubs.cpp` dialogs and
    `CFileDialog` in Qt so File → Load/Save and all other dialogs are
    functional
 2. **MIDI input** — wire `RtMidiBackend` to the Qt event loop
 3. **Toolbars** — recreate the MFC rebars as Qt toolbars
-4. **Windows Qt build** — package Qt5 for MinGW and test `-DRMT_USE_QT=ON`
-   on Windows
-
-Phase 1 (CMake foundation, cross-compile, core test) is complete.
+4. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
+   `-DRMT_USE_QT=ON` on Windows, so Qt can become the default there too
 
 ---
 
 ## Test Results
+
+Linux native GCC 10: the Qt5 frontend builds without warnings, shows the main
+screen with a song, keys move the cursor, all 81 menu actions are verified via
+`RMT_QT_MENU_TEST` (checked offscreen with `RMT_QT_GRAB` / `RMT_QT_KEYS`).
+`-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` builds without warnings and
+`RmtCoreTest` runs ("finished successfully", `--screenshot` draws gemx.rmt).
 
 MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 
@@ -343,11 +381,5 @@ MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 | `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` | ✅ `RmtCoreTest.exe`, `Rmt.exe`, `RmtMidiTest.exe` build (not run: needs Windows or Wine) |
 | default (full MFC GUI) | ❌ 18 MFC files: `afxwin.h` not available with MinGW |
 | `-DRMT_USE_QT=ON` | ❌ no Qt5 for MinGW installed |
-
-Linux native GCC 10: `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` builds and
-`RmtCoreTest` runs ("finished successfully", `--screenshot` draws gemx.rmt);
-the Qt5 frontend builds and shows the main screen with a song, keys move the
-cursor, all 81 menu actions are verified via `RMT_QT_MENU_TEST`
-(checked offscreen with `RMT_QT_GRAB` / `RMT_QT_KEYS`).
 
 MSVC builds: not tested here.
