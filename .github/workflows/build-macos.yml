@@ -158,7 +158,13 @@ jobs:
           </plist>
           PLIST
           plutil -lint $APP/Contents/Info.plist
-          $RUN "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite
+          # xcrun (behind /usr/bin/otool) builds its cache on the first call;
+          # through Rosetta that takes longer than the time macdeployqt 5.15.2
+          # gives otool, and then it deploys nothing: do the first call here
+          time otool -L build/out/rmt
+          time arch -x86_64 /usr/bin/otool -L build/out/rmt || true
+          "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite -verbose=2 2>&1 | tee macdeployqt.log
+          if grep -q '^ERROR' macdeployqt.log; then echo "macdeployqt failed"; exit 1; fi
           # No library may still be loaded from Homebrew or the build folders:
           # the load commands only (otool -L also lists the install name of a
           # dylib itself, which macdeployqt leaves as it was)
