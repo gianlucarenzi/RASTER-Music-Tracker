@@ -49,6 +49,27 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   scaling done by QPainter), and CDC::BitBlt / StretchBlt of the non-MFC
   builds clip once and copy whole rows. The 60 fps screen refresh and the
   50/60 Hz song timer (VBI) are unchanged and independent of each other.
+- All compiler warnings fixed: the Qt and core-only builds (GCC 10, -Wall
+  -Wextra) went from 191 warnings to none. (2026-09-29)
+  Real bugs found among them:
+  - Undo: event data was freed with delete[] on a void*; it is now freed with
+    the type it was allocated with.
+  - CInstruments / CTracks: the constructors tested m_instr / m_track before
+    they were initialised, and the destructors used delete instead of delete[].
+  - Loading Atari binaries: `!sizeRead == size` never detected a short read,
+    now `sizeRead != size`.
+  - POKEY registers view: a 2-byte buffer received the register number via
+    sprintf (overflow); several values could be read uninitialised.
+  - Tuning file: a ratio line without '/' used an uninitialised denominator,
+    it now defaults to 1.
+  - MOD import: the envelope length of looped instruments was computed but
+    never assigned (statement with no effect); it is now set.
+  - TMC import: the volume fade-out was clamped to 0..255 after the conversion
+    to BYTE, so the clamp did nothing; it is now clamped before.
+  Cleanups: missing default cases in switch statements, [[fallthrough]] on
+  intended fall-throughs, C++20 volatile deprecations, strncpy replaced by
+  memcpy for unterminated copies, unused variables, a nested comment, and the
+  empty src/import.cpp removed.
 
 
 Changes in RMT 1.35 (Planned)
