@@ -4,9 +4,12 @@
 #ifdef RMT_HAS_MFC
 #include <mmsystem.h>
 #endif
-// Note: outside the real-MFC build, PCMWAVEFORMAT/MMCKINFO/MMIOINFO/HMMIO
-// and the mmio*() functions come from MfcTypes.h (a minimal, always-fails
-// stand-in - see the comment above mmioOpen() there).
+// Outside the real-MFC build there is no mmio*() API: the WAV file is
+// written with std::ofstream (RIFF header, "fmt " and "data" chunks).
+#ifndef RMT_HAS_MFC
+#include <cstdint>
+#include <fstream>
+#endif
 
 class CWaveFile
 {
@@ -16,8 +19,13 @@ public:
 	void WriteWave(BYTE* Data, int Size);
 
 private:
+#ifdef RMT_HAS_MFC
 	PCMWAVEFORMAT WaveFormat;
 	MMCKINFO ckOutRIFF, ckOut;
 	MMIOINFO mmioinfoOut;
 	HMMIO hmmioOut;
+#else
+	std::ofstream m_out;
+	uint32_t m_dataSize = 0;
+#endif
 };

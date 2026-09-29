@@ -21,7 +21,7 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
 
     ou.close();	// hack, just to be able to actually use the filename for now...
 
-    if (!(wfm = pokey.GetSoundFormat()))
+    if (!(wfm = pokey.GetSoundFormat()) || !wfm->nSamplesPerSec)
     {
         SendErrorMessage("Wave Export Failed", "Could not get sound format!");
         return false;
@@ -29,16 +29,17 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
 
     if (!wavefile.OpenFile(songExport.GetFilePath().GetBuffer(), wfm->nSamplesPerSec, wfm->wBitsPerSample, wfm->nChannels))
     {
-        SendErrorMessage("Wave Export Failed", "Could not get sound format!");
+        SendErrorMessage("Wave Export Failed", "Could not create the WAV file!");
         return false;
     }
 
     // Dump the POKEY registers from full song playback
     CPokeyStream& pokeyStream = songExport.GetSongContainer().GetModifiablePokeyStream();
 
-    // Busy writing! TODO: Fix the timing overlap causing conflicts
-    // JAC! Does this problem really still exist?
+    // Busy writing: the timer routine must not play or render the POKEY
+    // meanwhile (another thread, same Atari memory and POKEY emulation)
     pokeyStream.SetState(CPokeyStream::WRITE);
+    songExport.GetSong().SetStreamRendering(&pokeyStream);
 
     g_AtariTrackerDriver->Init();	// Reset the Atari memory 
     SetChannelOnOff(-1, 1);	// Unmute all channels
@@ -53,20 +54,25 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
         // Copy the SAP-R bytes to memory for this frame
         streambuffer = pokeyStream.GetStreamBuffer() + frames * frameSize;
 
-        //for (int i = 0; i < frameSize; i++)
-        //{
-        //	memory[0xd200 + i] = streambuffer[i];
-        //}
-
-        memory[RMTPLAYR_TRACKN_AUDF + 0] = streambuffer[0x00];
-        memory[RMTPLAYR_TRACKN_AUDF + 1] = streambuffer[0x02];
-        memory[RMTPLAYR_TRACKN_AUDF + 2] = streambuffer[0x04];
-        memory[RMTPLAYR_TRACKN_AUDF + 3] = streambuffer[0x06];
-        memory[RMTPLAYR_TRACKN_AUDC + 0] = streambuffer[0x01];
-        memory[RMTPLAYR_TRACKN_AUDC + 1] = streambuffer[0x03];
-        memory[RMTPLAYR_TRACKN_AUDC + 2] = streambuffer[0x05];
-        memory[RMTPLAYR_TRACKN_AUDC + 3] = streambuffer[0x07];
-        memory[RMTPLAYR_V_AUDCTL] = streambuffer[0x08];
+        // A frame is AUDF1, AUDC1 ... AUDF4, AUDC4, AUDCTL of a POKEY; in stereo
+        // the 2nd POKEY ($D210, tracks 5-8) comes first, then the 1st ($D200)
+        const byte* pokey1 = streambuffer + (frameSize == 18 ? 9 : 0);
+        for (int i = 0; i < 4; i++)
+        {
+            memory[RMTPLAYR_TRACKN_AUDF + i] = pokey1[i * 2];
+            memory[RMTPLAYR_TRACKN_AUDC + i] = pokey1[i * 2 + 1];
+        }
+        memory[RMTPLAYR_V_AUDCTL] = pokey1[8];
+        if (frameSize == 18)
+        {
+            const byte* pokey2 = streambuffer;
+            for (int i = 0; i < 4; i++)
+            {
+                memory[RMTPLAYR_TRACKN_AUDF + 4 + i] = pokey2[i * 2];
+                memory[RMTPLAYR_TRACKN_AUDC + 4 + i] = pokey2[i * 2 + 1];
+            }
+            memory[RMTPLAYR_V_AUDCTL2] = pokey2[8];
+        }
 
         // Fill the POKEY buffer with 1 rendered chunk
         pokey.RenderSoundV2(songExport.GetSong().GetInstrumentSpeed(), buffer, length);
@@ -80,11 +86,15 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
 
     SetChannelOnOff(-1, 0);	// Mute all channels
 
+    // The timer routine may play again
+    songExport.GetSong().SetStreamRendering(nullptr);
+    pokeyStream.SetState(CPokeyStream::STOP);
+
     // Finished doing WAV things...
     wavefile.CloseFile();
 
     // Also make sure to delete the buffer once it's no longer needed
-    delete buffer;
+    delete[] buffer;
 
     return true;
 }

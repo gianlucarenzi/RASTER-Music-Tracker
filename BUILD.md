@@ -53,7 +53,7 @@ instruments (RTI) and tracks (TXT), keep the last folder, propose the current
 file name and return the chosen file type as with MFC. The filters match
 upper case extensions too (`*.rmt *.RMT`), and a name typed without extension
 gets the one of the chosen type. Import works for MOD and TMC, Export As
-for all formats but WAV (see [Status](#status)).
+for all formats (see [Status](#status)).
 
 At start-up a message box may say that `tuning.ini` is missing; the default
 tuning is used and the message is harmless.
@@ -100,8 +100,12 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   address, SFX and RMTFEAT definitions updated as they change), ASM simple
   notation (`IDD_EXPORT_ASM`), relocatable ASM for RmtPlayer
   (`IDD_EXPORT_RMTPLAYER_ASM`), SAP-R and SAP (`IDD_EXPSAP`) and XEX
-  (`IDD_EXPMSX`, screen text preview, rasterbar color); LZSS has no options.
-  WAV fails with "Could not get sound format!" (the WAV export, not a dialog)
+  (`IDD_EXPMSX`, screen text preview, rasterbar color); LZSS has no options
+- ✅ WAV export (44.1 kHz, 8 bit, stereo, one pass of the song up to its loop
+  point): written with `std::ofstream` (`WaveFile.cpp`, the `mmio*()` API is
+  Windows only) and rendered with the built-in POKEY; mono and stereo songs.
+  Checked against the sound of the tracker (`RMT_AUDIO_DUMP`): loudness
+  correlation 0.97 (gemx.rmt), 0.94 / 0.97 left / right (shorty_noises.rmt)
 - ⚠️  other dialogs: the MFC dialogs are stubs that answer "cancel"
   (`MfcDialogStubs.cpp`); they must still be rewritten in Qt (configuration,
   tuning, song/track/instrument info, effects...)

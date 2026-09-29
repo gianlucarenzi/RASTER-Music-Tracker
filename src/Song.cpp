@@ -109,6 +109,12 @@ void CSong::StopTimer()
     g_SongTimer.StopTimer();
 }
 
+void CSong::SetStreamRendering(CPokeyStream* pokeyStream)
+{
+    m_pokeyStream = pokeyStream;			// TimerRoutine() is bypassed while it is recording or writing
+    if (pokeyStream) g_SongTimer.WaitForTimerRoutineProcessed();
+}
+
 /// <summary>
 /// Change the timing of how often the CSong::TimerRoutine is being called.
 /// Depends on PAL or NTSC timing.

@@ -34,6 +34,10 @@ public:
 
     void StopTimer();
     void ChangeTimer(int ms);
+    // While a POKEY stream is rendered outside the timer (WAV export), the
+    // timer routine must not play or render: set the stream (it must not be
+    // stopped) and wait for a running timer routine; nullptr ends it
+    void SetStreamRendering(CPokeyStream* pokeyStream);
 
     void ClearSong(int numoftracks);
 

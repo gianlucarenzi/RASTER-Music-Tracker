@@ -318,8 +318,8 @@ BOOL CXPokey::RenderSound1_50(int instrspeed)
     return 0;
 }
 
-// Initial WAV recorder process
-// NOTE: This does NOT work with the Altirra plugin due to it hijacking the soundbuffer with its own thing...
+// Initial WAV recorder process: renders one frame into buffer, like
+// RenderSound1_50() does into the sound buffer
 void CXPokey::RenderSoundV2(int instrspeed, BYTE* buffer, int& length)
 {
     int rendersize = GetChunkSize();
@@ -334,6 +334,22 @@ void CXPokey::RenderSoundV2(int instrspeed, BYTE* buffer, int& length)
 
         switch (GetSoundDriver())
         {
+        case CPokey::SoundDriver::APOKEYSND:        // apokeysnd.dll or the built-in POKEY (emu/PokeySound)
+        {
+            int cycles = (int)((float)renderpartsize / GetChannels() * m_CyclesPerSample);
+            while (cycles > 0 && renderpartsize > 0)
+            {
+                // The maximum number of cycles that can be generated is CYCLESPERSCREEN
+                auto cyclesPerFrame = GetCyclesPerFrame(ntsc);
+                int rencyc = (cycles > cyclesPerFrame ? cyclesPerFrame : cycles);
+                renderpartsize = APokeySound_Generate(rencyc, buffer + renderoffset, ASAP_FORMAT_U8);
+                rendersize -= renderpartsize;
+                renderoffset += renderpartsize;
+                cycles -= rencyc;
+            }
+        }
+        break;
+
         case CPokey::SoundDriver::SA_POKEY:
             Pokey_Process(buffer + renderoffset, (unsigned short)renderpartsize);
             rendersize -= renderpartsize;

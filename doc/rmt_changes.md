@@ -105,6 +105,17 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   LZSS has no options, which is why it was the only format that worked
   before. The WAV export still fails with "Could not get sound format!".
   (2026-09-29)
+- WAV export fixed (it always failed outside Windows, and wrote no sound
+  with apokeysnd.dll or the built-in POKEY). (2026-09-29)
+  - The non-MFC build writes the WAV file with std::ofstream; the mmio*()
+    API it used is Windows only (MfcTypes.h had always-failing stubs).
+  - RenderSoundV2() only rendered with sa_pokey.dll; it now renders with the
+    APOKEYSND driver too (apokeysnd.dll and the built-in POKEY).
+  - Stereo songs: the 2nd POKEY is the first half of a stereo stream frame;
+    the export read it as the 1st POKEY, so the left channels were lost.
+  - The timer routine kept playing and rendering on its own thread during
+    the WAV rendering (same Atari memory and POKEY emulation); it is now
+    bypassed as during the stream dump (CSong::SetStreamRendering()).
 - Fixed the stripped RMT export writing one byte more than the module (the
   end address given to SaveBinaryBlock, which is inclusive, was the first
   byte after the module), and writing an empty file for a module ending at
