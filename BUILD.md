@@ -452,7 +452,7 @@ All output binaries are in `out/` subdirectory of the build folder.
 
 ---
 
-## Windows and macOS builds on GitHub Actions
+## Linux, Windows and macOS builds on GitHub Actions
 
 Pushing a tag `v*` (`scripts/push.sh` → `v2.0-rcN`, `scripts/release.sh` →
 `v2.1`...) builds the Qt5 frontend on GitHub and publishes the packages as
@@ -464,6 +464,7 @@ are only the artifacts, no release:
 
 | Workflow | Runner | Toolchain and libraries | Package |
 |----------|--------|-------------------------|---------|
+| `.github/workflows/build-linux.yml` | `ubuntu-latest`, container `ubuntu:20.04` (glibc 2.31, as Debian 11) | GCC 10, `portaudio19-dev`, `librtmidi-dev` (ALSA) of Ubuntu 20.04, the official Qt 5.15.2 (`aqtinstall`; Ubuntu 20.04 has 5.12) | `RMT-Linux-x86_64.AppImage` (`linuxdeploy` + Qt plugin): runs on Debian 11 / Ubuntu 20.04 and newer, the build checks that no file in it needs a glibc after 2.31 |
 | `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt5-base`, `portaudio`, `rtmidi` (WinMM) | `RMT-Windows-x64.zip`: `Rmt.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
 | `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | arm64: Apple Clang, Homebrew `qt@5`, `portaudio`, `rtmidi` (CoreMIDI). x86_64: the official Qt 5.15.2 `clang_64` (Intel only; Homebrew no longer installs on Intel), PortAudio 19.7.0 and RtMidi 6.0.0 built from source for x86_64 | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Macs, or Apple Silicon through Rosetta 2): `RMT.app` with the Qt frameworks and the libraries inside (`macdeployqt`, checked with the load commands of `otool -l`) |
 
@@ -471,6 +472,14 @@ are only the artifacts, no release:
 macOS asks to open it with right click → Open the first time. Its
 `resources/` are in `Contents/MacOS`, next to the program (as in `out/`);
 the configuration is in the user's preferences, so a new DMG keeps it.
+
+The Linux steps are `scripts/build-appimage.sh`, which also builds the
+AppImage locally in the same system:
+
+```bash
+docker run --rm -v "$PWD":/src -w /src ubuntu:20.04 scripts/build-appimage.sh
+# build-appimage/RMT-Linux-x86_64.AppImage
+```
 
 On the runners there is no sound card: the smoke tests print "cannot open the
 audio output (PortAudio)" and go on silent, as RMT does anywhere without one.

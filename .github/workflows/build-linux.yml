@@ -1,0 +1,55 @@
+name: Build RMT on Linux
+
+# The Qt5 frontend as an AppImage, built in an Ubuntu 20.04 container: its
+# glibc 2.31 is the one of Debian 11, so the AppImage runs there and on every
+# newer distribution (scripts/build-appimage.sh checks it). The runner
+# ubuntu-20.04 is gone, the container gives the same system. The official Qt
+# 5.15.2, PortAudio and RtMidi go into the AppImage with linuxdeploy. A tag
+# v* builds it and publishes it as a release asset; started by hand it only
+# keeps it as an artifact.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:           # manual test runs: the artifacts only, no release
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: ubuntu:20.04
+
+    steps:
+      - name: Install git
+        # before the checkout: without git it downloads the sources with no
+        # history, and the version comes from the nearest git tag
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends git ca-certificates
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build the AppImage
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          WORK=$GITHUB_WORKSPACE/build-appimage scripts/build-appimage.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RMT-Linux-x86_64
+          path: |
+            build-appimage/RMT-Linux-x86_64.AppImage
+            build-appimage/rmt-linux.png
+
+      - name: Create release and upload asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build-appimage/RMT-Linux-x86_64.AppImage
+          prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh
