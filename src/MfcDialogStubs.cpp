@@ -252,7 +252,30 @@ CRmtMidi::~CRmtMidi() {}
 // replaces these dialogs one by one in later phases.
 // ---------------------------------------------------------------------------
 
-CConfigDlg::CConfigDlg(CWnd*) {}
+// Shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same defaults as ConfigDlg.cpp
+CConfigDlg::CConfigDlg(CWnd* pParent) : CDialog(CConfigDlg::IDD, pParent)
+{
+    m_midi_TouchResponse = FALSE;
+    m_midi_VolumeOffset = 0;
+    m_trackLinePrimaryHighlight = 0;
+    m_trackLineSecondaryHighlight = 0;
+    m_scaling_percentage = 100;
+    m_ntsc = FALSE;
+    m_doSmoothScrolling = TRUE;
+    m_displayflatnotes = FALSE;
+    m_usegermannotation = FALSE;
+    m_midi_NoteOff = FALSE;
+    m_keyboard_updowncontinue = FALSE;
+    m_nohwsoundbuffer = FALSE;
+    m_tracklinealtnumbering = FALSE;
+    m_keyboard_rememberoctavesandvolumes = FALSE;
+    m_keyboard_escresetatarisound = FALSE;
+    m_keyboard_askwhencontrol_s = FALSE;
+    m_viewDebugDisplay = FALSE;
+    m_trackerDriverVersion = NONE;
+    m_midi_device = -1;
+    m_keyboard_layout = KeyboardLayout::QWERTY;
+}
 void CConfigDlg::DoDataExchange(CDataExchange*) {}
 BOOL CConfigDlg::OnInitDialog() { return TRUE; }
 void CConfigDlg::OnOK() {}

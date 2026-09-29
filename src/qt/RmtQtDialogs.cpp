@@ -10,6 +10,7 @@
 #include "Song.h"
 #include "exportdlgs.h"
 #include "SAPFileExportDialog.h"
+#include "ConfigDlg.h"
 #include "ASMFileExporter.h"
 #include "Notes.h"
 
@@ -19,6 +20,7 @@
 #include <QComboBox>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFileInfo>
 #include <QFontDatabase>
 #include <QFormLayout>
@@ -731,11 +733,192 @@ static INT_PTR RunExportSap(QWidget* parent, CSAPFileExportDialog* dlg)
 }
 
 // ---------------------------------------------------------------------------
+// IDD_CONFIG - View -> Configuration (CConfigDlg, ConfigDlg.cpp)
+// ---------------------------------------------------------------------------
+
+// IDD_PATHS - CConfigPathsDlg: default folders of songs, instruments and
+// tracks; like CConfigDlg::OnPaths() they apply at once on OK
+static void RunConfigPaths(QWidget* parent)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("Paths...");
+    dialog.setMinimumWidth(520);
+    auto* layout = new QVBoxLayout(&dialog);
+
+    auto addPath = [&](const char* label, const CString& value) {
+        layout->addWidget(new QLabel(label));
+        auto* edit = new QLineEdit(FromCString(value));
+        auto* browse = new QPushButton("Browse");
+        QObject::connect(browse, &QPushButton::clicked, &dialog, [&dialog, edit] {  // CFilePathDlg
+            QString dir = QFileDialog::getExistingDirectory(&dialog, "Select folder", edit->text());
+            if (!dir.isEmpty()) edit->setText(dir);
+        });
+        auto* row = new QHBoxLayout;
+        row->addWidget(edit, 1);
+        row->addWidget(browse);
+        layout->addLayout(row);
+        return edit;
+    };
+    auto* songs = addPath("Songs:", g_defaultSongsPath);
+    auto* instruments = addPath("Instruments:", g_defaultInstrumentsPath);
+    auto* tracks = addPath("Tracks:", g_defaultTracksPath);
+
+    auto* buttons = AddOkCancel(dialog, layout);
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return;
+
+    g_defaultSongsPath = ToCString(songs->text());
+    g_defaultInstrumentsPath = ToCString(instruments->text());
+    g_defaultTracksPath = ToCString(tracks->text());
+    g_lastLoadPath_Songs = g_lastLoadPath_Instruments = g_lastLoadPath_Tracks = "";
+}
+
+static INT_PTR RunConfig(QWidget* parent, CConfigDlg* dlg)
+{
+    QDialog dialog(parent);
+    dialog.setWindowTitle("RMT configuration");
+    auto* layout = new QVBoxLayout(&dialog);
+
+    auto addCheck = [](QLayout* to, const char* text, BOOL on) {
+        auto* check = new QCheckBox(text);
+        check->setChecked(on);
+        to->addWidget(check);
+        return check;
+    };
+    auto spin = [](int min, int max, int value) {
+        auto* box = new QSpinBox;
+        box->setRange(min, max);                    // DDV_MinMaxInt
+        box->setValue(value);
+        return box;
+    };
+
+    // General
+    auto* general = new QGroupBox("General");
+    auto* generalLayout = new QVBoxLayout(general);
+    auto* scaling = spin(100, 300, dlg->m_scaling_percentage);
+    auto* primary = spin(2, 256, dlg->m_trackLinePrimaryHighlight);
+    auto* secondary = spin(2, 256, dlg->m_trackLineSecondaryHighlight);
+    auto* sizeRow = new QHBoxLayout;
+    sizeRow->addWidget(new QLabel("Interface size (in %)"));
+    sizeRow->addWidget(scaling);
+    sizeRow->addSpacing(16);
+    sizeRow->addWidget(new QLabel("Track line highlight step"));
+    sizeRow->addWidget(primary);
+    sizeRow->addWidget(new QLabel("/"));
+    sizeRow->addWidget(secondary);
+    sizeRow->addStretch();
+    generalLayout->addLayout(sizeRow);
+    auto* grid = new QGridLayout;
+    auto gridCheck = [&](int row, int col, const char* text, BOOL on) {
+        auto* check = new QCheckBox(text);
+        check->setChecked(on);
+        grid->addWidget(check, row, col);
+        return check;
+    };
+    auto* german = gridCheck(0, 0, "Use German notation", dlg->m_usegermannotation);
+    auto* altNumbering = gridCheck(0, 1, "Alternative track line numbering", dlg->m_tracklinealtnumbering);
+    auto* flats = new QCheckBox("Display accidentals as Flats instead of Sharps");
+    flats->setChecked(dlg->m_displayflatnotes);
+    grid->addWidget(flats, 1, 0, 1, 2);
+    auto* ntsc = gridCheck(2, 0, "NTSC system speed (60Hz)", dlg->m_ntsc);
+    auto* noHwBuffer = gridCheck(2, 1, "Don't use hardware soundbuffer", dlg->m_nohwsoundbuffer);
+    auto* smooth = gridCheck(3, 0, "Smooth scroll during playback", dlg->m_doSmoothScrolling);
+    generalLayout->addLayout(grid);
+    auto* debug = addCheck(generalLayout, "Debug display (enable only if you know what you are doing)", dlg->m_viewDebugDisplay);
+    generalLayout->addWidget(new QLabel("RMT Driver Version:"));
+    auto* driver = new QComboBox;
+    driver->addItems({ "No RMT Driver", "RMT 1.28 Unpatched by Raster", "RMT 1.28 Unpatched with Tuning",
+        "RMT 1.25 Patch3 Instrumentarium by Analmux", "RMT 1.27 Patch6 by Analmux", "RMT 1.28 Patch8 by Analmux",
+        "RMT 1.34 Patch16 by VinsCool", "RMT 1.28 Patch Prince of Persia by VinsCool" });   // index = TrackerDriverVersion
+    driver->setCurrentIndex(dlg->m_trackerDriverVersion);
+    generalLayout->addWidget(driver);
+    layout->addWidget(general);
+
+    // Keyboard
+    auto* keyboard = new QGroupBox("Keyboard");
+    auto* keyboardLayout = new QVBoxLayout(keyboard);
+    auto* layoutCombo = new QComboBox;
+    layoutCombo->addItems({ "QWERTY Layout", "AZERTY Layout" });   // index = KeyboardLayout
+    layoutCombo->setCurrentIndex((int)dlg->m_keyboard_layout);
+    auto* layoutRow = new QHBoxLayout;
+    layoutRow->addWidget(new QLabel("Keyboard layout:"));
+    layoutRow->addWidget(layoutCombo, 1);
+    keyboardLayout->addLayout(layoutRow);
+    auto* upDown = addCheck(keyboardLayout, "Move to previous/next song line while track boundaries are crossed", dlg->m_keyboard_updowncontinue);
+    auto* remember = addCheck(keyboardLayout, "Remember octaves and volumes separately for each instrument", dlg->m_keyboard_rememberoctavesandvolumes);
+    auto* escReset = addCheck(keyboardLayout, "Reset the Atari sound routines each time ESC is pressed", dlg->m_keyboard_escresetatarisound);
+    auto* askCtrlS = addCheck(keyboardLayout, "Prompt a save dialog box each time CTRL+S is pressed", dlg->m_keyboard_askwhencontrol_s);
+    layout->addWidget(keyboard);
+
+    // MIDI: device 0 of the combo is "none" (m_midi_device -1)
+    auto* midi = new QGroupBox("MIDI");
+    auto* midiLayout = new QVBoxLayout(midi);
+    auto* device = new QComboBox;
+    device->addItem("--- none ---");
+    int numMidiDevices = midiInGetNumDevs();
+    for (int i = 0; i < numMidiDevices; i++) {
+        MIDIINCAPS micaps;
+        midiInGetDevCaps(i, &micaps, sizeof(MIDIINCAPS));
+        device->addItem(QString::fromLocal8Bit(micaps.szPname));
+    }
+    device->setCurrentIndex(std::max(0, std::min(dlg->m_midi_device + 1, device->count() - 1)));
+    auto* deviceRow = new QHBoxLayout;
+    deviceRow->addWidget(new QLabel("MIDI IN device:"));
+    deviceRow->addWidget(device, 1);
+    midiLayout->addLayout(deviceRow);
+    auto* touch = new QCheckBox("Touch response");
+    touch->setChecked(dlg->m_midi_TouchResponse);
+    auto* volumeOffset = spin(0, 15, dlg->m_midi_VolumeOffset);
+    auto* touchRow = new QHBoxLayout;
+    touchRow->addWidget(touch);
+    touchRow->addStretch();
+    touchRow->addWidget(new QLabel("Atari volume offset"));
+    touchRow->addWidget(volumeOffset);
+    midiLayout->addLayout(touchRow);
+    auto* noteOff = addCheck(midiLayout, "Record Note off", dlg->m_midi_NoteOff);
+    // CConfigDlg::OnMidiTouchResponseClicked(): the offset needs touch response
+    volumeOffset->setEnabled(touch->isChecked());
+    QObject::connect(touch, &QCheckBox::toggled, volumeOffset, &QSpinBox::setEnabled);
+    layout->addWidget(midi);
+
+    auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    QPushButton* paths = buttons->addButton("Paths...", QDialogButtonBox::ResetRole);
+    QObject::connect(paths, &QPushButton::clicked, &dialog, [&dialog] { RunConfigPaths(&dialog); });
+    QObject::connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
+    QObject::connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+    layout->addWidget(buttons);
+
+    if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return IDCANCEL;
+
+    dlg->m_scaling_percentage = scaling->value();
+    dlg->m_trackLinePrimaryHighlight = primary->value();
+    dlg->m_trackLineSecondaryHighlight = secondary->value();
+    dlg->m_usegermannotation = german->isChecked();
+    dlg->m_tracklinealtnumbering = altNumbering->isChecked();
+    dlg->m_displayflatnotes = flats->isChecked();
+    dlg->m_ntsc = ntsc->isChecked();
+    dlg->m_nohwsoundbuffer = noHwBuffer->isChecked();
+    dlg->m_doSmoothScrolling = smooth->isChecked();
+    dlg->m_viewDebugDisplay = debug->isChecked();
+    dlg->m_trackerDriverVersion = (TrackerDriverVersion)driver->currentIndex();
+    dlg->m_keyboard_layout = (KeyboardLayout)layoutCombo->currentIndex();
+    dlg->m_keyboard_updowncontinue = upDown->isChecked();
+    dlg->m_keyboard_rememberoctavesandvolumes = remember->isChecked();
+    dlg->m_keyboard_escresetatarisound = escReset->isChecked();
+    dlg->m_keyboard_askwhencontrol_s = askCtrlS->isChecked();
+    dlg->m_midi_device = device->currentIndex() - 1;
+    dlg->m_midi_TouchResponse = touch->isChecked();
+    dlg->m_midi_VolumeOffset = volumeOffset->value();
+    dlg->m_midi_NoteOff = noteOff->isChecked();
+    return IDOK;
+}
+
+// ---------------------------------------------------------------------------
 
 INT_PTR RmtQtRunDialog(QWidget* parent, CDialog* dlg)
 {
     switch (dlg->m_nIDTemplate) {
     case IDD_FILENEW: return RunFileNew(parent, static_cast<CFileNewDlg*>(dlg));
+    case IDD_CONFIG: return RunConfig(parent, static_cast<CConfigDlg*>(dlg));
     case IDD_IMPORTMOD: return RunImportMod(parent, static_cast<CImportModDlg*>(dlg));
     case IDD_EXPORT_STRIPPED_RMT: return RunExportStrippedRmt(parent, static_cast<CExportStrippedRMTDialog*>(dlg));
     case IDD_EXPMSX: return RunExportXex(parent, static_cast<CExpMSXDlg*>(dlg));

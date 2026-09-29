@@ -106,9 +106,12 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   Windows only) and rendered with the built-in POKEY; mono and stereo songs.
   Checked against the sound of the tracker (`RMT_AUDIO_DUMP`): loudness
   correlation 0.97 (gemx.rmt), 0.94 / 0.97 left / right (shorty_noises.rmt)
+- ✅ View → Configuration (`IDD_CONFIG`) with its Paths... dialog
+  (`IDD_PATHS`, folder choice with `QFileDialog`); the MIDI device list only
+  has "--- none ---" until MIDI input is wired
 - ⚠️  other dialogs: the MFC dialogs are stubs that answer "cancel"
-  (`MfcDialogStubs.cpp`); they must still be rewritten in Qt (configuration,
-  tuning, song/track/instrument info, effects...)
+  (`MfcDialogStubs.cpp`); they must still be rewritten in Qt (tuning,
+  song/track/instrument info, effects...)
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
@@ -411,7 +414,7 @@ The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
 1. **Native Qt dialogs** — rewrite the `MfcDialogStubs.cpp` dialogs in Qt
-   (file dialogs, File → New, Import and Export As are done): configuration,
+   (file dialogs, File → New, Import, Export As and Configuration are done):
    tuning, song/track/instrument info, effects. A new dialog is a
    case in `RmtQtRunDialog()` (`qt/RmtQtDialogs.cpp`) plus the `IDD` in the
    stub's constructor

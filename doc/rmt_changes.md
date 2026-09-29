@@ -105,6 +105,9 @@ Technical (Linux/POSIX Qt5 frontend — in progress, branch feature/Qt-Side):
   LZSS has no options, which is why it was the only format that worked
   before. The WAV export still fails with "Could not get sound format!".
   (2026-09-29)
+- Qt frontend: View -> Configuration works: the "RMT configuration" dialog
+  (general, keyboard and MIDI options, driver version) and its "Paths..."
+  dialog are rewritten in Qt with the MFC defaults and checks. (2026-09-29)
 - WAV export fixed (it always failed outside Windows, and wrote no sound
   with apokeysnd.dll or the built-in POKEY). (2026-09-29)
   - The non-MFC build writes the WAV file with std::ofstream; the mmio*()
