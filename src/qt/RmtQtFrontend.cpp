@@ -521,14 +521,22 @@ public:
 
         if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {        // test run: no modal dialogs
             // RMT_QT_FILEDIALOG="a.rmt,b.txt" answers the file dialogs in turn,
-            // with the filter that matches the file; none left: cancel
+            // with the filter that matches the file, or the one given as
+            // "file@N" (1-based); none left: cancel
             static QStringList answers = qEnvironmentVariable("RMT_QT_FILEDIALOG").split(',', Qt::SkipEmptyParts);
             if (answers.isEmpty()) {
                 qWarning("[FileDialog] %s: cancelled", title ? title : "");
                 return false;
             }
             QString answer = answers.takeFirst();
-            for (int i = 0; i < patternLists.size(); i++)
+            int at = answer.lastIndexOf('@');
+            bool forced = false;
+            if (at > 0) {
+                int n = answer.mid(at + 1).toInt(&forced);
+                if (forced && n >= 1 && n <= filters.size()) { index = n; answer = answer.left(at); }
+                else forced = false;
+            }
+            for (int i = 0; !forced && i < patternLists.size(); i++)
                 if (QDir::match(patternLists[i].join(' '), QFileInfo(answer).fileName())) { index = i + 1; break; }
             qWarning("[FileDialog] %s: %s (filter %d)", title ? title : "", qPrintable(answer), index);
             path = answer.toLocal8Bit().constData();

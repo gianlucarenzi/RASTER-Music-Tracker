@@ -52,9 +52,8 @@ unchanged. They work for songs (Load, Save, Save As: RMT, TXT, RMW),
 instruments (RTI) and tracks (TXT), keep the last folder, propose the current
 file name and return the chosen file type as with MFC. The filters match
 upper case extensions too (`*.rmt *.RMT`), and a name typed without extension
-gets the one of the chosen type. Import works for MOD and TMC; Export As
-shows its file dialog, but most formats then stop at an options dialog that
-is still a stub (see [Status](#status)).
+gets the one of the chosen type. Import works for MOD and TMC, Export As
+for all formats but WAV (see [Status](#status)).
 
 At start-up a message box may say that `tuning.ini` is missing; the default
 tuning is used and the message is harmless.
@@ -97,9 +96,15 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   and the "Import of module finished" dialogs (`IDD_IMPORTMODFINISHED`,
   `IDD_IMPORTTMCFINISHED`); checked with `rmt/imports/axel_f.mod`
   (ProTracker) and `rmt/imports/404_Error.tmc` (Theta Music Composer)
+- ✅ File → Export As: the options of stripped RMT (`IDD_EXPORT_STRIPPED_RMT`,
+  address, SFX and RMTFEAT definitions updated as they change), ASM simple
+  notation (`IDD_EXPORT_ASM`), relocatable ASM for RmtPlayer
+  (`IDD_EXPORT_RMTPLAYER_ASM`), SAP-R and SAP (`IDD_EXPSAP`) and XEX
+  (`IDD_EXPMSX`, screen text preview, rasterbar color); LZSS has no options.
+  WAV fails with "Could not get sound format!" (the WAV export, not a dialog)
 - ⚠️  other dialogs: the MFC dialogs are stubs that answer "cancel"
-  (`MfcDialogStubs.cpp`); they must still be rewritten in Qt. This stops
-  the export options (all formats but LZSS)
+  (`MfcDialogStubs.cpp`); they must still be rewritten in Qt (configuration,
+  tuning, song/track/instrument info, effects...)
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
@@ -137,8 +142,9 @@ QT_QPA_PLATFORM=offscreen RMT_AUDIO_DUMP=play.wav RMT_QT_KEYS=63 RMT_QT_GRAB_MS=
 
 `RMT_QT_COMMANDS` then triggers the menu actions of the given command IDs
 (`resource.h`, decimal or `0x` hex), and `RMT_QT_FILEDIALOG` answers the file
-dialogs in turn (the file type is taken from the extension; none left:
-cancel). Load a song, save it as TXT, load the TXT and save it as RMT:
+dialogs in turn (the file type is taken from the extension, or given as
+`file@N` with the 1-based filter index, e.g. `song.asm@7` for the relocatable
+ASM export; none left: cancel). Load a song, save it as TXT, load the TXT and save it as RMT:
 
 ```bash
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_GRAB_MS=3000 \
@@ -400,8 +406,8 @@ The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
 1. **Native Qt dialogs** — rewrite the `MfcDialogStubs.cpp` dialogs in Qt
-   (file dialogs, File → New and Import are done): export options,
-   configuration, tuning, song/track/instrument info. A new dialog is a
+   (file dialogs, File → New, Import and Export As are done): configuration,
+   tuning, song/track/instrument info, effects. A new dialog is a
    case in `RmtQtRunDialog()` (`qt/RmtQtDialogs.cpp`) plus the `IDD` in the
    stub's constructor
 2. **MIDI input** — wire `RtMidiBackend` to the Qt event loop

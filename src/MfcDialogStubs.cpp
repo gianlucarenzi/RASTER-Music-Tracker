@@ -125,34 +125,97 @@ BOOL CTracksLoadDlg::OnInitDialog() { return TRUE; }
 // exportdlgs.h
 // ---------------------------------------------------------------------------
 
-CExportStrippedRMTDialog::CExportStrippedRMTDialog(CWnd*) {}
+// Export dialogs: shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same
+// defaults as exportdlgs.cpp, the callers set the other members
+CExportStrippedRMTDialog::CExportStrippedRMTDialog(CWnd* pParent) : CDialog(CExportStrippedRMTDialog::IDD, pParent) {}
 void CExportStrippedRMTDialog::DoDataExchange(CDataExchange*) {}
 BOOL CExportStrippedRMTDialog::OnInitDialog() { return TRUE; }
 
-CExpMSXDlg::CExpMSXDlg(CWnd*) {}
+CExpMSXDlg::CExpMSXDlg(CWnd* pParent) : CDialog(CExpMSXDlg::IDD, pParent)
+{
+    m_meter = FALSE;
+    m_msx_shuffle = FALSE;
+    m_region_auto = FALSE;
+    m_metercolor = 0;
+}
 void CExpMSXDlg::DoDataExchange(CDataExchange*) {}
 BOOL CExpMSXDlg::OnInitDialog() { return TRUE; }
 void CExpMSXDlg::OnOK() {}
 
-CExportAsmDlg::CExportAsmDlg(CWnd*) {}
+CExportAsmDlg::CExportAsmDlg(CWnd* pParent) : CDialog(CExportAsmDlg::IDD, pParent)
+{
+    m_exportType = m_notesIndexOrFreq = m_durationsType = 0;
+}
 void CExportAsmDlg::DoDataExchange(CDataExchange*) {}
 void CExportAsmDlg::OnOK() {}
 BOOL CExportAsmDlg::OnInitDialog() { return TRUE; }
 
-CExportRelocatableAsmForRmtPlayer::CExportRelocatableAsmForRmtPlayer(CWnd*) {}
+CExportRelocatableAsmForRmtPlayer::CExportRelocatableAsmForRmtPlayer(CWnd* pParent) : CDialog(CExportRelocatableAsmForRmtPlayer::IDD, pParent)
+{
+    m_InitPhase = FALSE;
+}
 void CExportRelocatableAsmForRmtPlayer::DoDataExchange(CDataExchange*) {}
 BOOL CExportRelocatableAsmForRmtPlayer::OnInitDialog() { return TRUE; }
 
 // ---------------------------------------------------------------------------
 // SAPFileExportDialog.h
 //
-// Only ever reached through the static Show() helper (SongExporter.cpp);
-// our stub never actually constructs a CSAPFileExportDialog, so it always
-// reports "user cancelled" - exactly like every other stubbed dialog here.
+// Reached through the static Show() helper (SongExporter.cpp). The dialog is
+// shown by the Qt frontend; Show() is the one of SAPFileExportDialog.cpp
+// (MFC only, it also has the DDX code), kept identical.
 // ---------------------------------------------------------------------------
 
-bool CSAPFileExportDialog::Show(const CSong&, CSAPFile&) {
-    return false;
+CSAPFileExportDialog::CSAPFileExportDialog(CWnd* pParent) : CDialog(CSAPFileExportDialog::IDD, pParent) {}
+void CSAPFileExportDialog::DoDataExchange(CDataExchange*) {}
+
+bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
+    CSAPFileExportDialog dlg;
+    sapFile.Init(song);
+
+    dlg.m_author = sapFile.GetAuthor();
+    dlg.m_name = sapFile.GetName();
+    dlg.m_date = sapFile.GetDate();
+
+    song.GetSubsongParts(dlg.m_subsongs);
+
+    dlg.m_title.Format("Export as SAP File of Type '%s'", (LPCTSTR)sapFile.GetType());
+    if (dlg.DoModal() != IDOK)
+    {
+        return false;
+    }
+
+    sapFile.SetAuthor(dlg.m_author);
+    sapFile.SetName(dlg.m_name);
+    sapFile.SetDate(dlg.m_date);
+
+    // Parses the "Subsongs" line (only the number of subsongs is used, as
+    // in SAPFileExportDialog.cpp)
+    CString str = dlg.m_subsongs + " ";	// Add space after the last character for parsing
+    str.MakeUpper();
+    int subsongs = 0;
+    byte n = 0, isn = 0;
+
+    for (int i = 0; i < str.GetLength(); i++)
+    {
+        char a = str.GetAt(i);
+        if (a >= '0' && a <= '9') { n = (n << 4) + (a - '0'); isn = 1; }
+        else
+            if (a >= 'A' && a <= 'F') { n = (n << 4) + (a - 'A' + 10); isn = 1; }
+            else
+            {
+                if (isn)
+                {
+                    subsongs++;
+                    if (subsongs >= CSAPFile::MAXSUBSONGS)
+                    {
+                        break;
+                    }
+                    isn = 0;
+                }
+            }
+    }
+    sapFile.SetSongs(subsongs);
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -235,6 +298,7 @@ RMT_EMPTY_MAP(CExportStrippedRMTDialog)
 RMT_EMPTY_MAP(CExpMSXDlg)
 RMT_EMPTY_MAP(CExportAsmDlg)
 RMT_EMPTY_MAP(CExportRelocatableAsmForRmtPlayer)
+RMT_EMPTY_MAP(CSAPFileExportDialog)
 RMT_EMPTY_MAP(CConfigDlg)
 RMT_EMPTY_MAP(TuningDlg)
 RMT_EMPTY_MAP(CChangeMaxtracklenDlg)
