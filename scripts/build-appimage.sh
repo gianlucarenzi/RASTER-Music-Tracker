@@ -37,7 +37,7 @@ if [ "${RMT_APPIMAGE_DEPS:-1}" = 1 ]; then
     # (libxcb-cursor0: Qt 6.5+), and those the CMake files of Qt6Gui look for
     apt-get install -y --no-install-recommends \
         gcc-10 g++-10 ninja-build pkg-config git ca-certificates wget file \
-        python3-pip python3-dev imagemagick \
+        python3-pip python3-dev python3.9 python3.9-venv python3.9-dev imagemagick \
         portaudio19-dev librtmidi-dev \
         libgl1-mesa-dev libegl1 libfontconfig1 libfreetype6 libdbus-1-3 \
         libxkbcommon-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
@@ -45,11 +45,15 @@ if [ "${RMT_APPIMAGE_DEPS:-1}" = 1 ]; then
         libxcb-shape0 libxcb-xkb1 libxcb-util1 libxcb-cursor0
     # CMake of Ubuntu 20.04 is 3.16, RMT needs 3.25
     python3 -m pip install --upgrade pip
-    # (some of the aqtinstall modules are compiled for the Python 3.8 of
-    # Ubuntu 20.04: with gcc-10, the only compiler installed)
-    CC=gcc-10 python3 -m pip install cmake aqtinstall
+    python3 -m pip install cmake
+    # aqtinstall in a Python 3.9 venv: the last one for the Python 3.8 of
+    # Ubuntu 20.04 (3.1.18) does not know the layout of the Qt 6.8 archives
+    # (some of its modules are compiled: with gcc-10, the only compiler)
+    python3.9 -m venv /opt/aqt-venv
+    /opt/aqt-venv/bin/python -m pip install --upgrade pip
+    CC=gcc-10 /opt/aqt-venv/bin/python -m pip install aqtinstall
     # (from /tmp: aqt writes aqtinstall.log in the current folder)
-    [ -d "$QT_DIR" ] || (cd /tmp && python3 -m aqt install-qt linux desktop $QT_VERSION linux_gcc_64 -O /opt/qt)
+    [ -d "$QT_DIR" ] || (cd /tmp && /opt/aqt-venv/bin/python -m aqt install-qt linux desktop $QT_VERSION linux_gcc_64 -O /opt/qt)
 fi
 
 # --- build -------------------------------------------------------------------
