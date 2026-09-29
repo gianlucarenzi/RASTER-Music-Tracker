@@ -458,7 +458,9 @@ Pushing a tag `v*` (`scripts/push.sh` → `v2.0-rcN`, `scripts/release.sh` →
 `v2.1`...) builds the Qt5 frontend on GitHub and publishes the packages as
 assets of the release of that tag (a pre-release for the `-rc` tags); every
 job also uploads its package and an offscreen screenshot of gemx.rmt (the
-smoke test) as a workflow artifact:
+smoke test) as a workflow artifact. They can also be started by hand, to
+test them without a tag (`gh workflow run build-windows.yml`): then there
+are only the artifacts, no release:
 
 | Workflow | Runner | Toolchain and libraries | Package |
 |----------|--------|-------------------------|---------|

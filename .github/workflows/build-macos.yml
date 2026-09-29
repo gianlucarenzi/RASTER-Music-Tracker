@@ -16,6 +16,7 @@ name: Build RMT on macOS
 on:
   push:
     tags: ['v*']
+  workflow_dispatch:           # manual test runs: the artifacts only, no release
 
 permissions:
   contents: write
@@ -179,6 +180,7 @@ jobs:
             rmt-macos-${{ matrix.arch }}.png
 
       - name: Create release and upload asset
+        if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: RMT-macOS-${{ matrix.arch }}.dmg
