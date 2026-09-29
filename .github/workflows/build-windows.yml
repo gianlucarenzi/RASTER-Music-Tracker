@@ -1,0 +1,92 @@
+name: Build RMT on Windows
+
+# The Qt5 frontend built with MSYS2 / MinGW-w64 (GCC, like the Linux build):
+# Qt5, PortAudio (sound) and RtMidi (MIDI IN through WinMM) are MSYS2
+# packages. The result is a folder with Rmt.exe, its resources and all the
+# DLLs it needs, zipped; a tag v* builds it and publishes it as a release
+# asset.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0              # the version comes from the nearest git tag
+
+      - name: Install MSYS2 and the dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: git
+          pacboy: >-
+            toolchain:p
+            cmake:p
+            ninja:p
+            qt5-base:p
+            qt5-tools:p
+            portaudio:p
+            rtmidi:p
+
+      - name: Configure
+        run: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Smoke test (offscreen, screenshot of gemx.rmt)
+        run: |
+          QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/rmt-windows.png RMT_QT_GRAB_MS=3000 \
+            timeout 120 ./build/out/Rmt.exe rmt/songs/rmt128/raster/gemx.rmt || true
+          test -f rmt-windows.png
+
+      - name: Package
+        run: |
+          DIST=dist/RMT
+          mkdir -p $DIST
+          cp build/out/Rmt.exe $DIST/
+          cp -r build/out/resources $DIST/
+          WINDEPLOYQT=$(command -v windeployqt-qt5 || command -v windeployqt)
+          "$WINDEPLOYQT" --release --no-translations --compiler-runtime $DIST/Rmt.exe
+          # The MinGW DLLs of the program and of the Qt DLLs and plugins,
+          # until nothing new is found
+          for pass in 1 2 3 4 5; do
+            find $DIST -iname '*.exe' -o -iname '*.dll' | while read f; do
+              ldd "$f" | awk '{print $3}' | grep -i '^/mingw64/' || true
+            done | sort -u | while read dll; do
+              [ -f "$DIST/$(basename "$dll")" ] || cp "$dll" $DIST/
+            done
+          done
+          ls -la $DIST
+
+      - name: Create ZIP archive
+        run: |
+          cd dist
+          7z a ../RMT-Windows-x64.zip RMT >/dev/null
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RMT-Windows-x64
+          path: |
+            RMT-Windows-x64.zip
+            rmt-windows.png
+
+      - name: Create release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RMT-Windows-x64.zip
+          prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh

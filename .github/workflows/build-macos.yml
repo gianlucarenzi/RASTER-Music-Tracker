@@ -1,0 +1,134 @@
+name: Build RMT on macOS
+
+# The Qt5 frontend built with Apple Clang, twice on an Apple Silicon runner:
+# - arm64: native, with the Homebrew of /opt/homebrew
+# - x86_64: for Intel Macs (and Apple Silicon through Rosetta 2), with an
+#   Intel Homebrew in /usr/local run through Rosetta, as WaffleCopyPRO does
+# Qt5, PortAudio (sound) and RtMidi (MIDI IN through CoreMIDI) come from
+# Homebrew. The result is RMT.app in a DMG: macdeployqt puts the Qt
+# frameworks and the Homebrew libraries into the bundle, so nothing has to be
+# installed to run it; the bundle is signed ad hoc (not notarized: the first
+# time it is opened with right click -> Open). The program finds its
+# resources/ next to itself (Contents/MacOS), like out/ of the build, and
+# writes rmt.ini there. A tag v* builds and publishes both DMGs.
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            brew: /opt/homebrew/bin/brew
+            run: ''                   # native
+          - arch: x86_64
+            brew: /usr/local/bin/brew
+            run: arch -x86_64         # through Rosetta 2
+
+    env:
+      ARCH: ${{ matrix.arch }}
+      BREW: ${{ matrix.brew }}
+      RUN: ${{ matrix.run }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0              # the version comes from the nearest git tag
+
+      - name: Install Intel Homebrew
+        if: matrix.arch == 'x86_64'
+        run: |
+          NONINTERACTIVE=1 arch -x86_64 /bin/bash -c \
+            "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Install dependencies
+        run: $RUN $BREW install qt@5 portaudio rtmidi pkgconf cmake ninja
+
+      - name: Configure
+        run: |
+          PREFIX=$($RUN $BREW --prefix)
+          export PATH="$PREFIX/bin:$PATH"
+          $RUN cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON \
+            -DCMAKE_OSX_ARCHITECTURES=$ARCH \
+            -DCMAKE_PREFIX_PATH="$($RUN $BREW --prefix qt@5);$PREFIX"
+
+      - name: Build
+        run: |
+          export PATH="$($RUN $BREW --prefix)/bin:$PATH"
+          $RUN cmake --build build --parallel
+          file build/out/rmt
+
+      - name: Smoke test (offscreen, screenshot of gemx.rmt)
+        run: |
+          QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/rmt-macos-$ARCH.png RMT_QT_GRAB_MS=3000 \
+            $RUN ./build/out/rmt rmt/songs/rmt128/raster/gemx.rmt || true
+          test -f rmt-macos-$ARCH.png
+
+      - name: Make RMT.app
+        run: |
+          APP=dist/RMT.app
+          VERSION=$(git describe --tags --match 'v[0-9]*' 2>/dev/null | sed 's/^v//')
+          mkdir -p $APP/Contents/MacOS $APP/Contents/Resources
+          cp build/out/rmt $APP/Contents/MacOS/rmt
+          cp -R build/out/resources $APP/Contents/MacOS/
+          ICON=
+          if sips -s format icns src/res/Rmt.ico --out $APP/Contents/Resources/RMT.icns >/dev/null 2>&1; then
+            ICON="<key>CFBundleIconFile</key><string>RMT</string>"
+          fi
+          cat > $APP/Contents/Info.plist <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>CFBundleExecutable</key><string>rmt</string>
+            <key>CFBundleIdentifier</key><string>org.raster-atari.rmt</string>
+            <key>CFBundleName</key><string>RMT</string>
+            <key>CFBundleDisplayName</key><string>RASTER Music Tracker</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>${VERSION}</string>
+            <key>CFBundleVersion</key><string>${VERSION}</string>
+            <key>LSMinimumSystemVersion</key><string>11.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+            ${ICON}
+          </dict>
+          </plist>
+          PLIST
+          plutil -lint $APP/Contents/Info.plist
+          $RUN "$($RUN $BREW --prefix qt@5)/bin/macdeployqt" $APP -always-overwrite
+          # Nothing may still come from Homebrew
+          if find $APP -type f \( -perm +111 -o -name '*.dylib' \) -exec otool -L {} \; 2>/dev/null \
+               | grep -E '^\s+/(opt/homebrew|usr/local)/'; then
+            echo "RMT.app still uses Homebrew libraries"; exit 1
+          fi
+          codesign --force --deep --sign - $APP
+          codesign --verify --deep --verbose=2 $APP
+
+      - name: Create DMG
+        run: |
+          mkdir -p dmg
+          cp -R dist/RMT.app dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname "RASTER Music Tracker" -srcfolder dmg -ov -format UDZO RMT-macOS-$ARCH.dmg
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RMT-macOS-${{ matrix.arch }}
+          path: |
+            RMT-macOS-${{ matrix.arch }}.dmg
+            rmt-macos-${{ matrix.arch }}.png
+
+      - name: Create release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: RMT-macOS-${{ matrix.arch }}.dmg
+          prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh

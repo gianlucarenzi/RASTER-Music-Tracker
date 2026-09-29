@@ -433,13 +433,37 @@ All output binaries are in `out/` subdirectory of the build folder.
 
 ---
 
+## Windows and macOS builds on GitHub Actions
+
+Pushing a tag `v*` (`scripts/push.sh` → `v2.0-rcN`, `scripts/release.sh` →
+`v2.1`...) builds the Qt5 frontend on GitHub and publishes the packages as
+assets of the release of that tag (a pre-release for the `-rc` tags); every
+job also uploads its package and an offscreen screenshot of gemx.rmt (the
+smoke test) as a workflow artifact:
+
+| Workflow | Runner | Toolchain and libraries | Package |
+|----------|--------|-------------------------|---------|
+| `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt5-base`, `portaudio`, `rtmidi` (WinMM) | `RMT-Windows-x64.zip`: `Rmt.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
+| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | Apple Clang, Homebrew `qt@5`, `portaudio`, `rtmidi` (CoreMIDI) | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Homebrew in `/usr/local` through Rosetta 2; Intel Macs, or Apple Silicon through Rosetta): `RMT.app` with the Qt frameworks and Homebrew libraries inside (`macdeployqt`) |
+
+`RMT.app` needs nothing installed. It is signed ad hoc, not notarized, so
+macOS asks to open it with right click → Open the first time. Its
+`resources/` and `rmt.ini` are in `Contents/MacOS`, next to the program (as
+in `out/`).
+
+PortAudio and RtMidi are used by every build without MFC, on Windows too;
+the MFC build keeps DirectSound and the winmm MIDI of `RmtMidi.cpp`. With
+MSVC, `-DRMT_USE_QT=ON` no longer turns MFC on.
+
 ## Remaining work on the Qt frontend
 
 The Qt5 frontend is the official build on Linux/POSIX and the development
 track for the 2.x series. Remaining work:
 
-1. **Windows Qt build** — package Qt5 for MinGW/MSVC and test
-   `-DRMT_USE_QT=ON` on Windows, so Qt can become the default there too
+1. **Windows and macOS** — run the GitHub builds (first tag push) and fix
+   what they find; then test the packages on real machines (sound, MIDI),
+   keep the macOS configuration in `~/Library/Application Support` instead
+   of inside `RMT.app`, and make Qt the default on Windows too
 
 ---
 

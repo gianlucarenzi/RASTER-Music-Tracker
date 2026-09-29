@@ -14,8 +14,8 @@ rmt_embed_resources(${RMT_EMBEDDED_RESOURCES}
     IDR_TOOLBARCHANNELS ${CMAKE_CURRENT_SOURCE_DIR}/res/bmp00001.bmp
 )
 
-# Check if MFC is available (MSVC only)
-if(MSVC)
+# Check if MFC is available (MSVC only; the Qt frontend never uses it)
+if(MSVC AND NOT RMT_USE_QT)
     message(STATUS "MSVC detected, MFC will be linked")
     set(MFC_AVAILABLE TRUE)
 else()
@@ -325,26 +325,31 @@ if(WIN32)
 endif()
 
 # Search for optional libraries BEFORE creating executable
-# PortAudio cross-platform audio library
-if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+# PortAudio cross-platform audio library: every build without MFC (the MFC
+# one plays with DirectSound)
+if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
     find_package(PortAudio QUIET)
     if(NOT PortAudio_FOUND)
         find_library(PORTAUDIO_LIB portaudio QUIET)
     endif()
 endif()
 
-# RtMidi cross-platform MIDI library
-if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
-    # Try pkg-config first
-    find_package(PkgConfig QUIET)
-    if(PkgConfig_FOUND)
-        pkg_check_modules(RTMIDI QUIET rtmidi)
+# RtMidi cross-platform MIDI library: MIDI IN of every build without MFC
+# (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS; RmtMidiRt.cpp)
+if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
+    # Try pkg-config first; not when cross-compiling, it would find the
+    # library of the host
+    if(NOT CMAKE_CROSSCOMPILING)
+        find_package(PkgConfig QUIET)
+        if(PkgConfig_FOUND)
+            pkg_check_modules(RTMIDI QUIET rtmidi)
+        endif()
     endif()
 
     # If pkg-config didn't find it, try manual search
     if(NOT RTMIDI_FOUND)
         find_library(RTMIDI_LIB rtmidi QUIET)
-        find_path(RTMIDI_INCLUDE rtmidi.h QUIET)
+        find_path(RTMIDI_INCLUDE RtMidi.h PATH_SUFFIXES rtmidi QUIET)
     endif()
 endif()
 
@@ -430,7 +435,7 @@ endif()
 
 # Link PortAudio library (search was done earlier). Builds without MFC play
 # the DirectSound buffer of the sound code with it (MfcAudio.cpp)
-if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
     if(PortAudio_FOUND)
         target_link_libraries(Rmt PRIVATE ${PortAudio_LIBRARIES})
         target_include_directories(Rmt PRIVATE ${PortAudio_INCLUDE_DIRS})
@@ -445,7 +450,7 @@ if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
 endif()
 
 # Link RtMidi library (search was done earlier)
-if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
     if(RTMIDI_FOUND)
         target_link_libraries(Rmt PRIVATE ${RTMIDI_LIBRARIES})
         target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE_DIRS})
@@ -670,7 +675,7 @@ if(RMT_CORE_TEST)
 
     target_include_directories(RmtCoreTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
-    if(RMT_BUILD_CORE_ONLY OR NOT WIN32)
+    if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
         if(PortAudio_FOUND)
             target_link_libraries(RmtCoreTest PRIVATE ${PortAudio_LIBRARIES})
             target_include_directories(RmtCoreTest PRIVATE ${PortAudio_INCLUDE_DIRS})
