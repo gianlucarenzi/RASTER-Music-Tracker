@@ -158,12 +158,18 @@ jobs:
           </plist>
           PLIST
           plutil -lint $APP/Contents/Info.plist
-          # xcrun (behind /usr/bin/otool) builds its cache on the first call;
-          # through Rosetta that takes longer than the time macdeployqt 5.15.2
-          # gives otool, and then it deploys nothing: do the first call here
-          time otool -L build/out/rmt
-          time arch -x86_64 /usr/bin/otool -L build/out/rmt || true
-          "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite -verbose=2 2>&1 | tee macdeployqt.log
+          # xcrun (behind /usr/bin/otool, install_name_tool, strip) builds its
+          # cache on the first call of each tool; through Rosetta that takes
+          # longer than the time macdeployqt 5.15.2 gives them, and then it
+          # deploys nothing: do the first calls here. No strip: the Release
+          # binaries have nothing to strip
+          for tool in otool install_name_tool; do
+            time xcrun --find $tool
+            time arch -x86_64 /usr/bin/xcrun --find $tool || true
+          done
+          otool -L build/out/rmt
+          "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite -no-strip -verbose=2 2>&1 | tee macdeployqt.log
+          grep -q 'Destroyed while process' macdeployqt.log && echo "::warning::macdeployqt: a tool did not answer in time"
           if grep -q '^ERROR' macdeployqt.log; then echo "macdeployqt failed"; exit 1; fi
           # No library may still be loaded from Homebrew or the build folders:
           # the load commands only (otool -L also lists the install name of a
