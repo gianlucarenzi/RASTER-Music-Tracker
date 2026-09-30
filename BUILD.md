@@ -455,11 +455,17 @@ branch and the tag to `origin`.
 
 ### Final release
 
-When the release candidate cycle is finished:
+When the release candidate cycle is finished, write the release notes in
+`doc/release-notes/v<version>.md` and commit them: the first line is
+`# <release title>`, the rest is the body of the GitHub release (see
+`doc/release-notes/v2.2.md`). The CI builds only attach the packages, they do
+not write title or notes. Then:
 
 ```bash
-./scripts/release.sh 2.1     # creates v2.1, pushes branch + tag
+./scripts/release.sh 2.3     # creates v2.3, pushes branch + tag, sets title and notes
 ```
+
+The script refuses to run when the notes file is missing or not committed.
 
 After a release, update `RMT_BASE_VERSION` in `CMakeLists.txt` to the next
 development target (e.g. `"2.2"`) so subsequent RC tags follow the new series.
