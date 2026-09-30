@@ -12,7 +12,7 @@
 
 #include "Atari.h"
 #include "AtariTrackerDriver.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "IOHelpers.h"
 #include "Instruments.h"
 #include "Clipboard.h"

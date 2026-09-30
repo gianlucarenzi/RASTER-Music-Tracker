@@ -5,7 +5,7 @@
 // second POKEY), APokeySound_GetRandom, APokeySound_Generate(cycles, buffer,
 // format) and APokeySound_About. Generate() writes 44100 Hz samples, two
 // interleaved channels (left = first POKEY, right = second POKEY, or the first
-// on both sides in mono), which is what PokeyRederer.cpp expects.
+// on both sides in mono), which is what PokeyRenderer.cpp expects.
 //
 // The chip model is cycle based: 64 kHz / 15 kHz base clock, 1.79 MHz channels
 // 1 and 3, 16 bit channel pairs, high-pass filters, poly4/poly5/poly9/poly17,

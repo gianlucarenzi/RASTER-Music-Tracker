@@ -200,7 +200,7 @@
     <ClCompile Include="Fraction.cpp" />
     <ClCompile Include="ChannelControl.cpp" />
     <ClCompile Include="Clipboard.cpp" />
-    <ClCompile Include="ConfigDlg.cpp">
+    <ClCompile Include="OptionsDialog.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">_DEBUG;WIN32;_WINDOWS;NO_CONSOL_SOUND;NO_VOL_ONLY;STEREO;_MBCS;_AFXDLL</PreprocessorDefinitions>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</BrowseInformation>
@@ -211,7 +211,7 @@
     <ClCompile Include="LZSSFile.cpp" />
     <ClCompile Include="Notes.cpp" />
     <ClCompile Include="Pokey.cpp" />
-    <ClCompile Include="PokeyRederer.cpp" />
+    <ClCompile Include="PokeyRenderer.cpp" />
     <ClCompile Include="RmtCommandLineInfo.cpp" />
     <ClCompile Include="RmtTest.cpp" />
     <ClCompile Include="RuntimeException.cpp" />
@@ -331,7 +331,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</BrowseInformation>
     </ClCompile>
-    <ClCompile Include="TuningDlg.cpp" />
+    <ClCompile Include="TuningDialog.cpp" />
     <ClCompile Include="TuningTypes.cpp" />
     <ClCompile Include="Undo.cpp" />
     <ClCompile Include="VUPlayer.cpp" />
@@ -360,13 +360,13 @@
     <ClInclude Include="C6502.h" />
     <ClInclude Include="Fraction.h" />
     <ClInclude Include="Clipboard.h" />
-    <ClInclude Include="ConfigDlg.h" />
+    <ClInclude Include="OptionsDialog.h" />
     <ClInclude Include="info_dlg.h" />
     <ClInclude Include="InstrumentTypes.h" />
     <ClInclude Include="LZSSFile.h" />
     <ClInclude Include="Notes.h" />
     <ClInclude Include="Pokey.h" />
-    <ClInclude Include="PokeyRederer.h" />
+    <ClInclude Include="PokeyRenderer.h" />
     <ClInclude Include="RmtCommandLineInfo.h" />
     <ClInclude Include="RmtFile.h" />
     <ClInclude Include="Memory.h" />
@@ -413,7 +413,7 @@
     <ClInclude Include="RmtMidi.h" />
     <ClInclude Include="RmtView.h" />
     <ClInclude Include="StdAfx.h" />
-    <ClInclude Include="TuningDlg.h" />
+    <ClInclude Include="TuningDialog.h" />
     <ClInclude Include="TuningTypes.h" />
     <ClInclude Include="Undo.h" />
     <ClInclude Include="VUPlayer.h" />

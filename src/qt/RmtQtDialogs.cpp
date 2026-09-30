@@ -10,11 +10,11 @@
 #include "Song.h"
 #include "exportdlgs.h"
 #include "SAPFileExportDialog.h"
-#include "ConfigDlg.h"
+#include "OptionsDialog.h"
 #include "ASMFileExporter.h"
 #include "Notes.h"
 #include "EffectsDlg.h"
-#include "TuningDlg.h"
+#include "TuningDialog.h"
 #include "Tuning.h"
 #include "Tracks.h"
 #include "Instruments.h"
@@ -748,11 +748,11 @@ static INT_PTR RunExportSap(QWidget* parent, CSAPFileExportDialog* dlg)
 }
 
 // ---------------------------------------------------------------------------
-// IDD_CONFIG - View -> Configuration (CConfigDlg, ConfigDlg.cpp)
+// IDD_CONFIG - View -> Configuration (COptionsDialog, OptionsDialog.cpp)
 // ---------------------------------------------------------------------------
 
-// IDD_PATHS - CConfigPathsDlg: default folders of songs, instruments and
-// tracks; like CConfigDlg::OnPaths() they apply at once on OK
+// IDD_PATHS - COptionsPathsDlg: default folders of songs, instruments and
+// tracks; like COptionsDialog::OnPaths() they apply at once on OK
 static void RunConfigPaths(QWidget* parent)
 {
     QDialog dialog(parent);
@@ -787,7 +787,7 @@ static void RunConfigPaths(QWidget* parent)
     g_lastLoadPath_Songs = g_lastLoadPath_Instruments = g_lastLoadPath_Tracks = "";
 }
 
-static INT_PTR RunConfig(QWidget* parent, CConfigDlg* dlg)
+static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
 {
     QDialog dialog(parent);
     dialog.setWindowTitle("RMT configuration");
@@ -890,7 +890,7 @@ static INT_PTR RunConfig(QWidget* parent, CConfigDlg* dlg)
     touchRow->addWidget(volumeOffset);
     midiLayout->addLayout(touchRow);
     auto* noteOff = addCheck(midiLayout, "Record Note off", dlg->m_midi_NoteOff);
-    // CConfigDlg::OnMidiTouchResponseClicked(): the offset needs touch response
+    // COptionsDialog::OnMidiTouchResponseClicked(): the offset needs touch response
     volumeOffset->setEnabled(touch->isChecked());
     QObject::connect(touch, &QCheckBox::toggled, volumeOffset, &QSpinBox::setEnabled);
     layout->addWidget(midi);
@@ -929,7 +929,7 @@ static INT_PTR RunConfig(QWidget* parent, CConfigDlg* dlg)
 
 // ---------------------------------------------------------------------------
 // Song, track and instrument dialogs (effectsdlg.cpp, filenewdlg.cpp,
-// importdlgs.cpp, TuningDlg.cpp)
+// importdlgs.cpp, TuningDialog.cpp)
 // ---------------------------------------------------------------------------
 
 // A hex number edit (ES_UPPERCASE), read with Hexstr() like the MFC dialogs
@@ -1860,9 +1860,9 @@ static INT_PTR RunEffects(QWidget* parent, CEffectsDlg* dlg)
     return IDOK;
 }
 
-// IDD_TUNING - TuningDlg: Test now applies the values, Reset puts back the
+// IDD_TUNING - TuningDialog: Test now applies the values, Reset puts back the
 // ones the dialog was opened with, which Cancel also does
-static INT_PTR RunTuning(QWidget* parent, TuningDlg* dlg)
+static INT_PTR RunTuning(QWidget* parent, TuningDialog* dlg)
 {
     QDialog dialog(parent);
     dialog.setWindowTitle("Tuning configuration");
@@ -2011,7 +2011,7 @@ INT_PTR RmtQtRunDialog(QWidget* parent, CDialog* dlg)
 {
     switch (dlg->m_nIDTemplate) {
         case IDD_FILENEW: return RunFileNew(parent, static_cast<CFileNewDlg*>(dlg));
-        case IDD_CONFIG: return RunConfig(parent, static_cast<CConfigDlg*>(dlg));
+        case IDD_CONFIG: return RunConfig(parent, static_cast<COptionsDialog*>(dlg));
         case IDD_IMPORTMOD: return RunImportMod(parent, static_cast<CImportModDlg*>(dlg));
         case IDD_EXPORT_STRIPPED_RMT: return RunExportStrippedRmt(parent, static_cast<CExportStrippedRMTDialog*>(dlg));
         case IDD_EXPMSX: return RunExportXex(parent, static_cast<CExpMSXDlg*>(dlg));
@@ -2035,7 +2035,7 @@ INT_PTR RmtQtRunDialog(QWidget* parent, CDialog* dlg)
         case IDD_INSTRCHANGE: return RunInstrumentChange(parent, static_cast<CInstrumentChangeDlg*>(dlg));
         case IDD_SONGINSERTCOPYORCLONEOFSONGLINES: return RunInsertSongLines(parent, static_cast<CInsertCopyOrCloneOfSongLinesDlg*>(dlg));
         case IDD_CHANGEMAXTRACKLEN: return RunChangeMaxTrackLen(parent, static_cast<CChangeMaxtracklenDlg*>(dlg));
-        case IDD_TUNING: return RunTuning(parent, static_cast<TuningDlg*>(dlg));
+        case IDD_TUNING: return RunTuning(parent, static_cast<TuningDialog*>(dlg));
         case IDD_RENUMBERTRACKS: {
             auto* d = static_cast<CRenumberTracksDlg*>(dlg);
             return RunChoice(parent, "Renumber all tracks", "Renumber all tracks:",

@@ -3,7 +3,7 @@
 // FIXME: Use a better backend (DirectSound is outdated...)
 
 #include "PlatformTypes.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "AtariTrackerDriver.h"
 #include "ChannelControl.h" // For IsChannelOn
 

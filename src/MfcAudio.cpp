@@ -6,7 +6,7 @@
 //   as on Windows; here a timer created from a tick of a timer with the same
 //   callback starts at that timer's next deadline, so the song keeps its
 //   tempo instead of drifting by the time the callback takes.
-// - IDirectSoundBuffer: the secondary buffer of PokeyRederer.cpp, a ring
+// - IDirectSoundBuffer: the secondary buffer of PokeyRenderer.cpp, a ring
 //   played by PortAudio (RMT_HAVE_PORTAUDIO) with real cursors.
 
 #include "PlatformTypes.h"

@@ -30,8 +30,8 @@
 #include "importdlgs.h"
 #include "exportdlgs.h"
 #include "SAPFileExportDialog.h"
-#include "ConfigDlg.h"
-#include "TuningDlg.h"
+#include "OptionsDialog.h"
+#include "TuningDialog.h"
 
 // ---------------------------------------------------------------------------
 // EffectsDlg.h
@@ -234,8 +234,8 @@ bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile)
 // stubbed dialogs (DECLARE_MESSAGE_MAP in their headers)
 // ---------------------------------------------------------------------------
 
-// Shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same defaults as ConfigDlg.cpp
-CConfigDlg::CConfigDlg(CWnd* pParent) : CDialog(CConfigDlg::IDD, pParent)
+// Shown by the Qt frontend (src/qt/RmtQtDialogs.cpp); same defaults as OptionsDialog.cpp
+COptionsDialog::COptionsDialog(CWnd* pParent) : CDialog(COptionsDialog::IDD, pParent)
 {
     m_midi_TouchResponse = FALSE;
     m_midi_VolumeOffset = 0;
@@ -258,26 +258,26 @@ CConfigDlg::CConfigDlg(CWnd* pParent) : CDialog(CConfigDlg::IDD, pParent)
     m_midi_device = -1;
     m_keyboard_layout = KeyboardLayout::QWERTY;
 }
-void CConfigDlg::DoDataExchange(CDataExchange*) {}
-BOOL CConfigDlg::OnInitDialog() { return TRUE; }
-void CConfigDlg::OnOK() {}
-void CConfigDlg::OnMidiTouchResponseClicked() {}
-void CConfigDlg::OnPaths() {}
+void COptionsDialog::DoDataExchange(CDataExchange*) {}
+BOOL COptionsDialog::OnInitDialog() { return TRUE; }
+void COptionsDialog::OnOK() {}
+void COptionsDialog::OnMidiTouchResponseClicked() {}
+void COptionsDialog::OnPaths() {}
 
 // Tuning, track length and renumber dialogs: shown by the Qt frontend
-// (src/qt/RmtQtDialogs.cpp); same defaults as TuningDlg.cpp, filenewdlg.cpp
+// (src/qt/RmtQtDialogs.cpp); same defaults as TuningDialog.cpp, filenewdlg.cpp
 // and effectsdlg.cpp
-TuningDlg::TuningDlg(CWnd* pParent) : CDialog(TuningDlg::IDD, pParent)
+TuningDialog::TuningDialog(CWnd* pParent) : CDialog(TuningDialog::IDD, pParent)
 {
     m_tuningSettings = {};
     m_tuningRatios = {};
 }
-void TuningDlg::DoDataExchange(CDataExchange*) {}
-BOOL TuningDlg::OnInitDialog() { return TRUE; }
-void TuningDlg::OnOK() {}
-void TuningDlg::OnClickedIdtestnow() {}
-void TuningDlg::OnClickedIdreset() {}
-void TuningDlg::OnBnClickedCancel() {}
+void TuningDialog::DoDataExchange(CDataExchange*) {}
+BOOL TuningDialog::OnInitDialog() { return TRUE; }
+void TuningDialog::OnOK() {}
+void TuningDialog::OnClickedIdtestnow() {}
+void TuningDialog::OnClickedIdreset() {}
+void TuningDialog::OnBnClickedCancel() {}
 
 CChangeMaxtracklenDlg::CChangeMaxtracklenDlg(CWnd* pParent) : CDialog(CChangeMaxtracklenDlg::IDD, pParent)
 {
@@ -322,8 +322,8 @@ RMT_EMPTY_MAP(CExpMSXDlg)
 RMT_EMPTY_MAP(CExportAsmDlg)
 RMT_EMPTY_MAP(CExportRelocatableAsmForRmtPlayer)
 RMT_EMPTY_MAP(CSAPFileExportDialog)
-RMT_EMPTY_MAP(CConfigDlg)
-RMT_EMPTY_MAP(TuningDlg)
+RMT_EMPTY_MAP(COptionsDialog)
+RMT_EMPTY_MAP(TuningDialog)
 RMT_EMPTY_MAP(CChangeMaxtracklenDlg)
 RMT_EMPTY_MAP(CRenumberTracksDlg)
 RMT_EMPTY_MAP(CRenumberInstrumentsDlg)

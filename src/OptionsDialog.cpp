@@ -1,9 +1,9 @@
-// ConfigDlg.cpp : implementation file
+// OptionsDialog.cpp : implementation file
 //
 
 #include "StdAfx.h"
 #include "Rmt.h"
-#include "ConfigDlg.h"
+#include "OptionsDialog.h"
 #include "FilePathDlg.h"
 
 #ifdef _DEBUG
@@ -13,12 +13,12 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
-// CConfigDlg dialog
+// COptionsDialog dialog
 
-CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
-    : CDialog(CConfigDlg::IDD, pParent)
+COptionsDialog::COptionsDialog(CWnd* pParent /*=NULL*/)
+    : CDialog(COptionsDialog::IDD, pParent)
 {
-    //{{AFX_DATA_INIT(CConfigDlg)
+    //{{AFX_DATA_INIT(COptionsDialog)
     m_midi_TouchResponse = FALSE;
     m_midi_VolumeOffset = 0;
     m_trackLinePrimaryHighlight = 0;
@@ -40,10 +40,10 @@ CConfigDlg::CConfigDlg(CWnd* pParent /*=NULL*/)
     //}}AFX_DATA_INIT
 }
 
-void CConfigDlg::DoDataExchange(CDataExchange* pDX)
+void COptionsDialog::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CConfigDlg)
+    //{{AFX_DATA_MAP(COptionsDialog)
     DDX_Control(pDX, IDC_KEYBOARD_LAYOUT, m_keyboard_c_layout);
     DDX_Control(pDX, IDC_MIDI_DEVICE, m_midi_c_device);
     DDX_Check(pDX, IDC_MIDI_TR, m_midi_TouchResponse);
@@ -72,8 +72,8 @@ void CConfigDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 // clang-format off
-BEGIN_MESSAGE_MAP(CConfigDlg, CDialog)
-	//{{AFX_MSG_MAP(CConfigDlg)
+BEGIN_MESSAGE_MAP(COptionsDialog, CDialog)
+	//{{AFX_MSG_MAP(COptionsDialog)
 	ON_BN_CLICKED(IDC_MIDI_TR, OnMidiTouchResponseClicked)
 	ON_BN_CLICKED(IDC_PATHS, OnPaths)
 	//}}AFX_MSG_MAP
@@ -81,9 +81,9 @@ END_MESSAGE_MAP()
 // clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
-// CConfigDlg message handlers
+// COptionsDialog message handlers
 
-BOOL CConfigDlg::OnInitDialog()
+BOOL COptionsDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
@@ -123,7 +123,7 @@ BOOL CConfigDlg::OnInitDialog()
 /// MIDI device combo
 /// Keybord layout combo
 /// </summary>
-void CConfigDlg::OnOK()
+void COptionsDialog::OnOK()
 {
     m_midi_device = m_midi_c_device.GetCurSel() - 1;
     m_keyboard_layout = (KeyboardLayout)m_keyboard_c_layout.GetCurSel();
@@ -134,16 +134,16 @@ void CConfigDlg::OnOK()
 /// <summary>
 /// If MIDI touch response if turned on then enable the MIDI volume offset edit box
 /// </summary>
-void CConfigDlg::OnMidiTouchResponseClicked()
+void COptionsDialog::OnMidiTouchResponseClicked()
 {
     CButton* tr = (CButton*)GetDlgItem(IDC_MIDI_TR);
     CEdit* vof = (CEdit*)GetDlgItem(IDC_MIDI_VOLUMEOFFSET);
     vof->EnableWindow(tr->GetCheck());
 }
 
-void CConfigDlg::OnPaths()
+void COptionsDialog::OnPaths()
 {
-    CConfigPathsDlg dlg;
+    COptionsPathsDlg dlg;
     dlg.m_path_songs = g_defaultSongsPath;
     dlg.m_path_instruments = g_defaultInstrumentsPath;
     dlg.m_path_tracks = g_defaultTracksPath;
@@ -155,13 +155,13 @@ void CConfigDlg::OnPaths()
     }
 }
 /////////////////////////////////////////////////////////////////////////////
-// CConfigPathsDlg dialog
+// COptionsPathsDlg dialog
 
 
-CConfigPathsDlg::CConfigPathsDlg(CWnd* pParent /*=NULL*/)
-    : CDialog(CConfigPathsDlg::IDD, pParent)
+COptionsPathsDlg::COptionsPathsDlg(CWnd* pParent /*=NULL*/)
+    : CDialog(COptionsPathsDlg::IDD, pParent)
 {
-    //{{AFX_DATA_INIT(CConfigPathsDlg)
+    //{{AFX_DATA_INIT(COptionsPathsDlg)
     m_path_songs = _T("");
     m_path_instruments = _T("");
     m_path_tracks = _T("");
@@ -169,10 +169,10 @@ CConfigPathsDlg::CConfigPathsDlg(CWnd* pParent /*=NULL*/)
 }
 
 
-void CConfigPathsDlg::DoDataExchange(CDataExchange* pDX)
+void COptionsPathsDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(CConfigPathsDlg)
+    //{{AFX_DATA_MAP(COptionsPathsDlg)
     DDX_Text(pDX, IDC_EDIT1, m_path_songs);
     DDX_Text(pDX, IDC_EDIT2, m_path_instruments);
     DDX_Text(pDX, IDC_EDIT3, m_path_tracks);
@@ -181,8 +181,8 @@ void CConfigPathsDlg::DoDataExchange(CDataExchange* pDX)
 
 
 // clang-format off
-BEGIN_MESSAGE_MAP(CConfigPathsDlg, CDialog)
-	//{{AFX_MSG_MAP(CConfigPathsDlg)
+BEGIN_MESSAGE_MAP(COptionsPathsDlg, CDialog)
+	//{{AFX_MSG_MAP(COptionsPathsDlg)
 	ON_BN_CLICKED(IDC_BUTTON1, OnButton1)
 	ON_BN_CLICKED(IDC_BUTTON2, OnButton2)
 	ON_BN_CLICKED(IDC_BUTTON3, OnButton3)
@@ -191,9 +191,9 @@ END_MESSAGE_MAP()
 // clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
-// CConfigPathsDlg message handlers
+// COptionsPathsDlg message handlers
 
-void CConfigPathsDlg::BrowsePath(int itemID)
+void COptionsPathsDlg::BrowsePath(int itemID)
 {
     CFilePathDlg dlg;
     CString s;
@@ -204,17 +204,17 @@ void CConfigPathsDlg::BrowsePath(int itemID)
     }
 }
 
-void CConfigPathsDlg::OnButton1()
+void COptionsPathsDlg::OnButton1()
 {
     BrowsePath(IDC_EDIT1);
 }
 
-void CConfigPathsDlg::OnButton2()
+void COptionsPathsDlg::OnButton2()
 {
     BrowsePath(IDC_EDIT2);
 }
 
-void CConfigPathsDlg::OnButton3()
+void COptionsPathsDlg::OnButton3()
 {
     BrowsePath(IDC_EDIT3);
 }

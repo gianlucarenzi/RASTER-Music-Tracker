@@ -1407,7 +1407,7 @@ UINT timeSetEvent(UINT delay, UINT resolution, LPTIMECALLBACK callback, DWORD_PT
 UINT timeKillEvent(UINT id);
 
 // ---------------------------------------------------------------------------
-// Minimal DirectSound shim (legacy CXPokey/PokeyRederer.cpp renderer).
+// Minimal DirectSound shim (legacy CXPokey/PokeyRenderer.cpp renderer).
 // DirectSound types; the device below is silent (see IDirectSoundBuffer).
 // ---------------------------------------------------------------------------
 
@@ -1449,7 +1449,7 @@ struct DSBCAPS {
 
 // DirectSound outside Windows (MfcAudio.cpp): a secondary buffer is a ring
 // that PortAudio plays (when available and g_rmtAudioOutput is true), with
-// real play/write cursors, so PokeyRederer.cpp streams to it exactly as to
+// real play/write cursors, so PokeyRenderer.cpp streams to it exactly as to
 // DirectSound. Otherwise the buffer "plays" instantly: the cursors follow the
 // writes (RmtCoreTest, builds without PortAudio).
 extern bool g_rmtAudioOutput;

@@ -1,6 +1,6 @@
 #include "PlatformTypes.h"
 #include "Global.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "RmtMidi.h"
 #include "Clipboard.h"
 #include "Tuning.h"

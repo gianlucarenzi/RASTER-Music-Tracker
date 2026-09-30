@@ -2,7 +2,7 @@
 
 #include "Song.h"
 #include <iosfwd>
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "SongExport.h"
 
 extern CString g_rmtmsxtext;

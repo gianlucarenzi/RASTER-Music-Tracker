@@ -17,7 +17,7 @@
 #include "Tuning.h"
 #include "resource.h"
 #include "AtariTrackerDriver.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "emu/PokeySound.h"
 
 #include <cstdio>

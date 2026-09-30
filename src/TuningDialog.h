@@ -3,11 +3,11 @@
 
 #include "TuningTypes.h"
 
-// TuningDlg dialog
-class TuningDlg : public CDialog {
+// TuningDialog dialog
+class TuningDialog : public CDialog {
     // Construction
 public:
-    TuningDlg(CWnd* pParent = NULL); // standard constructor
+    TuningDialog(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
     enum { IDD = IDD_TUNING };

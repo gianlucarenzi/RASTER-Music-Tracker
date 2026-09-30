@@ -19,15 +19,15 @@ extern CString g_lastLoadPath_Instruments;
 extern CString g_lastLoadPath_Tracks;
 
 /////////////////////////////////////////////////////////////////////////////
-// CConfigDlg dialog
+// COptionsDialog dialog
 
-class CConfigDlg : public CDialog {
+class COptionsDialog : public CDialog {
     // Construction
 public:
-    CConfigDlg(CWnd* pParent = NULL); // standard constructor
+    COptionsDialog(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CConfigDlg)
+    //{{AFX_DATA(COptionsDialog)
     enum { IDD = IDD_CONFIG };
     CComboBox m_keyboard_c_layout;
     CComboBox m_midi_c_device;
@@ -57,7 +57,7 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CConfigDlg)
+    //{{AFX_VIRTUAL(COptionsDialog)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
                                                      //}}AFX_VIRTUAL
@@ -65,7 +65,7 @@ protected:
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CConfigDlg)
+    //{{AFX_MSG(COptionsDialog)
     virtual BOOL OnInitDialog();
     virtual void OnOK();
     afx_msg void OnMidiTouchResponseClicked();
@@ -77,17 +77,17 @@ public:
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CConfigPathsDlg dialog
+// COptionsPathsDlg dialog
 
-class CConfigPathsDlg : public CDialog {
+class COptionsPathsDlg : public CDialog {
     // Construction
 public:
-    CConfigPathsDlg(CWnd* pParent = NULL); // standard constructor
+    COptionsPathsDlg(CWnd* pParent = NULL); // standard constructor
 
     void BrowsePath(int itemID);
 
     // Dialog Data
-    //{{AFX_DATA(CConfigPathsDlg)
+    //{{AFX_DATA(COptionsPathsDlg)
     enum { IDD = IDD_PATHS };
     CString m_path_songs;
     CString m_path_instruments;
@@ -97,7 +97,7 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CConfigPathsDlg)
+    //{{AFX_VIRTUAL(COptionsPathsDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
                                                      //}}AFX_VIRTUAL
@@ -105,7 +105,7 @@ protected:
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CConfigPathsDlg)
+    //{{AFX_MSG(COptionsPathsDlg)
     afx_msg void OnButton1();
     afx_msg void OnButton2();
     afx_msg void OnButton3();

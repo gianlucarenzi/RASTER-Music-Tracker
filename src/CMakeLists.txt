@@ -133,7 +133,7 @@ else()
         Midi_Song.cpp
         Notes.cpp
         Pokey.cpp
-        PokeyRederer.cpp
+        PokeyRenderer.cpp
         PokeyStream.cpp
         RuntimeException.cpp
         SAPFile.cpp
@@ -166,7 +166,7 @@ else()
 
     set(RMT_GUI_MFC_SOURCES
         AboutDialog.cpp
-        ConfigDlg.cpp
+        OptionsDialog.cpp
         effectsdlg.cpp
         exportdlgs.cpp
         filenewdlg.cpp
@@ -181,7 +181,7 @@ else()
         RmtView.cpp
         SAPFileExportDialog.cpp
         StdAfx.cpp
-        TuningDlg.cpp
+        TuningDialog.cpp
 
         # WASAP cluster: used only by RmtTest.cpp (raw WndProc/CreateDialog,
         # not just MFC types), no other engine file references it.
@@ -240,7 +240,7 @@ set(RMT_HEADERS
     C6502.h
     ChannelControl.h
     Clipboard.h
-    ConfigDlg.h
+    OptionsDialog.h
     EffectsDlg.h
     ExportDlgs.h
     FileNewDlg.h
@@ -265,7 +265,7 @@ set(RMT_HEADERS
     Memory.h
     Notes.h
     Pokey.h
-    PokeyRederer.h
+    PokeyRenderer.h
     PokeyStream.h
     Resource.h
     RmtCommandLineInfo.h
@@ -296,7 +296,7 @@ set(RMT_HEADERS
     TracksTypes.h
     TrackTypes.h
     Tuning.h
-    TuningDlg.h
+    TuningDialog.h
     TuningTypes.h
     Undo.h
     VUPlayer.h
@@ -611,9 +611,9 @@ endif()
 # audio/MIDI backends, not the engine itself). It intentionally excludes the
 # genuine MFC GUI files (Rmt.cpp, MainFrm.cpp, RmtDoc.cpp, RmtView.cpp,
 # RmtCommandLineInfo.cpp, RmtMidi.cpp, StdAfx.cpp) and every real CDialog
-# implementation (AboutDialog.cpp, ConfigDlg.cpp, effectsdlg.cpp,
+# implementation (AboutDialog.cpp, OptionsDialog.cpp, effectsdlg.cpp,
 # exportdlgs.cpp, filenewdlg.cpp, FilePathDlg.cpp, importdlgs.cpp,
-# SAPFileExportDialog.cpp, TuningDlg.cpp) - those stay MFC-only, unmodified.
+# SAPFileExportDialog.cpp, TuningDialog.cpp) - those stay MFC-only, unmodified.
 #
 # Usage:
 #   cmake -B build-core-linux -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
@@ -647,7 +647,7 @@ if(RMT_CORE_TEST)
         Midi_Song.cpp
         Notes.cpp
         Pokey.cpp
-        PokeyRederer.cpp
+        PokeyRenderer.cpp
         PokeyStream.cpp
         RuntimeException.cpp
         SAPFile.cpp

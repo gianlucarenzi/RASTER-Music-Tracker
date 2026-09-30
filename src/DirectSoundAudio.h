@@ -19,7 +19,7 @@
 /**
  * @brief DirectSound audio backend (Windows only)
  * 
- * Wraps the existing PokeyRederer DirectSound code
+ * Wraps the existing PokeyRenderer DirectSound code
  */
 class DirectSoundAudio : public IAudioBackend {
 public:

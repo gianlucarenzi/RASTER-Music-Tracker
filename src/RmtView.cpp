@@ -13,11 +13,11 @@
 #include "Fraction.h"
 #include "RmtView.h"
 #include "MainFrm.h"
-#include "ConfigDlg.h"
+#include "OptionsDialog.h"
 #include "filenewdlg.h"
-#include "TuningDlg.h"
+#include "TuningDialog.h"
 #include "Atari.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "RmtMidi.h"
 #include "EffectsDlg.h"
 
@@ -856,7 +856,7 @@ void CRmtView::WriteTuningConfig()
 
 void CRmtView::OnViewConfiguration()
 {
-    CConfigDlg dlg;
+    COptionsDialog dlg;
 
     // GENERAL
     dlg.m_scaling_percentage = g_scaling_percentage;
@@ -943,7 +943,7 @@ void CRmtView::OnViewConfiguration()
 
 void CRmtView::OnViewTuning()
 {
-    TuningDlg dlg;
+    TuningDialog dlg;
     dlg.m_tuningSettings = g_tuning;
     dlg.m_tuningRatios = g_tuningRatios;
 

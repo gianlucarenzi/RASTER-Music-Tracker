@@ -1,10 +1,10 @@
-// TuningDlg.cpp : implementation file
+// TuningDialog.cpp : implementation file
 //
 
 
 #include "StdAfx.h"
 #include "Rmt.h"
-#include "TuningDlg.h"
+#include "TuningDialog.h"
 #include "Tuning.h"
 #include "Global.h"
 
@@ -16,15 +16,15 @@ static char THIS_FILE[] = __FILE__;
 
 extern CTuning g_Tuning;
 
-// TuningDlg dialog
-TuningDlg::TuningDlg(CWnd* pParent /*=nullptr*/)
+// TuningDialog dialog
+TuningDialog::TuningDialog(CWnd* pParent /*=nullptr*/)
     : CDialog(IDD_TUNING, pParent)
 {
     m_tuningSettings = {};
     m_tuningRatios = {};
 }
 
-void TuningDlg::DoDataExchange(CDataExchange* pDX)
+void TuningDialog::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_BASETUNING, m_tuningSettings.basetuning);
@@ -62,15 +62,15 @@ void TuningDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 // clang-format off
-BEGIN_MESSAGE_MAP(TuningDlg, CDialog)
+BEGIN_MESSAGE_MAP(TuningDialog, CDialog)
     ON_BN_CLICKED(IDTESTNOW, OnClickedIdtestnow)
     ON_BN_CLICKED(IDRESET, OnClickedIdreset)
     ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
 END_MESSAGE_MAP()
 // clang-format on
 
-// TuningDlg message handlers
-BOOL TuningDlg::OnInitDialog()
+// TuningDialog message handlers
+BOOL TuningDialog::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
@@ -82,17 +82,17 @@ BOOL TuningDlg::OnInitDialog()
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void TuningDlg::OnOK()
+void TuningDialog::OnOK()
 {
     OnClickedIdtestnow();
 
     CDialog::OnOK();
 }
 
-void TuningDlg::OnClickedIdtestnow()
+void TuningDialog::OnClickedIdtestnow()
 {
     // Get current screen values.
-    TuningDlg::UpdateData();
+    TuningDialog::UpdateData();
 
     g_tuning = m_tuningSettings;
     g_tuningRatios = m_tuningRatios;
@@ -100,7 +100,7 @@ void TuningDlg::OnClickedIdtestnow()
     g_Tuning.InitTuning();
 }
 
-void TuningDlg::OnClickedIdreset()
+void TuningDialog::OnClickedIdreset()
 {
     // Retrieve the last backed up values.
     g_tuning = m_tuningSettingsBackup;
@@ -109,7 +109,7 @@ void TuningDlg::OnClickedIdreset()
     g_Tuning.InitTuning();
 }
 
-void TuningDlg::OnBnClickedCancel()
+void TuningDialog::OnBnClickedCancel()
 {
     // Reset the values from the last backup.
     OnClickedIdreset();

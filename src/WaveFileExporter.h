@@ -1,7 +1,7 @@
 #pragma once
 
 #include "SongExport.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 
 class CWaveFileExporter {
 public:

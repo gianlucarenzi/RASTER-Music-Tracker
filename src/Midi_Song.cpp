@@ -1,7 +1,7 @@
 #include "PlatformTypes.h"
 #include "Song.h"
 #include "AtariTrackerDriver.h"
-#include "PokeyRederer.h"
+#include "PokeyRenderer.h"
 #include "Instruments.h"
 #include "Clipboard.h"
 #include "Global.h"
