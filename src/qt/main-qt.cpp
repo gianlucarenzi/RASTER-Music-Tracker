@@ -28,6 +28,11 @@ extern CRmtMidi g_Midi;
 
 int main(int argc, char** argv)
 {
+    // Qt6 scales by the fractional desktop DPI (Xft.dpi 106 -> 1.1), which
+    // blurs the pixel-exact bitmaps; round to whole factors like Qt5 did.
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::Round);
+#endif
     QApplication app(argc, argv);
     QApplication::setApplicationName("RASTER Music Tracker");
 
