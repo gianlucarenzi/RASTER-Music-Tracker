@@ -13,7 +13,7 @@ project(
 # RMT_BASE_VERSION is the numeric major.minor used by scripts/push.sh.
 # RMT_VERSION_FULL is the human-readable string baked into the binary.
 # ---------------------------------------------------------------------------
-set(RMT_BASE_VERSION "2.2")
+set(RMT_BASE_VERSION "2.3")
 
 find_package(Git QUIET)
 if(Git_FOUND)
