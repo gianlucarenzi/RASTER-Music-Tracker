@@ -365,6 +365,65 @@ cmake --build build-core-linux
 
 ---
 
+## Code style: clang-format and clang-tidy
+
+The sources use the K&R style: the opening brace goes on its own line only
+for function definitions, everywhere else it stays on the line of the
+statement, and `} else {` is cuddled. Indent is 4 spaces, no tabs. The rules
+are in `.clang-format` and `.clang-tidy` at the top of the repository; any
+clang-format / clang-tidy 11 or later reads them (on Debian/Ubuntu:
+`apt install clang-format clang-tidy`).
+
+Left out on purpose: the third-party and generated sources (`src/asap.c`,
+`src/asap.h`, `src/astil.*`, `src/info_dlg.*`, `src/wasap.*`,
+`src/lzss_sap.*`, `src/resource.h`) and `legacy/`. MFC message maps and
+hand-aligned tables sit between `// clang-format off` and
+`// clang-format on`; do the same for new tables of that kind.
+
+### Format
+
+```bash
+# One file, in place
+clang-format -i src/Song.cpp
+
+# Everything (the same file list as above)
+git ls-files 'src/*.cpp' 'src/*.h' 'src/*.c' \
+  | grep -vE '^src/(asap\.[ch]|astil\.[ch]|info_dlg\.[ch]|wasap\.[ch]|lzss_sap\.(cpp|h)|resource\.h)$' \
+  | xargs clang-format -i
+
+# Check only: prints the differences and fails, changes nothing
+clang-format --dry-run -Werror src/Song.cpp
+```
+
+clang-format 11 sometimes needs a second pass to settle; run it again until
+`--dry-run -Werror` is quiet.
+
+### Check
+
+clang-tidy needs the compile database, which CMake writes with
+`-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`:
+
+```bash
+cmake -B build-qt -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build build-qt
+
+# All the sources of that build
+run-clang-tidy -p build-qt -quiet '/src/'
+
+# One file
+clang-tidy -p build-qt src/Song.cpp
+```
+
+It checks `readability-misleading-indentation` and
+`bugprone-suspicious-semicolon`, i.e. that the layout matches the control
+flow. Only the sources of the configured build are checked: with the Qt build
+the MFC-only files (`MainFrm.cpp`, the real dialogs, ...) are formatted but
+not checked. clang-tidy 11 reports `clang-diagnostic-error` in
+`src/qt/RmtQtDialogs.cpp` (lambdas capturing structured bindings, which GCC
+accepts and clang supports from version 16): that is not a style problem.
+
+---
+
 ## Versioning
 
 The version string baked into the binary is derived **at CMake configure time**
