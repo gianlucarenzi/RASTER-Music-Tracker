@@ -1,4 +1,4 @@
-# RASTER Music Tracker 2.1 - the Qt port
+# RASTER Music Tracker 2.2 - the Qt port
 
 ### About
 
@@ -71,15 +71,15 @@ different from the Windows version you know?
 
 ### Download
 
-[**RMT 2.1**](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/tag/v2.1)
+[**RMT 2.2**](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/tag/v2.2)
 ([all releases](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases)):
 
 | System | Package | How to start it |
 |--------|---------|-----------------|
-| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
-| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
-| macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
-| macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
+| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
+| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
+| macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
+| macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
 
 Everything the program needs is inside each package. The configuration is
 kept in `~/.config/raster-atari.org/rmt.conf` on Linux, in the registry
