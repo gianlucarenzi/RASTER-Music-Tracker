@@ -1,7 +1,6 @@
 #pragma once
 
 class CFraction {
-
 public:
     int numerator;
     int denominator;

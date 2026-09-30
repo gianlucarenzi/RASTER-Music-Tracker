@@ -6,8 +6,7 @@
 #include "GuiHelpers.h"
 
 
-class CTracksControl
-{
+class CTracksControl {
 public:
     CTracksControl();
     ~CTracksControl();

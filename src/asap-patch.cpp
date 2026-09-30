@@ -6,8 +6,8 @@
 
 static TrackerDriverVersion AlternativeRMTPlayer = NONE;
 
-extern uint8_t const* GetAlternativeRMTPlayer(const int channels, const uint8_t* original) {
-
+extern uint8_t const* GetAlternativeRMTPlayer(const int channels, const uint8_t* original)
+{
     if (AlternativeRMTPlayer != NONE) {
         uint8_t* buffer;
         WORD size = 0;

@@ -18,34 +18,40 @@
 
 extern CTuning g_Tuning;
 
-CAtari::CycleCount CAtari::GetFrameCycleCount(boolean ntsc) {
+CAtari::CycleCount CAtari::GetFrameCycleCount(boolean ntsc)
+{
     static constexpr CycleCount MAXSCREENCYCLES_NTSC = 114 * 262;
     static constexpr CycleCount MAXSCREENCYCLES_PAL = 114 * 312;
     return ntsc ? MAXSCREENCYCLES_NTSC : MAXSCREENCYCLES_PAL;
 }
 
-CAtari::ClockFrequency CAtari::GetClockFrequency(boolean ntsc) {
+CAtari::ClockFrequency CAtari::GetClockFrequency(boolean ntsc)
+{
     return ntsc ? FREQ_17_NTSC : FREQ_17_PAL;
-
 }
 
-CAtari::CAtari() {
+CAtari::CAtari()
+{
     ClearMemory();
 }
 
-CAtari::~CAtari() {
+CAtari::~CAtari()
+{
     // TODO: Free memory
 }
 
-void CAtari::JSR(C6502::Address& adr, C6502::Register& a, C6502::Register& x, C6502::Register& y, C6502::CycleCount& cycles) {
+void CAtari::JSR(C6502::Address& adr, C6502::Register& a, C6502::Register& x, C6502::Register& y, C6502::CycleCount& cycles)
+{
     C6502::JSR(adr, a, x, y, cycles);
 }
 
-int CAtari::Init() {
+int CAtari::Init()
+{
     return C6502::Init(m_memory);
 }
 
-void CAtari::DeInit() {
+void CAtari::DeInit()
+{
     C6502::DeInit();
 }
 
@@ -54,38 +60,43 @@ void CAtari::ClearMemory()
     memset(m_memory, 0, RAM_SIZE);
 }
 
-byte CAtari::GetByteAt(const MemoryAddress address) {
+byte CAtari::GetByteAt(const MemoryAddress address)
+{
     return m_memory[address];
 }
 
-void CAtari::SetByteAt(const MemoryAddress address, const byte value) {
+void CAtari::SetByteAt(const MemoryAddress address, const byte value)
+{
     m_memory[address] = value;
 }
 
-byte* CAtari::GetMemoryAt(const MemoryAddress address) {
+byte* CAtari::GetMemoryAt(const MemoryAddress address)
+{
     return m_memory + address;
 }
 
-const byte* CAtari::GetConstMemoryAt(const MemoryAddress address) const {
+const byte* CAtari::GetConstMemoryAt(const MemoryAddress address) const
+{
     return m_memory + address;
 }
 
-BOOL CAtari::IsNTSC() const {
+BOOL CAtari::IsNTSC() const
+{
     return m_ntsc;
 }
 
-CAtari::ClockFrequency CAtari::GetClockFrequency() const {
+CAtari::ClockFrequency CAtari::GetClockFrequency() const
+{
     return GetClockFrequency(IsNTSC());
 }
 
-CAtari::CycleCount CAtari::GetFrameCycleCount() const {
+CAtari::CycleCount CAtari::GetFrameCycleCount() const
+{
     return GetFrameCycleCount(IsNTSC());
 }
 
 void CAtari::Init(const bool ntsc)
 {
-
     m_ntsc = ntsc;
     g_Tuning.InitTuning(GetClockFrequency(), GetMemoryAt(RMT_FRQTABLES));
 }
-

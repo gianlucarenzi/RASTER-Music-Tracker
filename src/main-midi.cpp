@@ -41,7 +41,8 @@ int main()
         return 0;
     }
 
-    std::cout << std::endl << "MIDI Ports:" << std::endl;
+    std::cout << std::endl
+              << "MIDI Ports:" << std::endl;
     for (int i = 0; i < portCount; ++i) {
         std::string portName = midi->GetPortName(i);
         std::cout << "  [" << i << "] " << portName << std::endl;
@@ -63,9 +64,9 @@ int main()
     std::cout << "Sending MIDI messages..." << std::endl;
 
     // Note On (C4, velocity 100)
-    uint8_t note = 60;  // Middle C (C4)
+    uint8_t note = 60; // Middle C (C4)
     uint8_t velocity = 100;
-    uint8_t channel = 0;  // Channel 1
+    uint8_t channel = 0; // Channel 1
 
     std::cout << "  Sending NoteOn: Channel " << (int)channel << ", Note " << (int)note
               << ", Velocity " << (int)velocity << std::endl;
@@ -80,8 +81,8 @@ int main()
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Send Control Change (Volume)
-    uint8_t controller = 7;  // Main Volume
-    uint8_t ccValue = 64;    // Half volume
+    uint8_t controller = 7; // Main Volume
+    uint8_t ccValue = 64;   // Half volume
 
     std::cout << "  Sending ControlChange: Channel " << (int)channel << ", CC " << (int)controller
               << ", Value " << (int)ccValue << std::endl;
@@ -94,7 +95,7 @@ int main()
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     // Send Program Change (different instrument)
-    uint8_t program = 5;  // Some instrument
+    uint8_t program = 5; // Some instrument
 
     std::cout << "  Sending ProgramChange: Channel " << (int)channel << ", Program " << (int)program << std::endl;
     if (midi->SendProgramChange(channel, program)) {

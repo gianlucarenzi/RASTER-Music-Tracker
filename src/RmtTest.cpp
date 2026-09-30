@@ -28,15 +28,13 @@ extern CSong g_Song;
 
 class CFileUtility {
 public:
-
     static void SaveFile(const CString& fileName, const byte* buffer,
-        const size_t size);
-
+                         const size_t size);
 };
 
 void CFileUtility::SaveFile(const CString& filePath, const byte* buffer,
-    const size_t size) {
-
+                            const size_t size)
+{
     SendInfoMessage((std::stringstream() << "Saving '" << filePath << "' with " << size << " bytes.\n").str().c_str());
     std::ofstream fos;
     fos.open(filePath, ios::out | ios::binary | ios::trunc);
@@ -46,26 +44,28 @@ void CFileUtility::SaveFile(const CString& filePath, const byte* buffer,
     fos.close();
 };
 
-CRmtTest::CRmtTest() {
+CRmtTest::CRmtTest()
+{
 }
 
 
-void CRmtTest::TestASAP(const CRmtApp& app, const CString fileName) {
+void CRmtTest::TestASAP(const CRmtApp& app, const CString fileName)
+{
     SendInfoMessage("Test - TestASAP");
     int sizeOfString = (fileName.GetLength() + 1);
     LPTSTR lpsz = new TCHAR[sizeOfString];
     _tcscpy_s(lpsz, sizeOfString, fileName);
-    //... modify lpsz as much as you want   
+    //... modify lpsz as much as you want
     WASAP_WinMain(app.m_hInstance, NULL, lpsz, 0);
     delete lpsz;
 }
 
-void CRmtTest::RunFor(const CRmtApp& app, const CString fileName) {
-
+void CRmtTest::RunFor(const CRmtApp& app, const CString fileName)
+{
     // TestASAP(app, fileName);
 
     // All these variables are initialized with their defaults.
-    // - g_AtariTrackerDriver 
+    // - g_AtariTrackerDriver
     // - g_tuning
     // - g_tuningRatios
     // - g_Song
@@ -78,5 +78,4 @@ void CRmtTest::RunFor(const CRmtApp& app, const CString fileName) {
     }
 
     CSongExporterTest::Test(g_Song);
-
 }

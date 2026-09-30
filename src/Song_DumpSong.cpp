@@ -7,7 +7,7 @@
 #include "ChannelControl.h"
 
 extern CAtariTrackerDriver* g_AtariTrackerDriver;
-extern CInstruments	g_Instruments;
+extern CInstruments g_Instruments;
 extern BOOL volatile g_rmtroutine;
 extern long g_playtime;
 
@@ -21,9 +21,9 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
 {
     CString statusBarLog;
 
-    Stop();					// Make sure RMT is stopped 
-    g_AtariTrackerDriver->Init();	// Reset the RMT routines 
-    SetChannelOnOff(-1, 0);	// Switch all channels off 
+    Stop();                       // Make sure RMT is stopped
+    g_AtariTrackerDriver->Init(); // Reset the RMT routines
+    SetChannelOnOff(-1, 0);       // Switch all channels off
 
     // Activate stream recording mode.
     m_pokeyStream = &pokeyStream;
@@ -40,8 +40,7 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
         DisableEventSection section;
 
         // The SAP-R dumper is running during that time...
-        while (m_play != PLAY_STOP)
-        {
+        while (m_play != PLAY_STOP) {
             // 1 VBI of module playback
             PlayVBI();
 
@@ -49,11 +48,9 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
             g_playtime++;
 
             // Multiple RMT routine calls will be processed if needed
-            for (int i = 0; i < m_instrumentSpeed; i++)
-            {
+            for (int i = 0; i < m_instrumentSpeed; i++) {
                 // 1 VBI of RMT routine (for instruments)
-                if (g_rmtroutine)
-                {
+                if (g_rmtroutine) {
                     g_AtariTrackerDriver->Play();
                 }
                 // Transfer from memory to POKEY buffer
@@ -70,7 +67,7 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
             statusBarLog.Format("Generating Pokey stream, playing song in quick mode... %i frames recorded", pokeyStream.GetCurrentFrame());
             SetStatusBarText(statusBarLog);
         }
-        g_AtariTrackerDriver->Init();	// Reset the RMT routines 
+        g_AtariTrackerDriver->Init(); // Reset the RMT routines
 
         // End playback now, the SAP-R data should have been dumped successfully!
         Stop();

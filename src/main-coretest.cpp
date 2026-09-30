@@ -78,11 +78,16 @@ static int Screenshot(const char* out, int w, int h, const char* song)
     g_Song.DrawSong();
     g_Song.DrawAnalyzer();
     g_Song.DrawPlayTimeCounter();
-    if (g_active_ti == Part::PART_TRACKS) g_Song.DrawTracks();
-    else g_Song.DrawInstrument();
+    if (g_active_ti == Part::PART_TRACKS)
+        g_Song.DrawTracks();
+    else
+        g_Song.DrawInstrument();
 
     FILE* f = std::fopen(out, "wb");
-    if (!f) { std::perror(out); return 1; }
+    if (!f) {
+        std::perror(out);
+        return 1;
+    }
     std::fprintf(f, "P6\n%d %d\n255\n", w, h);
     for (int i = 0; i < w * h; i++) {
         uint32_t p = memBitmap.Bits()[i];
@@ -105,12 +110,18 @@ static int PlaySong(const char* song, int frames, const char* regsOut, const cha
     g_AtariTrackerDriver->LoadRMTRoutines(g_trackerDriverVersion);
     g_AtariTrackerDriver->Init();
     g_Song.ClearSong(8);
-    if (!g_Song.FileOpen(song, FALSE)) { std::fprintf(stderr, "cannot open %s\n", song); return 1; }
+    if (!g_Song.FileOpen(song, FALSE)) {
+        std::fprintf(stderr, "cannot open %s\n", song);
+        return 1;
+    }
     g_Pokey.InitSound(g_Song.IsNTSC(), g_Song.IsStereo());
     g_Song.Play(PLAY_SONG, FALSE, 0);
 
     FILE* regs = std::fopen(regsOut, "w");
-    if (!regs) { std::perror(regsOut); return 1; }
+    if (!regs) {
+        std::perror(regsOut);
+        return 1;
+    }
     FILE* wav = wavOut ? std::fopen(wavOut, "wb") : nullptr;
     rmt_emu::PokeySound pokey;
     pokey.Initialize(false);
@@ -133,10 +144,18 @@ static int PlaySong(const char* song, int frames, const char* regsOut, const cha
     if (wav) {
         auto put32 = [&](uint32_t v) { std::fwrite(&v, 4, 1, wav); };
         auto put16 = [&](uint16_t v) { std::fwrite(&v, 2, 1, wav); };
-        std::fwrite("RIFF", 1, 4, wav); put32(36 + (uint32_t)pcm.size());
-        std::fwrite("WAVEfmt ", 1, 8, wav); put32(16); put16(1); put16(2);
-        put32(44100); put32(44100 * 4); put16(4); put16(16);
-        std::fwrite("data", 1, 4, wav); put32((uint32_t)pcm.size());
+        std::fwrite("RIFF", 1, 4, wav);
+        put32(36 + (uint32_t)pcm.size());
+        std::fwrite("WAVEfmt ", 1, 8, wav);
+        put32(16);
+        put16(1);
+        put16(2);
+        put32(44100);
+        put32(44100 * 4);
+        put16(4);
+        put16(16);
+        std::fwrite("data", 1, 4, wav);
+        put32((uint32_t)pcm.size());
         std::fwrite(pcm.data(), 1, pcm.size(), wav);
         std::fclose(wav);
     }
@@ -144,8 +163,9 @@ static int PlaySong(const char* song, int frames, const char* regsOut, const cha
     return 0;
 }
 
-int main(int argc, char** argv) {
-    g_rmtAudioOutput = false;       // deterministic: the sound buffer plays "instantly"
+int main(int argc, char** argv)
+{
+    g_rmtAudioOutput = false; // deterministic: the sound buffer plays "instantly"
     // program folder = folder of the executable: resources/drivers is there
     {
         std::error_code ec;

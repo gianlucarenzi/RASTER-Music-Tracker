@@ -6,9 +6,9 @@
 #include <cstring>
 
 #ifdef _WIN32
-    #include <windows.h>
-    #include <mmsystem.h>
-    #pragma comment(lib, "winmm.lib")
+#include <windows.h>
+#include <mmsystem.h>
+#pragma comment(lib, "winmm.lib")
 #endif
 
 WindowsMidiBackend::WindowsMidiBackend()
@@ -16,7 +16,8 @@ WindowsMidiBackend::WindowsMidiBackend()
       m_current_output_port(-1), m_current_input_port(-1),
       m_is_initialized(false)
 #ifdef _WIN32
-    , m_hMidiOut(nullptr), m_hMidiIn(nullptr)
+      ,
+      m_hMidiOut(nullptr), m_hMidiIn(nullptr)
 #endif
 {
 }
@@ -33,8 +34,7 @@ bool WindowsMidiBackend::Init()
     m_output_port_count = midiOutGetNumDevs();
     m_input_port_count = midiInGetNumDevs();
 
-    if (m_output_port_count == 0)
-    {
+    if (m_output_port_count == 0) {
         SetErrorMessage("No MIDI output ports available");
         return false;
     }
@@ -52,13 +52,11 @@ void WindowsMidiBackend::Deinit()
 {
     ClosePort();
 #ifdef _WIN32
-    if (m_hMidiOut != nullptr)
-    {
+    if (m_hMidiOut != nullptr) {
         midiOutClose((HMIDIOUT)m_hMidiOut);
         m_hMidiOut = nullptr;
     }
-    if (m_hMidiIn != nullptr)
-    {
+    if (m_hMidiIn != nullptr) {
         midiInClose((HMIDIIN)m_hMidiIn);
         m_hMidiIn = nullptr;
     }
@@ -99,8 +97,7 @@ std::string WindowsMidiBackend::GetPortName(int portIndex) const
 bool WindowsMidiBackend::OpenPort(int portIndex)
 {
 #ifdef _WIN32
-    if (portIndex < 0 || portIndex >= m_output_port_count)
-    {
+    if (portIndex < 0 || portIndex >= m_output_port_count) {
         SetErrorMessage("Invalid port index");
         return false;
     }
@@ -109,8 +106,7 @@ bool WindowsMidiBackend::OpenPort(int portIndex)
         ClosePort();
 
     MMRESULT result = midiOutOpen((LPHMIDIOUT)&m_hMidiOut, portIndex, 0, 0, CALLBACK_NULL);
-    if (result != MMSYSERR_NOERROR)
-    {
+    if (result != MMSYSERR_NOERROR) {
         SetErrorMessage("Failed to open MIDI output port");
         m_hMidiOut = nullptr;
         return false;
@@ -128,8 +124,7 @@ bool WindowsMidiBackend::OpenPort(int portIndex)
 void WindowsMidiBackend::ClosePort()
 {
 #ifdef _WIN32
-    if (m_hMidiOut != nullptr)
-    {
+    if (m_hMidiOut != nullptr) {
         midiOutClose((HMIDIOUT)m_hMidiOut);
         m_hMidiOut = nullptr;
     }
@@ -145,8 +140,7 @@ bool WindowsMidiBackend::IsPortOpen() const
 bool WindowsMidiBackend::SendNoteOn(uint8_t channel, uint8_t note, uint8_t velocity)
 {
 #ifdef _WIN32
-    if (m_hMidiOut == nullptr)
-    {
+    if (m_hMidiOut == nullptr) {
         SetErrorMessage("No MIDI port open");
         return false;
     }
@@ -166,8 +160,7 @@ bool WindowsMidiBackend::SendNoteOn(uint8_t channel, uint8_t note, uint8_t veloc
 bool WindowsMidiBackend::SendNoteOff(uint8_t channel, uint8_t note, uint8_t velocity)
 {
 #ifdef _WIN32
-    if (m_hMidiOut == nullptr)
-    {
+    if (m_hMidiOut == nullptr) {
         SetErrorMessage("No MIDI port open");
         return false;
     }
@@ -187,8 +180,7 @@ bool WindowsMidiBackend::SendNoteOff(uint8_t channel, uint8_t note, uint8_t velo
 bool WindowsMidiBackend::SendControlChange(uint8_t channel, uint8_t controller, uint8_t value)
 {
 #ifdef _WIN32
-    if (m_hMidiOut == nullptr)
-    {
+    if (m_hMidiOut == nullptr) {
         SetErrorMessage("No MIDI port open");
         return false;
     }
@@ -208,8 +200,7 @@ bool WindowsMidiBackend::SendControlChange(uint8_t channel, uint8_t controller, 
 bool WindowsMidiBackend::SendProgramChange(uint8_t channel, uint8_t program)
 {
 #ifdef _WIN32
-    if (m_hMidiOut == nullptr)
-    {
+    if (m_hMidiOut == nullptr) {
         SetErrorMessage("No MIDI port open");
         return false;
     }
@@ -232,8 +223,7 @@ size_t WindowsMidiBackend::SendRawMessage(const uint8_t* data, size_t length)
         return 0;
 
     // For short messages (3 bytes or less)
-    if (length <= 3)
-    {
+    if (length <= 3) {
         uint32_t message = 0;
         for (size_t i = 0; i < length; i++)
             message |= (data[i] << (i * 8));

@@ -10,58 +10,53 @@
 #endif // _MSC_VER > 1000
 
 
-class CMainFrame : public CFrameWnd
-{
-	
+class CMainFrame : public CFrameWnd {
 protected: // create from serialization only
-	CMainFrame();
-	DECLARE_DYNCREATE(CMainFrame)
+    CMainFrame();
+    DECLARE_DYNCREATE(CMainFrame)
 
-// Attributes
+    // Attributes
 public:
-
-// Operations
+    // Operations
 public:
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMainFrame)
-	public:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	//}}AFX_VIRTUAL
-
-// Implementation
+    // Overrides
+    // ClassWizard generated virtual function overrides
+    //{{AFX_VIRTUAL(CMainFrame)
 public:
-	virtual ~CMainFrame();
+    virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+    //}}AFX_VIRTUAL
+
+    // Implementation
+public:
+    virtual ~CMainFrame();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
-	void OnSelChangedComboSkipLinesAfterNoteInsert();
-	void OnRestoreFocusToMainWindow();
+    void OnSelChangedComboSkipLinesAfterNoteInsert();
+    void OnRestoreFocusToMainWindow();
 
-	CToolBar    m_wndToolBar;
+    CToolBar m_wndToolBar;
 
-	CStatusBar  m_wndStatusBar;
-	CToolBar	m_ToolBarPlay;
-	CToolBar	m_ToolBarChannels;
-	CToolBar	m_ToolBarBlock;
-	CReBar		m_wndReBar;
+    CStatusBar m_wndStatusBar;
+    CToolBar m_ToolBarPlay;
+    CToolBar m_ToolBarChannels;
+    CToolBar m_ToolBarBlock;
+    CReBar m_wndReBar;
 
-	CComboBox	m_comboSkipLinesAfterNoteInsert;
+    CComboBox m_comboSkipLinesAfterNoteInsert;
 
-protected:  // control bar embedded members
-
-// Generated message map functions
+protected: // control bar embedded members
+           // Generated message map functions
 protected:
-	//{{AFX_MSG(CMainFrame)
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnClose();
-	//afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+    //{{AFX_MSG(CMainFrame)
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnClose();
+    //afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+    afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+    //}}AFX_MSG
+    DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////

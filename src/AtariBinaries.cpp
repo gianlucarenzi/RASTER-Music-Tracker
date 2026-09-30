@@ -11,7 +11,8 @@ static std::map<TrackerDriverVersion, CByteArray*> m_trackerDriverVersionBinary;
 
 // TODO Move to CResourceUtility class
 
-CByteArray* LoadByteArray(const CString& filePath) {
+CByteArray* LoadByteArray(const CString& filePath)
+{
     CFileStatus status;
     if (CFile::GetStatus(filePath, status) == 0) {
         return nullptr;
@@ -30,7 +31,8 @@ CByteArray* LoadByteArray(const CString& filePath) {
     return byteArray;
 }
 
-CByteArray* LoadResourceByteArray(const std::filesystem::path& relativePath, const CString& fileName) {
+CByteArray* LoadResourceByteArray(const std::filesystem::path& relativePath, const CString& fileName)
+{
     CString filePath = GetResourceFilePath(relativePath, fileName);
     return LoadByteArray(filePath);
 }
@@ -45,9 +47,7 @@ bool CRmtAtariBinaries::GetTrackerDriverBinary(TrackerDriverVersion trackerDrive
     CByteArray* byteArray;
     if (byteArrayIt != m_trackerDriverVersionBinary.end()) {
         byteArray = (*byteArrayIt).second;
-    }
-    else {
-
+    } else {
         CString fileName;
         fileName.Format("rmt_driver_v%d.obx", (int)trackerDriverVersion);
         byteArray = LoadResourceByteArray(std::filesystem::path("resources/drivers"), fileName);
@@ -62,7 +62,8 @@ bool CRmtAtariBinaries::GetTrackerDriverBinary(TrackerDriverVersion trackerDrive
     return true;
 }
 
-bool CRmtAtariBinaries::GetVUPlayerBinary(byte*& binary, WORD& size) {
+bool CRmtAtariBinaries::GetVUPlayerBinary(byte*& binary, WORD& size)
+{
     binary = nullptr;
     size = 0;
 

@@ -1,5 +1,5 @@
 #include "PlatformTypes.h"
-#include <ctime> 
+#include <ctime>
 #include "SongExporterTest.h"
 
 #include <string>
@@ -21,14 +21,15 @@
 extern CXPokey g_Pokey;
 
 
-
-void AssertTrue(bool actual) {
+void AssertTrue(bool actual)
+{
     if (actual != true) {
         exit(1);
     }
 }
 
-CString GetFileNameWithoutExtension(const CString& fileName) {
+CString GetFileNameWithoutExtension(const CString& fileName)
+{
     int nPos = fileName.Find('.');
     if (nPos != -1) {
         return fileName.Left(nPos);
@@ -36,9 +37,10 @@ CString GetFileNameWithoutExtension(const CString& fileName) {
     return fileName;
 }
 
-static   time_t startTimestamp;
+static time_t startTimestamp;
 
-bool OpenOutputStream(const CString filePath, const std::ios_base::openmode mode, std::ofstream& os) {
+bool OpenOutputStream(const CString filePath, const std::ios_base::openmode mode, std::ofstream& os)
+{
     SendInfoMessage("Opening '" + filePath + "' for output.");
     os.open(filePath, mode);
     if (os.fail()) {
@@ -49,7 +51,8 @@ bool OpenOutputStream(const CString filePath, const std::ios_base::openmode mode
     return true;
 }
 
-void CloseOutputStream(const CString filePath, const bool result, std::ofstream& os) {
+void CloseOutputStream(const CString filePath, const bool result, std::ofstream& os)
+{
     os.close();
     time_t endTimestamp = time(NULL);
     long diff = (long)difftime(endTimestamp, startTimestamp);
@@ -57,16 +60,15 @@ void CloseOutputStream(const CString filePath, const bool result, std::ofstream&
     if (result) {
         CFile file(filePath, CFile::modeRead);
         SendInfoMessage("Output file '" + filePath + "' created in " + seconds.c_str() + " seconds with " + std::to_string(file.GetLength()).c_str() + " bytes.");
-    }
-    else {
+    } else {
         SendInfoMessage("Creation ofutput file '" + filePath + "' failed within " + seconds.c_str() + " seconds.");
         CFile::Remove(filePath);
     }
 }
 
 
-void CSongExporterTest::Test(CSong& song) {
-
+void CSongExporterTest::Test(CSong& song)
+{
     static const CString SEPARATOR = "\\";
 
     CSongContainer songContainer(song);
@@ -99,7 +101,7 @@ void CSongExporterTest::Test(CSong& song) {
     bool XEX_LZSS = true;
     bool SAP_B_LZSS = false;
     bool SAP_R = true;
-    [[maybe_unused]] bool SAP_R_LZSS = false;	// not exported by this test yet
+    [[maybe_unused]] bool SAP_R_LZSS = false; // not exported by this test yet
     bool WAV = false;
 
     if (LZSS) {
@@ -163,7 +165,5 @@ void CSongExporterTest::Test(CSong& song) {
             }
             CloseOutputStream(outFilePath, result, os);
         }
-
     }
-
 }

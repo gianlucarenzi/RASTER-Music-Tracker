@@ -28,10 +28,9 @@ typedef void PaStream;
  * - WASAPI on modern Windows
  * - CoreAudio on macOS
  */
-class PortAudioBackend : public IAudioBackend
-{
+class PortAudioBackend : public IAudioBackend {
 public:
-    static constexpr size_t BUFFER_SIZE = 0x8000;       ///< Circular buffer size
+    static constexpr size_t BUFFER_SIZE = 0x8000;               ///< Circular buffer size
     static constexpr size_t PORTAUDIO_FRAMES_PER_BUFFER = 1024; ///< PortAudio buffer
 
     PortAudioBackend();
@@ -63,8 +62,7 @@ public:
         unsigned long frameCount,
         const void* timeInfo,
         unsigned long statusFlags,
-        void* userData
-    );
+        void* userData);
 
 private:
     AudioFormat m_format;

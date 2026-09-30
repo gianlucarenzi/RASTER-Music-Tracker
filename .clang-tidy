@@ -1,0 +1,11 @@
+# Style checks for the RMT sources (K&R, see .clang-format).
+# clang-format lays out the code; these checks catch layout that lies
+# about the control flow. Fixes applied by clang-tidy are re-formatted
+# with .clang-format.
+#   run-clang-tidy -p <build dir with compile_commands.json> '/src/'
+Checks: >
+  -*,
+  readability-misleading-indentation,
+  bugprone-suspicious-semicolon
+HeaderFilterRegex: '/src/'
+FormatStyle: file

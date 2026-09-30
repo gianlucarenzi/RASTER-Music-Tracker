@@ -16,7 +16,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-extern CInstruments	g_Instruments;
+extern CInstruments g_Instruments;
 extern CTracks g_Tracks;
 extern CSong g_Song;
 
@@ -49,6 +49,7 @@ void CEffectsDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CEffectsDlg, CDialog)
     //{{AFX_MSG_MAP(CEffectsDlg)
     ON_CBN_SELCHANGE(IDC_EFF_COMBO, OnSelchangeEffCombo)
@@ -58,11 +59,12 @@ BEGIN_MESSAGE_MAP(CEffectsDlg, CDialog)
     ON_BN_CLICKED(IDPLAYSTOP, OnPlaystop)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CEffectsDlg message handlers
 
-#define NUMBEROFEFFECT	6
+#define NUMBEROFEFFECT 6
 
 struct TEffs {
     const char* name;
@@ -75,60 +77,48 @@ struct TEffs {
 };
 
 TEffs effects[NUMBEROFEFFECT] = {
-    {
-        "Fade in/out",
-        "Initial volume level, 0-100 (%)",
-        "100",
-        "Final volume level, 0-100 (%)",
-        "100",
-        "Line step",
-        "1"
-    },
-    {
-        "Modify notes, instruments and volume values",
-        "Notes tuning (+- semitones)",
-        "0",
-        "Instruments used (+- offset value)",
-        "0",
-        "Volume changes (%)",
-        "100"
-    },
-    {
-        "Echo",
-        "Delay (lines)",
-        "3",
-        "Fade out level 0-100 (%), or V1-V15 for linear volume subtraction",
-        "20",
-        "Minimal volume 0-15, or !0-!15 for ending echo on minimal volume",
-        "1"
-    },
-    {
-        "Expand/shrink lines",
-        "From step (negative values for bottom-up way)",
-        "1",
-        "To step (negative values for bottom-up way)",
-        "2",
-        "",
-        ""
-    },
-    {
-        "Volume humanize",
-        "Random level 0-100 (%)",
-        "30",
-        "Minimal volume 0-15",
-        "1",
-        "Line step",
-        "1"
-    },
-    {
-        "Volume set/remove",
-        "Volume range - minimum 0-15",
-        "0",
-        "Volume range - maximum 0-15",
-        "15",
-        "Set volume to 0-15, or 'X' to remove whole note events",
-        "15"
-    }
+    { "Fade in/out",
+      "Initial volume level, 0-100 (%)",
+      "100",
+      "Final volume level, 0-100 (%)",
+      "100",
+      "Line step",
+      "1" },
+    { "Modify notes, instruments and volume values",
+      "Notes tuning (+- semitones)",
+      "0",
+      "Instruments used (+- offset value)",
+      "0",
+      "Volume changes (%)",
+      "100" },
+    { "Echo",
+      "Delay (lines)",
+      "3",
+      "Fade out level 0-100 (%), or V1-V15 for linear volume subtraction",
+      "20",
+      "Minimal volume 0-15, or !0-!15 for ending echo on minimal volume",
+      "1" },
+    { "Expand/shrink lines",
+      "From step (negative values for bottom-up way)",
+      "1",
+      "To step (negative values for bottom-up way)",
+      "2",
+      "",
+      "" },
+    { "Volume humanize",
+      "Random level 0-100 (%)",
+      "30",
+      "Minimal volume 0-15",
+      "1",
+      "Line step",
+      "1" },
+    { "Volume set/remove",
+      "Volume range - minimum 0-15",
+      "0",
+      "Volume range - maximum 0-15",
+      "15",
+      "Set volume to 0-15, or 'X' to remove whole note events",
+      "15" }
 };
 
 int g_effai = 0;
@@ -143,15 +133,14 @@ BOOL CEffectsDlg::OnInitDialog()
 
     m_effai = g_effai;
 
-    for (int i = 0; i < NUMBEROFEFFECT; i++)
-    {
+    for (int i = 0; i < NUMBEROFEFFECT; i++) {
         m_eff_combo.AddString(effects[i].name);
     }
 
     m_eff_combo.SetCurSel(m_effai);
     OnSelchangeEffCombo();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -167,9 +156,8 @@ void CEffectsDlg::OnSelchangeEffCombo()
     m_edit3.EnableWindow(effects[m_effai].p3[0] != 0);
 
     if (eff_ed[m_effai][0] == "")
-        OnDefault();	//if the P1 parameter is empty, then set all defaults
-    else
-    {
+        OnDefault(); //if the P1 parameter is empty, then set all defaults
+    else {
         m_edit1.SetWindowText(eff_ed[m_effai][0]);
         m_edit2.SetWindowText(eff_ed[m_effai][1]);
         m_edit3.SetWindowText(eff_ed[m_effai][2]);
@@ -185,12 +173,10 @@ void ZpracujChPar(CString& s, char& ch, int& par) //"ProcessChPar" in English lo
     char a;
     ch = 0;
     par = 0;
-    for (i = 0; i < len; i++)
-    {
+    for (i = 0; i < len; i++) {
         a = s[i];
         if (a >= 'a' && a <= 'z') a -= 'a' - 'A';
-        if ((a >= '0' && a <= '9') || a == '-')
-        {
+        if ((a >= '0' && a <= '9') || a == '-') {
             par = atoi(((LPCTSTR)s) + i);
             return;
         }
@@ -267,177 +253,159 @@ void CEffectsDlg::PerformEffect()
 
     int continstr[TRACKLEN]; //the instrument numbers are continuous
     int lasti = -1;
-    for (i = 0; i <= bto; i++)
-    {
+    for (i = 0; i <= bto; i++) {
         if (td.instr[i] >= 0) lasti = td.instr[i];
         if (i >= bfro) continstr[i] = lasti;
     }
 
-    TTrack tempt;	//auxiliary empty track
+    TTrack tempt; //auxiliary empty track
     for (i = 0; i < TRACKLEN; i++) tempt.note[i] = tempt.instr[i] = tempt.volume[i] = tempt.speed[i] = -1;
 
-    switch (m_effai)
-    {
-    case 0:	//fade in/out: initial volume level %, final vol.level %, line step
-    {
-        if (p3 <= 0) break;
-        for (i = bfro; i <= bto; i += p3)	//line step p3
+    switch (m_effai) {
+        case 0: //fade in/out: initial volume level %, final vol.level %, line step
         {
-            if (!m_all && m_ainstr != continstr[i]) continue;
-            if (td.volume[i] < 0) continue;		//never without volume
-            float proc = (float)p1 / 100;
-            if (i > 0) proc += (float)(p2 - p1) / (bto - bfro) * (i - bfro) / 100;
-            h = (int)(proc * td.volume[i] + 0.5);	//volume change (rounded)
-            if (h < 0) h = 0;
-            else
-                if (h > 15) h = 15;
-            td.volume[i] = h;
-        }
-    }
-    break;
-
-    case 1: //change notes, instruments and volumes: note+-, instr+-, volume%
-    {
-        int ai = (m_all) ? -1 : m_ainstr;
-        g_Tracks.ModifyTrack(&td, bfro, bto, ai, p1, p2, p3);
-    }
-    break;
-
-    case 2: //echo: delay, fadeout level %, minimal volume 0..15 or !1..!15 echo ending volume
-    {
-        float dvol = 0;
-        if (ch2 == 'V')
-        {	//linear calculations
-            if (p2 < -15) p2 = -15;
-            if (p2 > 15) p2 = 15;
-        }
-        else
-        {	//percentage calculations
-            dvol = (1 - ((float)p2 / 100));
-            if (dvol < -15) dvol = -15;
-            if (dvol > 15) dvol = 15;
-        }
-        float nv;
-        int ph;
-
-        for (i = bfro; i <= bto; i++)
-        {
-            if (td.note[i] < 0) continue;	//there is no note
-            if (!m_all && td.instr[i] != m_ainstr) continue;	//not for this instrument
-            j = i + p1;	//echo for p1
-            if (j<bfro || j>bto) continue;		//echo is coming out of the block
-            if (td.note[j] >= 0) continue;	//there is already a note in the final place
-
-            if (ch2 == 'V')
-                nv = fvolume[i] - p2;	//linear calculations
-            else
-                nv = fvolume[i] * dvol; //percentage calculations
-            ph = (int)(fvolume[i] + 0.5); //original volume (rounded to the nearest)
-            h = (int)(nv + 0.5); //new volume (rounded to the nearest)
-
-            if (ch3 == '!')
-            {	//ending volume
-                if (ph <= p3) continue;
-            }
-
-            if (h < p3) h = p3;	//minimal volume p3
-            if (h < 0) h = 0;
-            else
-                if (h > 15) h = 15;
-
-            fvolume[j] = nv;				//volume in real numbers
-            td.note[j] = td.note[i];		//copies the note
-            td.instr[j] = td.instr[i];	//the same instrument
-            td.volume[j] = h;				//corresponding volume
-        }
-    }
-    break;
-
-    case 3: //expand/shrink lines: from step, to step
-    {
-        if (p1 == 0 && p2 == 0) break;
-        int lenb = bto - bfro;
-        for (i = (p1 >= 0) ? 0 : lenb, j = (p2 >= 0) ? 0 : lenb; i >= 0 && i <= lenb && j >= 0 && j <= lenb; i += p1, j += p2)
-        {
-            if (!m_all && td.instr[bfro + i] != m_ainstr) continue;	//not for this instrument
-            tempt.note[j] = td.note[bfro + i];
-            tempt.instr[j] = td.instr[bfro + i];
-            tempt.volume[j] = td.volume[bfro + i];
-            tempt.speed[j] = td.speed[bfro + i];
-        }
-        for (i = 0; i <= lenb; i++)
-        {
-            td.note[bfro + i] = tempt.note[i];
-            td.instr[bfro + i] = tempt.instr[i];
-            td.volume[bfro + i] = tempt.volume[i];
-            td.speed[bfro + i] = tempt.speed[i];
-        }
-    }
-    break;
-
-    case 4: //volume humanize: random level %, minimal volume, line step
-    {
-
-        if (p1 < 0) p1 = 0;
-        if (p1 > 100) p1 = 100;
-        if (p2 < 0) p2 = 0;
-        if (p3 <= 0) break;
-
-        int vol;
-        for (i = bfro; i <= bto; i += p3)
-        {
-            vol = td.volume[i];
-            if (!m_all && m_ainstr != continstr[i]) continue;	//not for this instrument
-            if (vol < 0) continue;	//if there is no volume
-
-            float dol = (vol - (float)p1 / 100 * 15);
-            if (dol < p2) dol = (float)p2;
-            dol -= 0.5;
-
-            float hor = (vol + (float)p1 / 100 * 15);
-            if (hor > 15) hor = 15;
-            hor += 0.5;
-
-            if (hor <= dol) continue;
-
-            int nv = (int)(0.5 + dol + (float)((hor - dol) * (((float)(rand() % 1000)) / 1000)));
-
-            if (nv < p2) nv = p2;
-            if (nv > 15) nv = 15;
-            td.volume[i] = nv;
-        }
-    }
-    break;
-
-    case 5: //Volume set / remove (ch3=='X')
-    {
-        if (p1 < 0) p1 = 0;
-        if (p1 > 15) p1 = 15;
-        if (p2 < 0) p2 = 0;
-        if (p2 > 15) p2 = 15;
-        if (p3 < 0) p3 = 0;
-        if (p3 > 15) p3 = 15;
-        int vol;
-        for (i = bfro; i <= bto; i++)
-        {
-            vol = td.volume[i];
-            if (!m_all && m_ainstr != continstr[i]) continue;	//not for this instrument
-            if (vol < 0) continue;	//if there is no volume
-
-            if (p1 <= vol && vol <= p2)
+            if (p3 <= 0) break;
+            for (i = bfro; i <= bto; i += p3) //line step p3
             {
-                if (ch3 == 'X')
-                    td.note[i] = td.instr[i] = td.volume[i] = -1; //clear
-                else
-                    if (p3 >= 0 && p3 <= 15)
-                        td.volume[i] = p3;
+                if (!m_all && m_ainstr != continstr[i]) continue;
+                if (td.volume[i] < 0) continue; //never without volume
+                float proc = (float)p1 / 100;
+                if (i > 0) proc += (float)(p2 - p1) / (bto - bfro) * (i - bfro) / 100;
+                h = (int)(proc * td.volume[i] + 0.5); //volume change (rounded)
+                if (h < 0)
+                    h = 0;
+                else if (h > 15)
+                    h = 15;
+                td.volume[i] = h;
             }
-        }
-    }
-    break;
+        } break;
 
-    default:
-        break;
+        case 1: //change notes, instruments and volumes: note+-, instr+-, volume%
+        {
+            int ai = (m_all) ? -1 : m_ainstr;
+            g_Tracks.ModifyTrack(&td, bfro, bto, ai, p1, p2, p3);
+        } break;
+
+        case 2: //echo: delay, fadeout level %, minimal volume 0..15 or !1..!15 echo ending volume
+        {
+            float dvol = 0;
+            if (ch2 == 'V') { //linear calculations
+                if (p2 < -15) p2 = -15;
+                if (p2 > 15) p2 = 15;
+            } else { //percentage calculations
+                dvol = (1 - ((float)p2 / 100));
+                if (dvol < -15) dvol = -15;
+                if (dvol > 15) dvol = 15;
+            }
+            float nv;
+            int ph;
+
+            for (i = bfro; i <= bto; i++) {
+                if (td.note[i] < 0) continue;                    //there is no note
+                if (!m_all && td.instr[i] != m_ainstr) continue; //not for this instrument
+                j = i + p1;                                      //echo for p1
+                if (j < bfro || j > bto) continue;               //echo is coming out of the block
+                if (td.note[j] >= 0) continue;                   //there is already a note in the final place
+
+                if (ch2 == 'V')
+                    nv = fvolume[i] - p2; //linear calculations
+                else
+                    nv = fvolume[i] * dvol;   //percentage calculations
+                ph = (int)(fvolume[i] + 0.5); //original volume (rounded to the nearest)
+                h = (int)(nv + 0.5);          //new volume (rounded to the nearest)
+
+                if (ch3 == '!') { //ending volume
+                    if (ph <= p3) continue;
+                }
+
+                if (h < p3) h = p3; //minimal volume p3
+                if (h < 0)
+                    h = 0;
+                else if (h > 15)
+                    h = 15;
+
+                fvolume[j] = nv;           //volume in real numbers
+                td.note[j] = td.note[i];   //copies the note
+                td.instr[j] = td.instr[i]; //the same instrument
+                td.volume[j] = h;          //corresponding volume
+            }
+        } break;
+
+        case 3: //expand/shrink lines: from step, to step
+        {
+            if (p1 == 0 && p2 == 0) break;
+            int lenb = bto - bfro;
+            for (i = (p1 >= 0) ? 0 : lenb, j = (p2 >= 0) ? 0 : lenb; i >= 0 && i <= lenb && j >= 0 && j <= lenb; i += p1, j += p2) {
+                if (!m_all && td.instr[bfro + i] != m_ainstr) continue; //not for this instrument
+                tempt.note[j] = td.note[bfro + i];
+                tempt.instr[j] = td.instr[bfro + i];
+                tempt.volume[j] = td.volume[bfro + i];
+                tempt.speed[j] = td.speed[bfro + i];
+            }
+            for (i = 0; i <= lenb; i++) {
+                td.note[bfro + i] = tempt.note[i];
+                td.instr[bfro + i] = tempt.instr[i];
+                td.volume[bfro + i] = tempt.volume[i];
+                td.speed[bfro + i] = tempt.speed[i];
+            }
+        } break;
+
+        case 4: //volume humanize: random level %, minimal volume, line step
+        {
+            if (p1 < 0) p1 = 0;
+            if (p1 > 100) p1 = 100;
+            if (p2 < 0) p2 = 0;
+            if (p3 <= 0) break;
+
+            int vol;
+            for (i = bfro; i <= bto; i += p3) {
+                vol = td.volume[i];
+                if (!m_all && m_ainstr != continstr[i]) continue; //not for this instrument
+                if (vol < 0) continue;                            //if there is no volume
+
+                float dol = (vol - (float)p1 / 100 * 15);
+                if (dol < p2) dol = (float)p2;
+                dol -= 0.5;
+
+                float hor = (vol + (float)p1 / 100 * 15);
+                if (hor > 15) hor = 15;
+                hor += 0.5;
+
+                if (hor <= dol) continue;
+
+                int nv = (int)(0.5 + dol + (float)((hor - dol) * (((float)(rand() % 1000)) / 1000)));
+
+                if (nv < p2) nv = p2;
+                if (nv > 15) nv = 15;
+                td.volume[i] = nv;
+            }
+        } break;
+
+        case 5: //Volume set / remove (ch3=='X')
+        {
+            if (p1 < 0) p1 = 0;
+            if (p1 > 15) p1 = 15;
+            if (p2 < 0) p2 = 0;
+            if (p2 > 15) p2 = 15;
+            if (p3 < 0) p3 = 0;
+            if (p3 > 15) p3 = 15;
+            int vol;
+            for (i = bfro; i <= bto; i++) {
+                vol = td.volume[i];
+                if (!m_all && m_ainstr != continstr[i]) continue; //not for this instrument
+                if (vol < 0) continue;                            //if there is no volume
+
+                if (p1 <= vol && vol <= p2) {
+                    if (ch3 == 'X')
+                        td.note[i] = td.instr[i] = td.volume[i] = -1; //clear
+                    else if (p3 >= 0 && p3 <= 15)
+                        td.volume[i] = p3;
+                }
+            }
+        } break;
+
+        default:
+            break;
     }
 
     //copies to the actual track
@@ -468,6 +436,7 @@ void CSongTracksOrderDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CSongTracksOrderDlg, CDialog)
     //{{AFX_MSG_MAP(CSongTracksOrderDlg)
     ON_WM_PAINT()
@@ -496,6 +465,7 @@ BEGIN_MESSAGE_MAP(CSongTracksOrderDlg, CDialog)
     ON_BN_CLICKED(IDC_CLEARALL, OnClearall)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CSongTracksOrderDlg message handlers
@@ -505,10 +475,8 @@ BOOL CSongTracksOrderDlg::OnInitDialog()
     CDialog::OnInitDialog();
 
     m_fromtrack = m_totrack = -1;
-    if (g_tracks4_8 <= 4)
-    {
-        for (int i = 0; i < 4; i++)
-        {
+    if (g_tracks4_8 <= 4) {
+        for (int i = 0; i < 4; i++) {
             GetDlgItem(IDC_R1 + i)->EnableWindow(0);
             GetDlgItem(IDC_R1D + i)->EnableWindow(0);
         }
@@ -519,7 +487,7 @@ BOOL CSongTracksOrderDlg::OnInitDialog()
     }
     OnDefault();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -527,21 +495,19 @@ void CSongTracksOrderDlg::OnPaint()
 {
     CPaintDC dc(this); // device context for painting
 
-    const int tids[8] = { IDC_L1,IDC_L2,IDC_L3,IDC_L4,IDC_R1,IDC_R2,IDC_R3,IDC_R4 };
-    const int tidd[8] = { IDC_L1D,IDC_L2D,IDC_L3D,IDC_L4D,IDC_R1D,IDC_R2D,IDC_R3D,IDC_R4D };
+    const int tids[8] = { IDC_L1, IDC_L2, IDC_L3, IDC_L4, IDC_R1, IDC_R2, IDC_R3, IDC_R4 };
+    const int tidd[8] = { IDC_L1D, IDC_L2D, IDC_L3D, IDC_L4D, IDC_R1D, IDC_R2D, IDC_R3D, IDC_R4D };
 
-    for (int i = 0; i < g_tracks4_8; i++)
-    {
+    for (int i = 0; i < g_tracks4_8; i++) {
         int z = m_tracksorder[i];
-        if (z >= 0)
-        {
+        if (z >= 0) {
             CRect rects, rectd;
             ((CWnd*)GetDlgItem(tids[z]))->GetWindowRect(&rects);
             ScreenToClient(&rects);
             ((CWnd*)GetDlgItem(tidd[i]))->GetWindowRect(&rectd);
             ScreenToClient(&rectd);
-            dc.MoveTo((rects.left + rects.right) / 2, rects.bottom);		//rects.CenterPoint()
-            dc.LineTo((rectd.left + rectd.right) / 2, rectd.top);		//rectd.CenterPoint());
+            dc.MoveTo((rects.left + rects.right) / 2, rects.bottom); //rects.CenterPoint()
+            dc.LineTo((rectd.left + rectd.right) / 2, rectd.top);    //rectd.CenterPoint());
         }
     }
 
@@ -556,14 +522,14 @@ void CSongTracksOrderDlg::OnDefault()
 
 void CSongTracksOrderDlg::OnMonostereo()
 {
-    const int ttt[8] = { 0,3,4,7, 1,2,5,6 };
+    const int ttt[8] = { 0, 3, 4, 7, 1, 2, 5, 6 };
     for (int i = 0; i < 8; i++) m_tracksorder[i] = ttt[i];
     Invalidate();
 }
 
 void CSongTracksOrderDlg::OnStereomono()
 {
-    const int ttt[8] = { 0,4,5,1, 2,6,7,3 };
+    const int ttt[8] = { 0, 4, 5, 1, 2, 6, 7, 3 };
     for (int i = 0; i < 8; i++) m_tracksorder[i] = ttt[i];
     Invalidate();
 }
@@ -591,17 +557,13 @@ void CSongTracksOrderDlg::OnL1R4()
 {
     CWnd* wnd = GetFocus();
     int num = wnd->GetDlgCtrlID() - IDC_L1;
-    if (num >= 0 && num < 8)
-    {
+    if (num >= 0 && num < 8) {
         m_fromtrack = num;
+    } else if (num >= 8 && num < 16) {
+        m_totrack = num - (IDC_L1D - IDC_L1);
+        m_tracksorder[m_totrack] = m_fromtrack;
+        Invalidate();
     }
-    else
-        if (num >= 8 && num < 16)
-        {
-            m_totrack = num - (IDC_L1D - IDC_L1);
-            m_tracksorder[m_totrack] = m_fromtrack;
-            Invalidate();
-        }
 }
 
 void CSongTracksOrderDlg::OnNothing()
@@ -665,6 +627,7 @@ void CInstrumentChangeDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CInstrumentChangeDlg, CDialog)
     //{{AFX_MSG_MAP(CInstrumentChangeDlg)
     ON_BN_CLICKED(IDC_BUTTON1, OnDefault)
@@ -690,6 +653,7 @@ BEGIN_MESSAGE_MAP(CInstrumentChangeDlg, CDialog)
     ON_BN_CLICKED(IDC_CHECK12, OnCheckSomeSonglinesOnly)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CInstrumentChangeDlg message handlers
@@ -699,8 +663,7 @@ BOOL CInstrumentChangeDlg::OnInitDialog()
     CDialog::OnInitDialog();
 
     int i;
-    for (i = 0; i < CNotes::NOTESNUM; i++)
-    {
+    for (i = 0; i < CNotes::NOTESNUM; i++) {
         const auto note = CNotes::GetNote(i);
         ((CComboBox*)GetDlgItem(IDC_COMBO1))->AddString(note);
         ((CComboBox*)GetDlgItem(IDC_COMBO2))->AddString(note);
@@ -709,8 +672,7 @@ BOOL CInstrumentChangeDlg::OnInitDialog()
     }
     ((CComboBox*)GetDlgItem(IDC_COMBO6))->AddString("---");
     CString s;
-    for (i = 0; i <= 15; i++)
-    {
+    for (i = 0; i <= 15; i++) {
         s.Format("%X", i);
         ((CComboBox*)GetDlgItem(IDC_COMBO3))->AddString((LPCTSTR)s);
         ((CComboBox*)GetDlgItem(IDC_COMBO4))->AddString((LPCTSTR)s);
@@ -718,8 +680,7 @@ BOOL CInstrumentChangeDlg::OnInitDialog()
         ((CComboBox*)GetDlgItem(IDC_COMBO8))->AddString((LPCTSTR)s);
     }
     ((CComboBox*)GetDlgItem(IDC_COMBO8))->AddString("---");
-    for (i = 0; i < INSTRSNUM; i++)
-    {
+    for (i = 0; i < INSTRSNUM; i++) {
         s.Format("%02X", i);
         ((CComboBox*)GetDlgItem(IDC_COMBO9))->AddString((LPCTSTR)s);
         ((CComboBox*)GetDlgItem(IDC_COMBO10))->AddString((LPCTSTR)s);
@@ -730,8 +691,7 @@ BOOL CInstrumentChangeDlg::OnInitDialog()
 
     if (m_onlytrack >= 0)
         s.Format("Only in current track ($%02X)", m_onlytrack);
-    else
-    {
+    else {
         s = "Only in current track";
         m_check4.EnableWindow(0);
     }
@@ -753,7 +713,7 @@ BOOL CInstrumentChangeDlg::OnInitDialog()
 
     OnDefault();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -763,15 +723,14 @@ void CInstrumentChangeDlg::OnDefault()
     instrfrom = ((CComboBox*)GetDlgItem(IDC_COMBO11))->GetCurSel();
     instrto = ((CComboBox*)GetDlgItem(IDC_COMBO12))->GetCurSel();
 
-    if (m_checkoneinstr.GetCheck() || instrto < instrfrom)	instrto = instrfrom;
+    if (m_checkoneinstr.GetCheck() || instrto < instrfrom) instrto = instrfrom;
 
     TInstrInfo iinfo;
     //m_song->InstrInfo(instrfrom,&iinfo,instrto);
     g_Song.InstrInfo(instrfrom, &iinfo, instrto);
     int count = iinfo.count;
 
-    if (!count)
-    {
+    if (!count) {
         iinfo.minnote = 0;
         iinfo.maxnote = CNotes::NOTESNUM - 1;
         iinfo.minvol = 0;
@@ -821,8 +780,7 @@ void CInstrumentChangeDlg::OnFullRanges()
 
     TInstrInfo iinfo;
     g_Song.InstrInfo(0, &iinfo, INSTRSNUM - 1);
-    if (!iinfo.count)
-    {
+    if (!iinfo.count) {
         ((CComboBox*)GetDlgItem(IDC_COMBO1))->SetCurSel(0);
         ((CComboBox*)GetDlgItem(IDC_COMBO2))->SetCurSel(CNotes::NOTESNUM - 1);
         ((CComboBox*)GetDlgItem(IDC_COMBO3))->SetCurSel(0);
@@ -837,9 +795,7 @@ void CInstrumentChangeDlg::OnFullRanges()
         ((CComboBox*)GetDlgItem(IDC_COMBO12))->SetCurSel(INSTRSNUM - 1);
         ((CComboBox*)GetDlgItem(IDC_COMBO9))->SetCurSel(0);
         ((CComboBox*)GetDlgItem(IDC_COMBO10))->SetCurSel(INSTRSNUM - 1);
-    }
-    else
-    {
+    } else {
         ((CComboBox*)GetDlgItem(IDC_COMBO11))->SetCurSel(iinfo.instrfrom);
         ((CComboBox*)GetDlgItem(IDC_COMBO12))->SetCurSel(iinfo.instrto);
     }
@@ -859,36 +815,33 @@ void CInstrumentChangeDlg::OnSelchangeComboInstrs()
 void CInstrumentChangeDlg::SelChangeComboX()
 {
     int i, c[12];
-    static int idcombo[12] = { IDC_COMBO1,IDC_COMBO2,IDC_COMBO3,IDC_COMBO4,IDC_COMBO5,IDC_COMBO6,IDC_COMBO7,IDC_COMBO8,IDC_COMBO9,IDC_COMBO10,IDC_COMBO11,IDC_COMBO12 };
+    static int idcombo[12] = { IDC_COMBO1, IDC_COMBO2, IDC_COMBO3, IDC_COMBO4, IDC_COMBO5, IDC_COMBO6, IDC_COMBO7, IDC_COMBO8, IDC_COMBO9, IDC_COMBO10, IDC_COMBO11, IDC_COMBO12 };
     for (i = 0; i < 12; i++) c[i] = ((CComboBox*)GetDlgItem(idcombo[i]))->GetCurSel();
 
-    if (c[1] < c[0]) c[1] = c[0];	//noteto<notefrom
-    if (c[3] < c[2]) c[3] = c[2];	//volumemax<volumemin
-    if (c[5] < c[4]) c[5] = c[4];	//noteto<notefrom
-    if (c[7] < c[6]) c[7] = c[6];	//volumemax<volumemin
-    if (c[9] < c[8]) c[9] = c[8];	//instrto<instrfrom
+    if (c[1] < c[0]) c[1] = c[0];     //noteto<notefrom
+    if (c[3] < c[2]) c[3] = c[2];     //volumemax<volumemin
+    if (c[5] < c[4]) c[5] = c[4];     //noteto<notefrom
+    if (c[7] < c[6]) c[7] = c[6];     //volumemax<volumemin
+    if (c[9] < c[8]) c[9] = c[8];     //instrto<instrfrom
     if (c[11] < c[10]) c[11] = c[10]; //instrto<instrfrom
 
-    if (m_check1.GetCheck())
-    {	//same volume range
+    if (m_check1.GetCheck()) { //same volume range
         int j = c[1] - c[0] + c[4];
-        if (j > CNotes::NOTESNUM) { j = CNotes::NOTESNUM; }		//an "---" item is added at the end
+        if (j > CNotes::NOTESNUM) { j = CNotes::NOTESNUM; } //an "---" item is added at the end
         c[5] = j;
     }
 
-    if (m_check2.GetCheck())
-    {	//same volume range
+    if (m_check2.GetCheck()) { //same volume range
         int j = c[3] - c[2] + c[6];
-        if (j > 16) j = 16;					//16th item "---" is added at the end of 0-15
+        if (j > 16) j = 16; //16th item "---" is added at the end of 0-15
         c[7] = j;
     }
 
-    if (m_check3.GetCheck() || m_checkoneinstr.GetCheck())
-    {
+    if (m_check3.GetCheck() || m_checkoneinstr.GetCheck()) {
         //same instrument range || only one instrument
         if (m_checkoneinstr.GetCheck()) c[11] = c[10];
         int j = c[11] - c[10] + c[8];
-        if (j > INSTRSNUM) j = INSTRSNUM;	//an "---" item is added at the end
+        if (j > INSTRSNUM) j = INSTRSNUM; //an "---" item is added at the end
         c[9] = j;
     }
 
@@ -920,19 +873,16 @@ void CInstrumentChangeDlg::OnSameInstrRange()
 
 void CInstrumentChangeDlg::OnCheckoneinstrument()
 {
-    if (m_checkoneinstr.GetCheck())
-    {
+    if (m_checkoneinstr.GetCheck()) {
         OnDefault();
-    }
-    else
+    } else
         SelChangeComboX();
 }
 
 void CInstrumentChangeDlg::OnCheckTrackOnly()
 {
     //mutually excluded check4 and check5+6
-    if (m_check4.GetCheck())
-    {
+    if (m_check4.GetCheck()) {
         m_check5.SetCheck(0);
         m_check5.SetWindowText("Only in some channels");
         m_onlychannels = -1; //all
@@ -945,33 +895,27 @@ void CInstrumentChangeDlg::OnCheckTrackOnly()
 void CInstrumentChangeDlg::OnCheckSomeChannelsOnly()
 {
     //mutually excluded check4 and check5+6
-    if (m_check5.GetCheck())
-    {
+    if (m_check5.GetCheck()) {
         m_check4.SetCheck(0);
         CChannelsSelectionDlg dlg;
-        if (dlg.DoModal() == IDOK && dlg.m_channelyes > 0)
-        {
+        if (dlg.DoModal() == IDOK && dlg.m_channelyes > 0) {
             m_onlychannels = dlg.m_channelyes;
-            const char* cnames[] = { "L1","L2","L3","L4","R1","R2","R3","R4" };
+            const char* cnames[] = { "L1", "L2", "L3", "L4", "R1", "R2", "R3", "R4" };
             CString s;
             s = "Only in ";
             int j = 0;
-            for (int i = 0; i < g_tracks4_8; i++)
-            {
-                if (m_onlychannels & (1 << i))
-                {
+            for (int i = 0; i < g_tracks4_8; i++) {
+                if (m_onlychannels & (1 << i)) {
                     if (j) s += ",";
                     s += cnames[i];
                     j++;
                 }
             }
             m_check5.SetWindowText(s);
-        }
-        else
+        } else
             m_check5.SetCheck(0);
     }
-    if (!m_check5.GetCheck())
-    {
+    if (!m_check5.GetCheck()) {
         m_check5.SetWindowText("Only in some channels");
         m_onlychannels = -1; //all
     }
@@ -980,8 +924,7 @@ void CInstrumentChangeDlg::OnCheckSomeChannelsOnly()
 void CInstrumentChangeDlg::OnCheckSomeSonglinesOnly()
 {
     int check6 = m_check6.GetCheck();
-    if (check6)
-    {
+    if (check6) {
         m_check4.SetCheck(0);
     }
     m_edit1.EnableWindow(check6);
@@ -993,15 +936,13 @@ void CInstrumentChangeDlg::OnOK()
 {
     if (!m_check4.GetCheck()) m_onlytrack = -1;
     if (!m_check5.GetCheck()) m_onlychannels = -1;
-    if (m_check6.GetCheck())
-    {
+    if (m_check6.GetCheck()) {
         CString s;
         m_edit1.GetWindowText(s);
         m_onlysonglinefrom = Hexstr((char*)(LPCTSTR)s, 4);
         m_edit2.GetWindowText(s);
         m_onlysonglineto = Hexstr((char*)(LPCTSTR)s, 4);
-    }
-    else
+    } else
         m_onlysonglinefrom = m_onlysonglineto = -1;
     CDialog::OnOK();
 }
@@ -1015,7 +956,7 @@ CRenumberTracksDlg::CRenumberTracksDlg(CWnd* pParent /*=NULL*/)
     : CDialog(CRenumberTracksDlg::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CRenumberTracksDlg)
-        // NOTE: the ClassWizard will add member initialization here
+    // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 }
 
@@ -1024,15 +965,17 @@ void CRenumberTracksDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(CRenumberTracksDlg)
-        // NOTE: the ClassWizard will add DDX and DDV calls here
+    // NOTE: the ClassWizard will add DDX and DDV calls here
     //}}AFX_DATA_MAP
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CRenumberTracksDlg, CDialog)
     //{{AFX_MSG_MAP(CRenumberTracksDlg)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CRenumberTracksDlg message handlers
@@ -1044,15 +987,16 @@ BOOL CRenumberTracksDlg::OnInitDialog()
     m_radio = 0;
     ((CButton*)GetDlgItem(IDC_RADIO1))->SetCheck(1);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CRenumberTracksDlg::OnOK()
 {
-    if (((CButton*)GetDlgItem(IDC_RADIO1))->GetCheck()) m_radio = 1;
-    else
-        if (((CButton*)GetDlgItem(IDC_RADIO2))->GetCheck()) m_radio = 2;
+    if (((CButton*)GetDlgItem(IDC_RADIO1))->GetCheck())
+        m_radio = 1;
+    else if (((CButton*)GetDlgItem(IDC_RADIO2))->GetCheck())
+        m_radio = 2;
 
     CDialog::OnOK();
 }
@@ -1064,7 +1008,7 @@ CRenumberInstrumentsDlg::CRenumberInstrumentsDlg(CWnd* pParent /*=NULL*/)
     : CDialog(CRenumberInstrumentsDlg::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CRenumberInstrumentsDlg)
-        // NOTE: the ClassWizard will add member initialization here
+    // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 }
 
@@ -1073,15 +1017,17 @@ void CRenumberInstrumentsDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(CRenumberInstrumentsDlg)
-        // NOTE: the ClassWizard will add DDX and DDV calls here
+    // NOTE: the ClassWizard will add DDX and DDV calls here
     //}}AFX_DATA_MAP
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CRenumberInstrumentsDlg, CDialog)
     //{{AFX_MSG_MAP(CRenumberInstrumentsDlg)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CRenumberInstrumentsDlg message handlers
@@ -1093,17 +1039,18 @@ BOOL CRenumberInstrumentsDlg::OnInitDialog()
     m_radio = 0;
     ((CButton*)GetDlgItem(IDC_RADIO1))->SetCheck(1);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CRenumberInstrumentsDlg::OnOK()
 {
-    if (((CButton*)GetDlgItem(IDC_RADIO1))->GetCheck()) m_radio = 1;
-    else
-        if (((CButton*)GetDlgItem(IDC_RADIO2))->GetCheck()) m_radio = 2;
-        else
-            if (((CButton*)GetDlgItem(IDC_RADIO3))->GetCheck()) m_radio = 3;
+    if (((CButton*)GetDlgItem(IDC_RADIO1))->GetCheck())
+        m_radio = 1;
+    else if (((CButton*)GetDlgItem(IDC_RADIO2))->GetCheck())
+        m_radio = 2;
+    else if (((CButton*)GetDlgItem(IDC_RADIO3))->GetCheck())
+        m_radio = 3;
 
     CDialog::OnOK();
 }
@@ -1116,7 +1063,7 @@ CInsertCopyOrCloneOfSongLinesDlg::CInsertCopyOrCloneOfSongLinesDlg(CWnd* pParent
     : CDialog(CInsertCopyOrCloneOfSongLinesDlg::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CInsertCopyOrCloneOfSongLinesDlg)
-        // NOTE: the ClassWizard will add member initialization here
+    // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 }
 
@@ -1137,6 +1084,7 @@ void CInsertCopyOrCloneOfSongLinesDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CInsertCopyOrCloneOfSongLinesDlg, CDialog)
     //{{AFX_MSG_MAP(CInsertCopyOrCloneOfSongLinesDlg)
     ON_BN_CLICKED(IDC_CLONETRACKS, OnClonetracks)
@@ -1144,6 +1092,7 @@ BEGIN_MESSAGE_MAP(CInsertCopyOrCloneOfSongLinesDlg, CDialog)
     ON_EN_CHANGE(IDC_SONGLINETO, OnChangeSonglinerange)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CInsertCopyOrCloneOfSongLinesDlg message handlers
@@ -1165,7 +1114,7 @@ BOOL CInsertCopyOrCloneOfSongLinesDlg::OnInitDialog()
 
     ValuesTest();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -1174,8 +1123,7 @@ void CInsertCopyOrCloneOfSongLinesDlg::OnOK()
     // TODO: Add extra validation here
     m_clone = m_c_clone.GetCheck();
 
-    if (!ValuesTest())
-    {
+    if (!ValuesTest()) {
         MessageBox("Some parameters need to be corrected.\nPlease re-verify their values.", "Warning", MB_ICONWARNING);
         return;
     }
@@ -1196,19 +1144,30 @@ BOOL CInsertCopyOrCloneOfSongLinesDlg::ValuesTest()
 
     m_c_linefrom.GetWindowText(s);
     c = Hexstr((char*)(LPCTSTR)s, 4);
-    if (c < 0) { c = 0; r = 0; }
-    else
-        if (c >= SONGLEN) { c = SONGLEN - 1; r = 0; }
+    if (c < 0) {
+        c = 0;
+        r = 0;
+    } else if (c >= SONGLEN) {
+        c = SONGLEN - 1;
+        r = 0;
+    }
     m_linefrom = c;
     s.Format("%02X", c);
     m_c_linefrom.SetWindowText(s);
 
     m_c_lineto.GetWindowText(s);
     c = Hexstr((char*)(LPCTSTR)s, 4);
-    if (c < 0) { c = 0; r = 0; }
-    else
-        if (c >= SONGLEN) { c = SONGLEN - 1; r = 0; }
-    if (c < m_linefrom) { c = m_linefrom; r = 0; }	//it can't be smaller
+    if (c < 0) {
+        c = 0;
+        r = 0;
+    } else if (c >= SONGLEN) {
+        c = SONGLEN - 1;
+        r = 0;
+    }
+    if (c < m_linefrom) {
+        c = m_linefrom;
+        r = 0;
+    } //it can't be smaller
     m_lineto = c;
     s.Format("%02X", c);
     m_c_lineto.SetWindowText(s);
@@ -1221,9 +1180,13 @@ BOOL CInsertCopyOrCloneOfSongLinesDlg::ValuesTest()
 
     m_c_volumep.GetWindowText(s);
     c = atoi((LPCTSTR)s);
-    if (c < 0) { c = 0; r = 0; }
-    else
-        if (c >= 1600) { c = 1600; r = 0; }
+    if (c < 0) {
+        c = 0;
+        r = 0;
+    } else if (c >= 1600) {
+        c = 1600;
+        r = 0;
+    }
     m_volumep = c;
     s.Format("%i", c);
     m_c_volumep.SetWindowText(s);
@@ -1266,7 +1229,7 @@ COctaveSelectDlg::COctaveSelectDlg(CWnd* pParent /*=NULL*/)
     : CDialog(COctaveSelectDlg::IDD, pParent)
 {
     //{{AFX_DATA_INIT(COctaveSelectDlg)
-        // NOTE: the ClassWizard will add member initialization here
+    // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 }
 
@@ -1275,11 +1238,12 @@ void COctaveSelectDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(COctaveSelectDlg)
-        // NOTE: the ClassWizard will add DDX and DDV calls here
+    // NOTE: the ClassWizard will add DDX and DDV calls here
     //}}AFX_DATA_MAP
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(COctaveSelectDlg, CDialog)
     //{{AFX_MSG_MAP(COctaveSelectDlg)
     ON_BN_CLICKED(IDC_OCTAVE1, OnOctave)
@@ -1289,6 +1253,7 @@ BEGIN_MESSAGE_MAP(COctaveSelectDlg, CDialog)
     ON_BN_CLICKED(IDC_OCTAVE5, OnOctave)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // COctaveSelectDlg message handlers
@@ -1296,8 +1261,7 @@ END_MESSAGE_MAP()
 BOOL COctaveSelectDlg::PreTranslateMessage(MSG* pMsg)
 {
     // TODO: Add your specialized code here and/or call the base class
-    if (pMsg->message == 0x0118 && pMsg->wParam == 0xfff6)
-    {
+    if (pMsg->message == 0x0118 && pMsg->wParam == 0xfff6) {
         //P message:0x0118 [Unknown] wParam:0000FFF6 lParam:17677DBA
         //(related to WM_NCHITTEST, WM_NCMOUSEMOVE and HTCLOSE events)
         //The message that causes the "Close" bubble prompt. And because of that, it stops playing for a moment and it annoys it there unnecessarily. ;-)
@@ -1317,7 +1281,7 @@ BOOL COctaveSelectDlg::OnInitDialog()
 
     return FALSE;
     //return TRUE;  // return TRUE unless you set the focus to a control
-                  // EXCEPTION: OCX Property Pages should return FALSE
+    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void COctaveSelectDlg::OnOK()
@@ -1342,7 +1306,7 @@ CInstrumentSelectDlg::CInstrumentSelectDlg(CWnd* pParent /*=NULL*/)
     : CDialog(CInstrumentSelectDlg::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CInstrumentSelectDlg)
-        // NOTE: the ClassWizard will add member initialization here
+    // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 }
 
@@ -1356,11 +1320,13 @@ void CInstrumentSelectDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CInstrumentSelectDlg, CDialog)
     //{{AFX_MSG_MAP(CInstrumentSelectDlg)
     ON_LBN_SELCHANGE(IDC_LIST1, OnSelchangeList1)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CInstrumentSelectDlg message handlers
@@ -1368,8 +1334,7 @@ END_MESSAGE_MAP()
 BOOL CInstrumentSelectDlg::PreTranslateMessage(MSG* pMsg)
 {
     // TODO: Add your specialized code here and/or call the base class
-    if (pMsg->message == 0x0118 && pMsg->wParam == 0xfff6)
-    {
+    if (pMsg->message == 0x0118 && pMsg->wParam == 0xfff6) {
         //P message:0x0118 [Unknown] wParam:0000FFF6 lParam:17677DBA
         //(related to WM_NCHITTEST, WM_NCMOUSEMOVE and HTCLOSE events)
         //The message that causes the "Close" bubble prompt. And because of that, it stops playing for a moment and it annoys it there unnecessarily. ;-)
@@ -1388,21 +1353,20 @@ BOOL CInstrumentSelectDlg::OnInitDialog()
     // TODO: Add extra initialization here
     SetWindowPos(0, m_pos.x, m_pos.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
 
-    for (i = 0; i < INSTRSNUM; i++)
-    {
+    for (i = 0; i < INSTRSNUM; i++) {
         s.Format("%02X: %s", i, g_Instruments.GetName(i));
         m_list1.AddString(s);
     }
 
     m_list1.SetCurSel(m_selected);
-    if (m_selected > 16)
-    {
-        if (m_selected < 64 - 16) m_list1.SetTopIndex(m_selected - 16);
+    if (m_selected > 16) {
+        if (m_selected < 64 - 16)
+            m_list1.SetTopIndex(m_selected - 16);
         else
             m_list1.SetTopIndex(64 - 16);
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -1435,11 +1399,13 @@ void CVolumeSelectDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CVolumeSelectDlg, CDialog)
     //{{AFX_MSG_MAP(CVolumeSelectDlg)
     ON_LBN_SELCHANGE(IDC_LIST1, OnSelchangeList1)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CVolumeSelectDlg message handlers
@@ -1452,15 +1418,15 @@ BOOL CVolumeSelectDlg::OnInitDialog()
     SetWindowPos(0, m_pos.x, m_pos.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW);
 
     m_list1.SetTabStops(10);
-    const char* vs[] = { "F\t|||||||||||||||","E\t||||||||||||||","D\t|||||||||||||","C\t||||||||||||",
-                "B\t|||||||||||","A\t||||||||||","9\t|||||||||","8\t||||||||",
-                "7\t|||||||","6\t||||||","5\t|||||","4\t||||",
-                "3\t|||","2\t||","1\t|","0\t" };
+    const char* vs[] = { "F\t|||||||||||||||", "E\t||||||||||||||", "D\t|||||||||||||", "C\t||||||||||||",
+                         "B\t|||||||||||", "A\t||||||||||", "9\t|||||||||", "8\t||||||||",
+                         "7\t|||||||", "6\t||||||", "5\t|||||", "4\t||||",
+                         "3\t|||", "2\t||", "1\t|", "0\t" };
     for (int i = 0; i < 16; i++) m_list1.AddString(vs[i]);
 
     m_list1.SetCurSel(15 - m_volume);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -1482,8 +1448,7 @@ void CVolumeSelectDlg::OnOK()
 BOOL CVolumeSelectDlg::PreTranslateMessage(MSG* pMsg)
 {
     // TODO: Add your specialized code here and/or call the base class
-    if (pMsg->message == 0x0118 && pMsg->wParam == 0xfff6)
-    {
+    if (pMsg->message == 0x0118 && pMsg->wParam == 0xfff6) {
         //P message:0x0118 [Unknown] wParam:0000FFF6 lParam:17677DBA
         //(related to WM_NCHITTEST, WM_NCMOUSEMOVE and HTCLOSE events)
         //The message that causes the "Close" bubble prompt. And because of that, it stops playing for a moment and it annoys it there unnecessarily. ;-)
@@ -1501,7 +1466,7 @@ CChannelsSelectionDlg::CChannelsSelectionDlg(CWnd* pParent /*=NULL*/)
     : CDialog(CChannelsSelectionDlg::IDD, pParent)
 {
     //{{AFX_DATA_INIT(CChannelsSelectionDlg)
-        // NOTE: the ClassWizard will add member initialization here
+    // NOTE: the ClassWizard will add member initialization here
     //}}AFX_DATA_INIT
 }
 
@@ -1510,43 +1475,42 @@ void CChannelsSelectionDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     //{{AFX_DATA_MAP(CChannelsSelectionDlg)
-        // NOTE: the ClassWizard will add DDX and DDV calls here
+    // NOTE: the ClassWizard will add DDX and DDV calls here
     //}}AFX_DATA_MAP
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CChannelsSelectionDlg, CDialog)
     //{{AFX_MSG_MAP(CChannelsSelectionDlg)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CChannelsSelectionDlg message handlers
 
-const int idcchan[8] = { IDC_CHECK1,IDC_CHECK2,IDC_CHECK3,IDC_CHECK4,IDC_CHECK10,IDC_CHECK11,IDC_CHECK12,IDC_CHECK13 };
+const int idcchan[8] = { IDC_CHECK1, IDC_CHECK2, IDC_CHECK3, IDC_CHECK4, IDC_CHECK10, IDC_CHECK11, IDC_CHECK12, IDC_CHECK13 };
 
 BOOL CChannelsSelectionDlg::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
     m_channelyes = 0;
-    if (g_tracks4_8 <= 4)
-    {
+    if (g_tracks4_8 <= 4) {
         for (int i = 4; i < 8; i++) ((CButton*)GetDlgItem(idcchan[i]))->EnableWindow(0);
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CChannelsSelectionDlg::OnOK()
 {
     // TODO: Add extra validation here
-    for (int i = 0; i < 8; i++)
-    {
+    for (int i = 0; i < 8; i++) {
         if (((CButton*)GetDlgItem(idcchan[i]))->GetCheck())
             m_channelyes |= (1 << i);
     }
     CDialog::OnOK();
 }
-

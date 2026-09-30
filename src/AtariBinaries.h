@@ -4,13 +4,10 @@
 
 #include "TrackerDriverVersion.h"
 
-class CRmtAtariBinaries
-{
-
+class CRmtAtariBinaries {
 public:
     // TODO Return CByteArray*
     // Have instance and free at end of application
     static bool GetTrackerDriverBinary(TrackerDriverVersion trackerDriverVersion, byte*& binary, WORD& size);
     static bool GetVUPlayerBinary(byte*& binary, WORD& size);
 };
-

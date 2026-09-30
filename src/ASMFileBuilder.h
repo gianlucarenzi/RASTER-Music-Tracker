@@ -1,9 +1,7 @@
 #pragma once
 #include "AssemblerTypes.h"
 
-class CASMFileBuilder
-{
-
+class CASMFileBuilder {
 public:
     static int BuildInstrumentData(
         CString& strCode,
@@ -12,8 +10,7 @@ public:
         int from,
         int to,
         int* info,
-        AssemblerFormat assemblerFormat
-    );
+        AssemblerFormat assemblerFormat);
 
     static int BuildTracksData(
         CString& strCode,
@@ -32,7 +29,5 @@ public:
         int len,
         int start,
         int numTracks,
-        AssemblerFormat assemblerFormat
-    );
+        AssemblerFormat assemblerFormat);
 };
-

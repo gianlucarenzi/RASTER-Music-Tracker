@@ -13,7 +13,7 @@
 #include <string>
 
 #ifdef _WIN32
-    #include <dsound.h>
+#include <dsound.h>
 #endif
 
 /**
@@ -21,8 +21,7 @@
  * 
  * Wraps the existing PokeyRederer DirectSound code
  */
-class DirectSoundAudio : public IAudioBackend
-{
+class DirectSoundAudio : public IAudioBackend {
 public:
     static constexpr size_t BUFFER_SIZE = 0x8000; // Must be a power of 2
 
@@ -50,11 +49,11 @@ public:
 private:
     // Windows DirectSound objects
 #ifdef _WIN32
-    LPDIRECTSOUND          m_lpds;              ///< DirectSound device
-    LPDIRECTSOUNDBUFFER    m_lpdsbPrimary;      ///< Primary sound buffer
+    LPDIRECTSOUND m_lpds;               ///< DirectSound device
+    LPDIRECTSOUNDBUFFER m_lpdsbPrimary; ///< Primary sound buffer
 #else
-    void* m_lpds;           // Dummy for non-Windows
-    void* m_lpdsbPrimary;   // Dummy for non-Windows
+    void* m_lpds;         // Dummy for non-Windows
+    void* m_lpdsbPrimary; // Dummy for non-Windows
 #endif
 
     AudioFormat m_format;

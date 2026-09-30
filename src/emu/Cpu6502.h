@@ -28,7 +28,7 @@ private:
     uint8_t* m_mem = nullptr;
     uint16_t m_pc = 0;
     uint8_t m_a = 0, m_x = 0, m_y = 0, m_s = 0xFF, m_p = 0x24;
-    int m_extra = 0;                    // page crossing / branch cycles of the current instruction
+    int m_extra = 0; // page crossing / branch cycles of the current instruction
 
     uint8_t Rd(uint16_t a) const { return m_mem[a]; }
     void Wr(uint16_t a, uint8_t v) { m_mem[a] = v; }
@@ -51,14 +51,21 @@ private:
     uint16_t Zp() { return Rd(m_pc++); }
     uint16_t Zpx() { return (uint8_t)(Rd(m_pc++) + m_x); }
     uint16_t Zpy() { return (uint8_t)(Rd(m_pc++) + m_y); }
-    uint16_t Abs() { uint16_t a = Rd16(m_pc); m_pc += 2; return a; }
-    uint16_t Absi(uint8_t i, bool read) {
+    uint16_t Abs()
+    {
+        uint16_t a = Rd16(m_pc);
+        m_pc += 2;
+        return a;
+    }
+    uint16_t Absi(uint8_t i, bool read)
+    {
         uint16_t b = Abs(), a = (uint16_t)(b + i);
         if (read && (a & 0xFF00) != (b & 0xFF00)) m_extra++;
         return a;
     }
     uint16_t Izx() { return Rd16Zp((uint8_t)(Rd(m_pc++) + m_x)); }
-    uint16_t Izy(bool read) {
+    uint16_t Izy(bool read)
+    {
         uint16_t b = Rd16Zp(Rd(m_pc++)), a = (uint16_t)(b + m_y);
         if (read && (a & 0xFF00) != (b & 0xFF00)) m_extra++;
         return a;

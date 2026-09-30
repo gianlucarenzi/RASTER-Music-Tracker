@@ -1,10 +1,10 @@
 #pragma once
 
 // Helper defines to make the code a bit more readable
-#define SCALE(x) ((x) * g_scaling_percentage) / 100
-#define INVERSE_SCALE(x) ((x) * 100) / g_scaling_percentage
-#define SCREENUPDATE g_screenupdate = TRUE
-#define NO_SCREENUPDATE g_screenupdate = FALSE
+#define SCALE(x)         ((x)*g_scaling_percentage) / 100
+#define INVERSE_SCALE(x) ((x)*100) / g_scaling_percentage
+#define SCREENUPDATE     g_screenupdate = TRUE
+#define NO_SCREENUPDATE  g_screenupdate = FALSE
 
 
 class DisableEventSection {
@@ -61,10 +61,9 @@ enum class TextColor : int {
 
 class LogicalTextColor {
 public:
-
-    static const TextColor SELECTED = TextColor::INVERSE_RED;		// Highlight color
-    static const TextColor SELECTED_PROVE = TextColor::INVERSE_BLUE;		// Highlight color in PROVE mode
-    static const TextColor HOVERED = TextColor::INVERSE_WHITE;	// Highlight color from cursor hover
+    static const TextColor SELECTED = TextColor::INVERSE_RED;        // Highlight color
+    static const TextColor SELECTED_PROVE = TextColor::INVERSE_BLUE; // Highlight color in PROVE mode
+    static const TextColor HOVERED = TextColor::INVERSE_WHITE;       // Highlight color from cursor hover
 };
 
 enum class TextMiniColor : int {

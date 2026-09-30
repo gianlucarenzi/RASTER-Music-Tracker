@@ -3,8 +3,7 @@
 #include "SongContainer.h"
 
 // Song with lazily created dump of the Pokey stream.
-class CSongExport
-{
+class CSongExport {
 public:
     CSongExport(CSongContainer& songContainer, CString filePath);
 
@@ -19,4 +18,3 @@ private:
     CSongContainer* m_songContainer;
     CString m_filePath;
 };
-

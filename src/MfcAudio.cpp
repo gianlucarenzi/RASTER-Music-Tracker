@@ -43,7 +43,7 @@ UINT s_nextTimerId = 1;
 thread_local LPTIMECALLBACK t_callback = nullptr;
 thread_local DWORD_PTR t_user = 0;
 thread_local Clock::time_point t_deadline;
-thread_local std::shared_future<void> t_callbackDone;   // ready when the running callback has returned
+thread_local std::shared_future<void> t_callbackDone; // ready when the running callback has returned
 
 // "too late" threshold: a timer this far behind restarts from now instead of catching up
 constexpr std::chrono::milliseconds kMaxLateness(200);
@@ -62,7 +62,7 @@ UINT timeSetEvent(UINT delay, UINT, LPTIMECALLBACK callback, DWORD_PTR user, UIN
         // with two live timers)
         first = t_deadline + std::chrono::milliseconds(delay);
         if (first < Clock::now() - kMaxLateness)
-            first = Clock::now();                                   // too late: do not catch up
+            first = Clock::now(); // too late: do not catch up
         after = t_callbackDone;
     }
 
@@ -92,7 +92,7 @@ UINT timeSetEvent(UINT delay, UINT, LPTIMECALLBACK callback, DWORD_PTR user, UIN
             if (!(flags & TIME_PERIODIC)) break;
             deadline += std::chrono::milliseconds(delay);
             if (deadline < Clock::now() - kMaxLateness)
-                deadline = Clock::now();                            // too late (debugger, suspend): do not catch up
+                deadline = Clock::now(); // too late (debugger, suspend): do not catch up
         }
     });
     return id;
@@ -104,13 +104,13 @@ UINT timeKillEvent(UINT id)
     {
         std::lock_guard<std::mutex> lock(s_timersLock);
         auto it = s_timers.find(id);
-        if (it == s_timers.end()) return 1;                          // MMSYSERR_ERROR
+        if (it == s_timers.end()) return 1; // MMSYSERR_ERROR
         timer = it->second;
         s_timers.erase(it);
     }
     timer->stop = true;
     if (timer->thread.get_id() == std::this_thread::get_id())
-        timer->thread.detach();                                       // killed from its own callback
+        timer->thread.detach(); // killed from its own callback
     else if (timer->thread.joinable())
         timer->thread.join();
     return 0;
@@ -126,7 +126,7 @@ struct RmtAudioStream {
 #ifdef RMT_HAVE_PORTAUDIO
     PaStream* stream = nullptr;
 #endif
-    DWORD safety = 0;                   // bytes between the play and the write cursor
+    DWORD safety = 0; // bytes between the play and the write cursor
     // test device (RMT_AUDIO_DUMP=file.wav): a thread takes the ring in real
     // time, like a sound card, and writes what it would play
     std::thread dumpThread;
@@ -155,21 +155,32 @@ static void WriteWavHeader(FILE* f, const WAVEFORMATEX& fmt, uint32_t dataBytes)
     auto put32 = [f](uint32_t v) { std::fwrite(&v, 4, 1, f); };
     auto put16 = [f](uint16_t v) { std::fwrite(&v, 2, 1, f); };
     std::fseek(f, 0, SEEK_SET);
-    std::fwrite("RIFF", 1, 4, f); put32(36 + dataBytes);
-    std::fwrite("WAVEfmt ", 1, 8, f); put32(16); put16(1); put16(fmt.nChannels);
-    put32(fmt.nSamplesPerSec); put32(fmt.nAvgBytesPerSec); put16(fmt.nBlockAlign); put16(fmt.wBitsPerSample);
-    std::fwrite("data", 1, 4, f); put32(dataBytes);
+    std::fwrite("RIFF", 1, 4, f);
+    put32(36 + dataBytes);
+    std::fwrite("WAVEfmt ", 1, 8, f);
+    put32(16);
+    put16(1);
+    put16(fmt.nChannels);
+    put32(fmt.nSamplesPerSec);
+    put32(fmt.nAvgBytesPerSec);
+    put16(fmt.nBlockAlign);
+    put16(fmt.wBitsPerSample);
+    std::fwrite("data", 1, 4, f);
+    put32(dataBytes);
 }
 
 static RmtAudioStream* StartDumpDevice(IDirectSoundBuffer* buffer, const char* path)
 {
     FILE* f = std::fopen(path, "wb");
-    if (!f) { std::perror(path); return nullptr; }
+    if (!f) {
+        std::perror(path);
+        return nullptr;
+    }
     auto* s = new RmtAudioStream;
     s->dumpFile = f;
     WriteWavHeader(f, buffer->m_format, 0);
     const WAVEFORMATEX fmt = buffer->m_format;
-    s->safety = fmt.nSamplesPerSec / 100 * fmt.nBlockAlign;            // 10 ms
+    s->safety = fmt.nSamplesPerSec / 100 * fmt.nBlockAlign; // 10 ms
     s->dumpThread = std::thread([s, buffer, fmt] {
         auto start = Clock::now();
         uint64_t framesDone = 0;
@@ -217,7 +228,7 @@ static int PlayCallback(const void*, void* output, unsigned long frames, const P
 
 static bool PortAudioReady()
 {
-    static int state = 0;               // 0 not tried, 1 ok, -1 failed
+    static int state = 0; // 0 not tried, 1 ok, -1 failed
     if (!state) {
         state = Pa_Initialize() == paNoError ? 1 : -1;
         if (state > 0) std::atexit([] { Pa_Terminate(); });
@@ -240,12 +251,12 @@ HRESULT IDirectSoundBuffer::Play(DWORD, DWORD, DWORD)
         return DS_OK;
     PaSampleFormat format = f.wBitsPerSample == 8 ? paUInt8 : paInt16;
     auto* s = new RmtAudioStream;
-    unsigned long framesPerBuffer = f.nSamplesPerSec / 200;         // 5 ms
+    unsigned long framesPerBuffer = f.nSamplesPerSec / 200; // 5 ms
     if (Pa_OpenDefaultStream(&s->stream, 0, f.nChannels, format, f.nSamplesPerSec, framesPerBuffer,
                              PlayCallback, this) != paNoError) {
         std::fprintf(stderr, "RMT: cannot open the audio output (PortAudio)\n");
         delete s;
-        return DS_OK;                   // go on silent
+        return DS_OK; // go on silent
     }
     const PaStreamInfo* info = Pa_GetStreamInfo(s->stream);
     double latency = info ? info->outputLatency : 0.02;
@@ -287,9 +298,8 @@ HRESULT IDirectSoundBuffer::GetCurrentPosition(DWORD* playCursor, DWORD* writeCu
     if (m_stream && !m_data.empty()) {
         play = m_play;
         write = (DWORD)((play + m_stream->safety) % m_data.size());
-    }
-    else {
-        play = write = m_cursor;        // instant mode
+    } else {
+        play = write = m_cursor; // instant mode
     }
     if (playCursor) *playCursor = play;
     if (writeCursor) *writeCursor = write;

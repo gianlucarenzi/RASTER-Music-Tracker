@@ -6,10 +6,10 @@
 #include <cstring>
 
 #ifdef _WIN32
-    #include <windows.h>
-    #include <dsound.h>
-    #pragma comment(lib, "dsound.lib")
-    #pragma comment(lib, "dxguid.lib")
+#include <windows.h>
+#include <dsound.h>
+#pragma comment(lib, "dsound.lib")
+#pragma comment(lib, "dxguid.lib")
 #endif
 
 DirectSoundAudio::DirectSoundAudio()
@@ -26,8 +26,7 @@ DirectSoundAudio::~DirectSoundAudio()
 
 bool DirectSoundAudio::Init(const AudioFormat& format)
 {
-    if (!format.IsValid())
-    {
+    if (!format.IsValid()) {
         m_error_message = "Invalid audio format";
         return false;
     }
@@ -55,8 +54,7 @@ AudioFormat DirectSoundAudio::GetFormat() const
 bool DirectSoundAudio::Start()
 {
 #ifdef _WIN32
-    if (!m_is_initialized)
-    {
+    if (!m_is_initialized) {
         m_error_message = "Audio not initialized";
         return false;
     }
@@ -88,13 +86,10 @@ size_t DirectSoundAudio::Write(const void* data, size_t length)
         length = GetAvailableSpace();
 
     // Copy to internal buffer (simplified - in production would use DirectSound buffer directly)
-    if (m_write_pos + length <= BUFFER_SIZE)
-    {
+    if (m_write_pos + length <= BUFFER_SIZE) {
         memcpy(&m_buffer[m_write_pos], data, length);
         m_write_pos = (m_write_pos + length) % BUFFER_SIZE;
-    }
-    else
-    {
+    } else {
         size_t part1 = BUFFER_SIZE - m_write_pos;
         memcpy(&m_buffer[m_write_pos], data, part1);
         memcpy(&m_buffer[0], (const uint8_t*)data + part1, length - part1);
@@ -142,8 +137,7 @@ bool DirectSoundAudio::InitInternal()
 
     // Create DirectSound device
     m_lpds = nullptr;
-    if (DirectSoundCreate(NULL, (LPDIRECTSOUND*)&m_lpds, NULL) != DS_OK)
-    {
+    if (DirectSoundCreate(NULL, (LPDIRECTSOUND*)&m_lpds, NULL) != DS_OK) {
         m_error_message = "Failed to create DirectSound device";
         return false;
     }
@@ -156,8 +150,7 @@ bool DirectSoundAudio::InitInternal()
 
     m_lpdsbPrimary = nullptr;
     LPDIRECTSOUND lpds = (LPDIRECTSOUND)m_lpds;
-    if (lpds->CreateSoundBuffer(&dsbdesc, (LPDIRECTSOUNDBUFFER*)&m_lpdsbPrimary, NULL) != DS_OK)
-    {
+    if (lpds->CreateSoundBuffer(&dsbdesc, (LPDIRECTSOUNDBUFFER*)&m_lpdsbPrimary, NULL) != DS_OK) {
         m_error_message = "Failed to create primary sound buffer";
         lpds->Release();
         m_lpds = nullptr;
@@ -176,8 +169,7 @@ bool DirectSoundAudio::InitInternal()
     wfx.cbSize = 0;
 
     LPDIRECTSOUNDBUFFER lpdsb = (LPDIRECTSOUNDBUFFER)m_lpdsbPrimary;
-    if (lpdsb->SetFormat(&wfx) != DS_OK)
-    {
+    if (lpdsb->SetFormat(&wfx) != DS_OK) {
         m_error_message = "Failed to set primary buffer format";
         lpdsb->Release();
         lpds->Release();
@@ -200,15 +192,13 @@ void DirectSoundAudio::DeInitInternal()
 #ifdef _WIN32
     m_is_playing = false;
 
-    if (m_lpdsbPrimary)
-    {
+    if (m_lpdsbPrimary) {
         LPDIRECTSOUNDBUFFER lpdsb = (LPDIRECTSOUNDBUFFER)m_lpdsbPrimary;
         lpdsb->Release();
         m_lpdsbPrimary = nullptr;
     }
 
-    if (m_lpds)
-    {
+    if (m_lpds) {
         LPDIRECTSOUND lpds = (LPDIRECTSOUND)m_lpds;
         lpds->Release();
         m_lpds = nullptr;

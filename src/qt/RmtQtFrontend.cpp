@@ -83,19 +83,26 @@ public:
 class QtCCmdUI : public CCmdUI {
 public:
     QAction* m_action;
-    QtCCmdUI(UINT id, QAction* action) { m_nID = id; m_action = action; }
+    QtCCmdUI(UINT id, QAction* action)
+    {
+        m_nID = id;
+        m_action = action;
+    }
     void Enable(BOOL on) override { m_action->setEnabled(on != FALSE); }
-    void SetCheck(int check) override {
+    void SetCheck(int check) override
+    {
         // setCheckable(true) is set at construction for known toggle items;
         // calling it here during aboutToShow emits QAction::changed → menu repaint.
         if (m_action->isCheckable())
             m_action->setChecked(check != 0);
     }
-    void SetRadio(BOOL on) override {
+    void SetRadio(BOOL on) override
+    {
         if (m_action->isCheckable())
             m_action->setChecked(on != FALSE);
     }
-    void SetText(LPCTSTR text) override {
+    void SetText(LPCTSTR text) override
+    {
         CCmdUI::SetText(text);
         if (text) m_action->setText(text);
     }
@@ -106,7 +113,8 @@ public:
 class QtToolCmdUI : public QtCCmdUI {
 public:
     using QtCCmdUI::QtCCmdUI;
-    void SetCheck(int check) override {
+    void SetCheck(int check) override
+    {
         m_action->setCheckable(true);
         m_action->setChecked(check != 0);
     }
@@ -127,9 +135,9 @@ public:
     QtRmtDoc m_doc;
     QtMainFrame m_frame;
     QtRmtView m_view;
-    CBitmap m_windowBitmap;         // 1x1, only for GetDC() (CreateCompatibleDC/Bitmap)
+    CBitmap m_windowBitmap; // 1x1, only for GetDC() (CreateCompatibleDC/Bitmap)
     CDC m_windowDC;
-    QSize m_widgetSize;             // a change forces a redraw (the view resizes its bitmap)
+    QSize m_widgetSize; // a change forces a redraw (the view resizes its bitmap)
     std::map<UINT_PTR, QTimer*> m_timers;
     std::set<unsigned> m_keysDown;
     // All (id → action) pairs registered in the menu bar, for update-UI polling
@@ -138,19 +146,25 @@ public:
     // The toolbars of CMainFrame::OnCreate() (m_wndToolBar, m_ToolBarBlock)
     QToolBar* m_mainToolBar = nullptr;
     QToolBar* m_blockToolBar = nullptr;
-    QComboBox* m_linesAfter = nullptr;              // m_comboSkipLinesAfterNoteInsert
-    struct ToolAction { UINT id; QAction* action; QToolBar* bar; };
+    QComboBox* m_linesAfter = nullptr; // m_comboSkipLinesAfterNoteInsert
+    struct ToolAction {
+        UINT id;
+        QAction* action;
+        QToolBar* bar;
+    };
     std::vector<ToolAction> m_toolActions;
-    int m_toolScaling = 0;                          // g_scaling_percentage of the icon size
+    int m_toolScaling = 0; // g_scaling_percentage of the icon size
 
-    void Attach(RmtViewWidget* widget) {
+    void Attach(RmtViewWidget* widget)
+    {
         m_widget = widget;
         m_frame.m_hWnd = (HWND)m_win;
         m_view.m_hWnd = (HWND)widget;
         m_view.m_pDocument = &m_doc;
     }
 
-    void EnsureWindowDC() {
+    void EnsureWindowDC()
+    {
         if (!m_windowBitmap.Width()) {
             m_windowBitmap.Create(1, 1);
             m_windowDC.CreateCompatibleDC(nullptr);
@@ -163,7 +177,8 @@ public:
         }
     }
 
-    void Paint(QPainter& painter) {
+    void Paint(QPainter& painter)
+    {
         EnsureWindowDC();
         // CRmtView::OnDraw() without its final StretchBlt: the widget shows the
         // view's own bitmap (m_mem_dc), which holds the g_width x g_height
@@ -190,31 +205,33 @@ public:
     }
 
     // WM_COMMAND: the view, then the frame (as the MFC command routing)
-    void Dispatch(UINT id) {
+    void Dispatch(UINT id)
+    {
         if (m_view.OnCmdMsg(id) || m_frame.OnCmdMsg(id)) return;
         switch (id) {
-        case ID_APP_ABOUT:
-        case ID_HELP_ABOUT_APP:
-            if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB"))
-                QMessageBox::about(m_win, "About RMT",
-                    QString("%1\n\nQt frontend (Linux/POSIX)").arg(g_app.GetVersionAndBuild().GetString()));
-            break;
-        case ID_APP_EXIT:
-            m_win->close();
-            break;
-        case ID_HELP_ONLINE_HELP:
-        case ID_HELP_HELP_TOPICS:
-            g_app.OpenOnlineHelp();
-            break;
-        default:
-            qDebug("RMT: command %u has no handler", id);
+            case ID_APP_ABOUT:
+            case ID_HELP_ABOUT_APP:
+                if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB"))
+                    QMessageBox::about(m_win, "About RMT",
+                                       QString("%1\n\nQt frontend (Linux/POSIX)").arg(g_app.GetVersionAndBuild().GetString()));
+                break;
+            case ID_APP_EXIT:
+                m_win->close();
+                break;
+            case ID_HELP_ONLINE_HELP:
+            case ID_HELP_HELP_TOPICS:
+                g_app.OpenOnlineHelp();
+                break;
+            default:
+                qDebug("RMT: command %u has no handler", id);
         }
     }
 
     // Build the full menu bar from the MFC .rc menu structure.
     // Each action dispatches via Dispatch(id); ON_UPDATE_COMMAND_UI is run
     // on aboutToShow so enabled/checked states are kept in sync.
-    void BuildMenuBar(QMenuBar* bar) {
+    void BuildMenuBar(QMenuBar* bar)
+    {
         // Helper: add a single command item to a menu
         auto addItem = [&](QMenu* menu, const char* text, UINT id,
                            const char* shortcut = nullptr) -> QAction* {
@@ -259,106 +276,106 @@ public:
 
         // ---- File ----
         QMenu* mFile = bar->addMenu("&File");
-        addItemTagged(mFile, "Ne&w",             ID_FILE_NEW,     "Ctrl+W");
-        addItemTagged(mFile, "&Load...",          ID_FILE_OPEN,    "Ctrl+L");
-        addItemTagged(mFile, "&Reload",           ID_FILE_RELOAD,  "Ctrl+R");
+        addItemTagged(mFile, "Ne&w", ID_FILE_NEW, "Ctrl+W");
+        addItemTagged(mFile, "&Load...", ID_FILE_OPEN, "Ctrl+L");
+        addItemTagged(mFile, "&Reload", ID_FILE_RELOAD, "Ctrl+R");
         mFile->addSeparator();
-        addItemTagged(mFile, "&Save",             ID_FILE_SAVE,    "Ctrl+S");
-        addItemTagged(mFile, "Save &As...",       ID_FILE_SAVE_AS);
+        addItemTagged(mFile, "&Save", ID_FILE_SAVE, "Ctrl+S");
+        addItemTagged(mFile, "Save &As...", ID_FILE_SAVE_AS);
         mFile->addSeparator();
-        addItemTagged(mFile, "&Import...",        ID_FILE_IMPORT);
-        addItemTagged(mFile, "&Export As...",     ID_FILE_EXPORT_AS);
+        addItemTagged(mFile, "&Import...", ID_FILE_IMPORT);
+        addItemTagged(mFile, "&Export As...", ID_FILE_EXPORT_AS);
         mFile->addSeparator();
-        addItemTagged(mFile, "E&xit",             ID_FILE_EXIT,    "Alt+F4");
+        addItemTagged(mFile, "E&xit", ID_FILE_EXIT, "Alt+F4");
 
         // ---- Edit ----
         QMenu* mEdit = bar->addMenu("&Edit");
-        addItemTagged(mEdit, "&Undo",             ID_UNDO_UNDO,    "Ctrl+Z");
-        addItemTagged(mEdit, "&Redo",             ID_UNDO_REDO,    "Ctrl+Y");
+        addItemTagged(mEdit, "&Undo", ID_UNDO_UNDO, "Ctrl+Z");
+        addItemTagged(mEdit, "&Redo", ID_UNDO_REDO, "Ctrl+Y");
         mEdit->addSeparator();
         addItemTagged(mEdit, "&Clear Undo && Redo history", ID_UNDO_CLEARUNDOREDO);
 
         // ---- Track ----
         QMenu* mTrack = bar->addMenu("&Track");
-        addItemTagged(mTrack, "&Copy",            ID_TRACK_COPY);
-        addItemTagged(mTrack, "&Paste",           ID_TRACK_PASTE);
-        addItemTagged(mTrack, "Cu&t",             ID_TRACK_CUT);
-        addItemTagged(mTrack, "&Delete",          ID_TRACK_DELETE);
+        addItemTagged(mTrack, "&Copy", ID_TRACK_COPY);
+        addItemTagged(mTrack, "&Paste", ID_TRACK_PASTE);
+        addItemTagged(mTrack, "Cu&t", ID_TRACK_CUT);
+        addItemTagged(mTrack, "&Delete", ID_TRACK_DELETE);
         mTrack->addSeparator();
         addItemTagged(mTrack, "&Info about current track...", ID_TRACK_INFOABOUTUSINGOFACTUALTRACK);
-        addItemTagged(mTrack, "Search and &build wise loop",  ID_TRACK_SEARCHANDBUILDLOOP);
-        addItemTagged(mTrack, "E&xpand loop",     ID_TRACK_EXPANDLOOP);
+        addItemTagged(mTrack, "Search and &build wise loop", ID_TRACK_SEARCHANDBUILDLOOP);
+        addItemTagged(mTrack, "E&xpand loop", ID_TRACK_EXPANDLOOP);
         mTrack->addSeparator();
         addItemTagged(mTrack, "Search and rebuild wise loops in all tracks...", ID_SONG_SEARCHANDBUILDLOOPSINALLTRACKS);
-        addItemTagged(mTrack, "Expand loops in all tracks",   ID_SONG_EXPANDLOOPSINALLTRACKS);
-        addItemTagged(mTrack, "Renumber all tracks...",       ID_TRACK_RENUMBERALLTRACKS);
+        addItemTagged(mTrack, "Expand loops in all tracks", ID_SONG_EXPANDLOOPSINALLTRACKS);
+        addItemTagged(mTrack, "Renumber all tracks...", ID_TRACK_RENUMBERALLTRACKS);
         mTrack->addSeparator();
-        addItemTagged(mTrack, "&Load track from file...",     ID_TRACK_LOAD);
-        addItemTagged(mTrack, "&Save track as...",            ID_TRACK_SAVE);
+        addItemTagged(mTrack, "&Load track from file...", ID_TRACK_LOAD);
+        addItemTagged(mTrack, "&Save track as...", ID_TRACK_SAVE);
         mTrack->addSeparator();
         addItemTagged(mTrack, "Clear all duplicated tracks, adjust song...", ID_TRACK_CLEARALLDUPLICATEDTRACKS);
-        addItemTagged(mTrack, "Clear all tracks unused in song...",          ID_TRACK_CLEARALLTRACKSUNUSEDINSONG);
-        addItemTagged(mTrack, "All tracks cleanup...",        ID_TRACK_ALLTRACKSCLEANUP);
+        addItemTagged(mTrack, "Clear all tracks unused in song...", ID_TRACK_CLEARALLTRACKSUNUSEDINSONG);
+        addItemTagged(mTrack, "All tracks cleanup...", ID_TRACK_ALLTRACKSCLEANUP);
 
         // ---- Block ----
         QMenu* mBlock = bar->addMenu("&Block");
-        addItemTagged(mBlock, "Restore from &backup",  ID_BLOCK_BACKUP,  "Ctrl+B");
+        addItemTagged(mBlock, "Restore from &backup", ID_BLOCK_BACKUP, "Ctrl+B");
         mBlock->addSeparator();
-        addItemTagged(mBlock, "&Copy",            ID_BLOCK_COPY,    "Ctrl+C");
-        addItemTagged(mBlock, "&Paste",           ID_BLOCK_PASTE,   "Ctrl+V");
+        addItemTagged(mBlock, "&Copy", ID_BLOCK_COPY, "Ctrl+C");
+        addItemTagged(mBlock, "&Paste", ID_BLOCK_PASTE, "Ctrl+V");
         {
             QMenu* sub = mBlock->addMenu("Paste sp&ecial");
             addItemTagged(sub, "&Merge with current content", ID_BLOCK_PASTESPECIAL_MERGEWITHCURRENTCONTENT, "Ctrl+M");
-            addItemTagged(sub, "&Volume values only",          ID_BLOCK_PASTESPECIAL_VOLUMEVALUESONLY);
-            addItemTagged(sub, "&Speed values only",           ID_BLOCK_PASTESPECIAL_SPEEDVALUESONLY);
+            addItemTagged(sub, "&Volume values only", ID_BLOCK_PASTESPECIAL_VOLUMEVALUESONLY);
+            addItemTagged(sub, "&Speed values only", ID_BLOCK_PASTESPECIAL_SPEEDVALUESONLY);
         }
-        addItemTagged(mBlock, "Cu&t",             ID_BLOCK_CUT,     "Ctrl+X");
-        addItemTagged(mBlock, "&Delete",          ID_BLOCK_DELETE,  "Del");
+        addItemTagged(mBlock, "Cu&t", ID_BLOCK_CUT, "Ctrl+X");
+        addItemTagged(mBlock, "&Delete", ID_BLOCK_DELETE, "Del");
         addItemTagged(mBlock, "Exchange block and Clipboard", ID_BLOCK_EXCHANGE, "Ctrl+E");
         mBlock->addSeparator();
-        addItemTagged(mBlock, "E&ffects/tools...", ID_BLOCK_EFFECT,  "Ctrl+F");
+        addItemTagged(mBlock, "E&ffects/tools...", ID_BLOCK_EFFECT, "Ctrl+F");
         mBlock->addSeparator();
-        addItemTagged(mBlock, "Select &all",      ID_BLOCK_SELECTALL, "Ctrl+A");
+        addItemTagged(mBlock, "Select &all", ID_BLOCK_SELECTALL, "Ctrl+A");
 
         // ---- Instrument ----
         QMenu* mInstr = bar->addMenu("&Instrument");
-        addItemTagged(mInstr, "&Copy",            ID_INSTR_COPY);
-        addItemTagged(mInstr, "&Paste",           ID_INSTR_PASTE);
+        addItemTagged(mInstr, "&Copy", ID_INSTR_COPY);
+        addItemTagged(mInstr, "&Paste", ID_INSTR_PASTE);
         {
             QMenu* sub = mInstr->addMenu("Paste sp&ecial");
-            addItemTagged(sub, "&Volume envelopes only",        ID_INSTRUMENT_PASTESPECIAL_VOLUMELRENVELOPESONLY);
-            addItemTagged(sub, "&Envelope parameters only",     ID_INSTRUMENT_PASTESPECIAL_ENVELOPEPARAMETERSONLY);
+            addItemTagged(sub, "&Volume envelopes only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELRENVELOPESONLY);
+            addItemTagged(sub, "&Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_ENVELOPEPARAMETERSONLY);
             addItemTagged(sub, "Volume envelopes and Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_VOLUMEENVANDENVELOPEPARSONLY);
             addItemTagged(sub, "&Insert Volume envelopes and Envelope parameters to cursor position", ID_INSTRUMENT_PASTESPECIAL_INSERTVOLUMEENVSANDENVELOPEPARSTOCURSORPOSITION);
             sub->addSeparator();
-            addItemTagged(sub, "Volume &L envelope only",       ID_INSTRUMENT_PASTESPECIAL_VOLUMELENVELOPEONLY);
-            addItemTagged(sub, "Volume &R envelope only",       ID_INSTRUMENT_PASTESPECIAL_VOLUMERENVELOPEONLY);
-            addItemTagged(sub, "Volume R to L envelope only",   ID_INSTRUMENT_PASTESPECIAL_VOLUMERTOLENVELOPEONLY);
-            addItemTagged(sub, "Volume L to R envelope only",   ID_INSTRUMENT_PASTESPECIAL_VOLUMELTORENVELOPEONLY);
+            addItemTagged(sub, "Volume &L envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELENVELOPEONLY);
+            addItemTagged(sub, "Volume &R envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMERENVELOPEONLY);
+            addItemTagged(sub, "Volume R to L envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMERTOLENVELOPEONLY);
+            addItemTagged(sub, "Volume L to R envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELTORENVELOPEONLY);
             sub->addSeparator();
-            addItemTagged(sub, "&Table only",                   ID_INSTRUMENT_PASTESPECIAL_TABLEONLY);
+            addItemTagged(sub, "&Table only", ID_INSTRUMENT_PASTESPECIAL_TABLEONLY);
         }
-        addItemTagged(mInstr, "Cu&t",             ID_INSTR_CUT);
-        addItemTagged(mInstr, "&Delete",          ID_INSTR_DELETE);
+        addItemTagged(mInstr, "Cu&t", ID_INSTR_CUT);
+        addItemTagged(mInstr, "&Delete", ID_INSTR_DELETE);
         mInstr->addSeparator();
         addItemTagged(mInstr, "&Info about current instrument...", ID_INSTRUMENT_INFO);
         addItemTagged(mInstr, "Change all the instrument occurences...", ID_INSTRUMENT_CHANGE);
-        addItemTagged(mInstr, "Renumber all instruments...",  ID_INSTRUMENT_RENUMBERALLINSTRUMENTS);
+        addItemTagged(mInstr, "Renumber all instruments...", ID_INSTRUMENT_RENUMBERALLINSTRUMENTS);
         mInstr->addSeparator();
         addItemTagged(mInstr, "&Load instrument from file...", ID_INSTR_LOAD);
-        addItemTagged(mInstr, "&Save instrument as...",       ID_INSTR_SAVE);
+        addItemTagged(mInstr, "&Save instrument as...", ID_INSTR_SAVE);
         mInstr->addSeparator();
         addItemTagged(mInstr, "Clear all unused instruments...", ID_INSTRUMENT_CLEARALLUNUSEDINSTRUMENTS);
-        addItemTagged(mInstr, "All instruments cleanup...",   ID_INSTR_ALLINSTRUMENTSCLEANUP);
+        addItemTagged(mInstr, "All instruments cleanup...", ID_INSTR_ALLINSTRUMENTSCLEANUP);
 
         // ---- Song ----
         QMenu* mSong = bar->addMenu("&Song");
-        addItemTagged(mSong, "&Copy line",        ID_SONG_COPYLINE);
-        addItemTagged(mSong, "&Paste line",       ID_SONG_PASTELINE);
-        addItemTagged(mSong, "Cl&ear line",       ID_SONG_CLEARLINE);
+        addItemTagged(mSong, "&Copy line", ID_SONG_COPYLINE);
+        addItemTagged(mSong, "&Paste line", ID_SONG_PASTELINE);
+        addItemTagged(mSong, "Cl&ear line", ID_SONG_CLEARLINE);
         mSong->addSeparator();
-        addItemTagged(mSong, "Delete c&urrent line",            ID_SONG_DELETEACTUALLINE,             "Ctrl+U");
-        addItemTagged(mSong, "&Insert new empty line",          ID_SONG_INSERTNEWEMPTYLINE,           "Ctrl+I");
+        addItemTagged(mSong, "Delete c&urrent line", ID_SONG_DELETEACTUALLINE, "Ctrl+U");
+        addItemTagged(mSong, "&Insert new empty line", ID_SONG_INSERTNEWEMPTYLINE, "Ctrl+I");
         addItemTagged(mSong, "Insert new line with unused empty tracks", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS, "Ctrl+P");
         addItemTagged(mSong, "Insert c&opy or clone of song line(s)...", ID_SONG_INSERTCOPYORCLONEOFSONGLINES, "Ctrl+O");
         addItemTagged(mSong, "Insert &new empty unused track to current song position", ID_SONG_PUTNEWEMPTYUNUSEDTRACK, "Ctrl+N");
@@ -368,30 +385,30 @@ public:
         addItemTagged(mSong, "Song columns' order change/copy/clear...", ID_SONG_TRACKSORDERCHANGE);
         addItemTagged(mSong, "Change maximal length of tracks...", ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS);
         mSong->addSeparator();
-        addItemTagged(mSong, "All size optimizations...",       ID_SONG_SIZEOPTIMIZATION);
+        addItemTagged(mSong, "All size optimizations...", ID_SONG_SIZEOPTIMIZATION);
 
         // ---- View ---- (toggle items are checkable at construction)
         QMenu* mView = bar->addMenu("&View");
         addItemTagged(mView, "&Configuration...", ID_VIEW_CONFIGURATION);
         mView->addSeparator();
-        addItemTagged(mView, "&Tuning...",        ID_VIEW_TUNING);
+        addItemTagged(mView, "&Tuning...", ID_VIEW_TUNING);
         mView->addSeparator();
-        addToggle(mView,   "Main &toolbar",       ID_VIEW_TOOLBAR);
-        addToggle(mView,   "&Block toolbar",      ID_VIEW_BLOCKTOOLBAR);
+        addToggle(mView, "Main &toolbar", ID_VIEW_TOOLBAR);
+        addToggle(mView, "&Block toolbar", ID_VIEW_BLOCKTOOLBAR);
         mView->addSeparator();
-        addToggle(mView,   "&Status Bar",         ID_VIEW_STATUS_BAR);
+        addToggle(mView, "&Status Bar", ID_VIEW_STATUS_BAR);
         mView->addSeparator();
-        addToggle(mView,   "&Play time counter",  ID_VIEW_PLAYTIMECOUNTER);
-        addToggle(mView,   "&Volume analyzer",    ID_VIEW_VOLUMEANALYZER);
-        addToggle(mView,   "Pokey chip &registers", ID_VIEW_POKEYREGS);
+        addToggle(mView, "&Play time counter", ID_VIEW_PLAYTIMECOUNTER);
+        addToggle(mView, "&Volume analyzer", ID_VIEW_VOLUMEANALYZER);
+        addToggle(mView, "Pokey chip &registers", ID_VIEW_POKEYREGS);
         mView->addSeparator();
-        addToggle(mView,   "&Instrument active help", ID_VIEW_INSTRUMENTACTIVEHELP);
+        addToggle(mView, "&Instrument active help", ID_VIEW_INSTRUMENTACTIVEHELP);
 
         // ---- Help ----
         QMenu* mHelp = bar->addMenu("&Help");
-        addItemTagged(mHelp, "&Help Topics",                    ID_HELP_HELP_TOPICS);
-        addItemTagged(mHelp, "&Online Help",                    ID_HELP_ONLINE_HELP, "Shift+F1");
-        addItemTagged(mHelp, "&About RASTER Music Tracker",     ID_HELP_ABOUT_APP);
+        addItemTagged(mHelp, "&Help Topics", ID_HELP_HELP_TOPICS);
+        addItemTagged(mHelp, "&Online Help", ID_HELP_ONLINE_HELP, "Shift+F1");
+        addItemTagged(mHelp, "&About RASTER Music Tracker", ID_HELP_ABOUT_APP);
 
         // Wire up ON_UPDATE_COMMAND_UI: each menu updates only its own direct
         // children (submenus update their own items via their own aboutToShow).
@@ -408,8 +425,13 @@ public:
     // of their bitmap, one per button, the light gray of the bitmap is the
     // background; the tooltips and the status bar texts are the ones of the
     // string table
-    void BuildToolBars() {
-        struct Button { UINT id; const char* status; const char* tip; };
+    void BuildToolBars()
+    {
+        struct Button {
+            UINT id;
+            const char* status;
+            const char* tip;
+        };
         auto build = [&](const char* title, UINT bitmap, std::initializer_list<Button> buttons) {
             auto* bar = new QToolBar(title, m_win);
             bar->setObjectName(title);
@@ -427,15 +449,15 @@ public:
             }
             int index = 0;
             for (const Button& b : buttons) {
-                if (!b.id) {                        // SEPARATOR
+                if (!b.id) { // SEPARATOR
                     bar->addSeparator();
                     continue;
                 }
                 QImage tile = image.copy(index++ * 16, 0, 16, 15);
                 QIcon icon;
-                for (int scale = 1; scale <= 3; scale++)    // nearest neighbour, like the view
+                for (int scale = 1; scale <= 3; scale++) // nearest neighbour, like the view
                     icon.addPixmap(QPixmap::fromImage(tile.scaled(16 * scale, 15 * scale)));
-                if (b.id == ID_BUTTONCOMBO1) {      // the combo takes the place of this button
+                if (b.id == ID_BUTTONCOMBO1) { // the combo takes the place of this button
                     m_linesAfter = new QComboBox(bar);
                     for (int i = 0; i <= 8; i++) m_linesAfter->addItem(QString::number(i));
                     m_linesAfter->setCurrentIndex(g_linesafter);
@@ -465,54 +487,55 @@ public:
             return bar;
         };
         m_mainToolBar = build("Main toolbar", IDR_MAINFRAME, {
-            { ID_FILE_NEW, "Create a new song", "New" },
-            { ID_FILE_OPEN, "Load an existing song", "Load" },
-            { ID_FILE_SAVE, "Save the song", "Save" },
-            { ID_FILE_EXPORT_AS, "Export song to file", "Export" },
-            { 0, nullptr, nullptr },
-            { ID_APP_ABOUT, "Display program information, version number and copyright", "About" },
-            { 0, nullptr, nullptr },
-            { ID_PLAY0, "Play song from bookmark position", "Play from bookmark" },
-            { ID_PLAY1, "Play song from start position", "Play from start" },
-            { ID_PLAY2, "Play song from current position", "Play" },
-            { ID_PLAY3, "Play and loop current tracks pattern", "Loop pattern" },
-            { ID_PLAYSTOP, "Stop playing the song. Mute all sounds.", "Stop" },
-            { 0, nullptr, nullptr },
-            { ID_PLAYFOLLOW, "Follow the currently playing position (turn on/off)", "Follow song" },
-            { 0, nullptr, nullptr },
-            { ID_EM_TRACKS, "Move to track edit view", "Track edit" },
-            { ID_EM_INSTRUMENTS, "Move to instrument edit view", "Instrument edit" },
-            { ID_EM_INFO, "Move cursor to Info edit", "Info edit" },
-            { ID_EM_SONG, "Move cursor to song edit", "Song edit" },
-            { 0, nullptr, nullptr },
-            { ID_PROVEMODE, "Edit/Jam mode toggle", "Jam mode" },
-            { 0, nullptr, nullptr },
-            { ID_MIDIONOFF, "MIDI on/off", "MIDI on/off" },
-            { 0, nullptr, nullptr },
-            { ID_BUTTONCOMBO1, "Insert note spacing", "Insert note spacing" },
-        });
+                                                                 { ID_FILE_NEW, "Create a new song", "New" },
+                                                                 { ID_FILE_OPEN, "Load an existing song", "Load" },
+                                                                 { ID_FILE_SAVE, "Save the song", "Save" },
+                                                                 { ID_FILE_EXPORT_AS, "Export song to file", "Export" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_APP_ABOUT, "Display program information, version number and copyright", "About" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_PLAY0, "Play song from bookmark position", "Play from bookmark" },
+                                                                 { ID_PLAY1, "Play song from start position", "Play from start" },
+                                                                 { ID_PLAY2, "Play song from current position", "Play" },
+                                                                 { ID_PLAY3, "Play and loop current tracks pattern", "Loop pattern" },
+                                                                 { ID_PLAYSTOP, "Stop playing the song. Mute all sounds.", "Stop" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_PLAYFOLLOW, "Follow the currently playing position (turn on/off)", "Follow song" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_EM_TRACKS, "Move to track edit view", "Track edit" },
+                                                                 { ID_EM_INSTRUMENTS, "Move to instrument edit view", "Instrument edit" },
+                                                                 { ID_EM_INFO, "Move cursor to Info edit", "Info edit" },
+                                                                 { ID_EM_SONG, "Move cursor to song edit", "Song edit" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_PROVEMODE, "Edit/Jam mode toggle", "Jam mode" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_MIDIONOFF, "MIDI on/off", "MIDI on/off" },
+                                                                 { 0, nullptr, nullptr },
+                                                                 { ID_BUTTONCOMBO1, "Insert note spacing", "Insert note spacing" },
+                                                             });
         m_blockToolBar = build("Block toolbar", IDR_TOOLBARBLOCK, {
-            { ID_BLOCK_BACKUP, "Restore block from backup", "Restore block" },
-            { 0, nullptr, nullptr },
-            { ID_BLOCK_NOTEUP, "Note transposition up", "Transpose up" },
-            { ID_BLOCK_NOTEDOWN, "Note transposition down", "Transpose down" },
-            { ID_BLOCK_INSTRLEFT, "Instrument number change", "Change instrument" },
-            { ID_BLOCK_INSTRRIGHT, "Instrument number change", "Change instrument" },
-            { ID_BLOCK_VOLUMEUP, "Volume up", "Volume up" },
-            { ID_BLOCK_VOLUMEDOWN, "Volume down", "Volume down" },
-            { ID_BLOCK_EFFECT, "Effects/tools", "Effects/tools" },
-            { 0, nullptr, nullptr },
-            { ID_BLOCK_INSTRALL, "Block modification mode", "Block mode" },
-            { 0, nullptr, nullptr },
-            { ID_BLOCK_PLAY, "Play selected block", "Play block" },
-        });
+                                                                      { ID_BLOCK_BACKUP, "Restore block from backup", "Restore block" },
+                                                                      { 0, nullptr, nullptr },
+                                                                      { ID_BLOCK_NOTEUP, "Note transposition up", "Transpose up" },
+                                                                      { ID_BLOCK_NOTEDOWN, "Note transposition down", "Transpose down" },
+                                                                      { ID_BLOCK_INSTRLEFT, "Instrument number change", "Change instrument" },
+                                                                      { ID_BLOCK_INSTRRIGHT, "Instrument number change", "Change instrument" },
+                                                                      { ID_BLOCK_VOLUMEUP, "Volume up", "Volume up" },
+                                                                      { ID_BLOCK_VOLUMEDOWN, "Volume down", "Volume down" },
+                                                                      { ID_BLOCK_EFFECT, "Effects/tools", "Effects/tools" },
+                                                                      { 0, nullptr, nullptr },
+                                                                      { ID_BLOCK_INSTRALL, "Block modification mode", "Block mode" },
+                                                                      { 0, nullptr, nullptr },
+                                                                      { ID_BLOCK_PLAY, "Play selected block", "Play block" },
+                                                                  });
         UpdateToolBars();
     }
 
     // ON_UPDATE_COMMAND_UI of the buttons (MFC runs it when idle), the combo
     // follows g_linesafter (Ctrl+numpad +/-, new song), the icons the
     // interface size
-    void UpdateToolBars() {
+    void UpdateToolBars()
+    {
         if (!m_started || !m_mainToolBar) return;
         for (const ToolAction& t : m_toolActions) {
             if (t.bar->isHidden()) continue;
@@ -529,14 +552,16 @@ public:
         }
     }
 
-    QWidget* ControlBarWidget(const CControlBar* bar) {
+    QWidget* ControlBarWidget(const CControlBar* bar)
+    {
         if (bar == &m_frame.m_wndToolBar) return m_mainToolBar;
         if (bar == &m_frame.m_ToolBarBlock) return m_blockToolBar;
         if (bar == (const CControlBar*)&m_frame.m_wndStatusBar) return m_win->statusBar();
         return nullptr;
     }
 
-    static UINT MouseFlags(Qt::MouseButtons b, Qt::KeyboardModifiers m) {
+    static UINT MouseFlags(Qt::MouseButtons b, Qt::KeyboardModifiers m)
+    {
         UINT f = 0;
         if (b & Qt::LeftButton) f |= MK_LBUTTON;
         if (b & Qt::RightButton) f |= MK_RBUTTON;
@@ -550,16 +575,22 @@ public:
 
     CFrameWnd* GetMainWnd() override { return &m_frame; }
 
-    void GetClientRect(const CWnd* wnd, RECT* r) override {
+    void GetClientRect(const CWnd* wnd, RECT* r) override
+    {
         QWidget* w = wnd == &m_frame ? (QWidget*)m_win : (QWidget*)m_widget;
         *r = RECT{ 0, 0, w->width(), w->height() };
     }
 
     void Invalidate(CWnd*) override { m_widget->update(); }
 
-    CDC* GetDC(CWnd*) override { EnsureWindowDC(); return &m_windowDC; }
+    CDC* GetDC(CWnd*) override
+    {
+        EnsureWindowDC();
+        return &m_windowDC;
+    }
 
-    UINT_PTR SetTimer(CWnd*, UINT_PTR id, UINT ms) override {
+    UINT_PTR SetTimer(CWnd*, UINT_PTR id, UINT ms) override
+    {
         QTimer*& t = m_timers[id];
         if (!t) {
             t = new QTimer(m_widget);
@@ -569,23 +600,27 @@ public:
         return id;
     }
 
-    BOOL KillTimer(CWnd*, UINT_PTR id) override {
+    BOOL KillTimer(CWnd*, UINT_PTR id) override
+    {
         auto it = m_timers.find(id);
         if (it == m_timers.end() || !it->second) return FALSE;
         it->second->stop();
         return TRUE;
     }
 
-    void PostCommand(UINT id) override {
+    void PostCommand(UINT id) override
+    {
         QTimer::singleShot(0, m_widget, [this, id] { Dispatch(id); });
     }
 
-    void Close() override {
+    void Close() override
+    {
         QTimer::singleShot(0, m_win, [this] { m_win->close(); });
     }
 
-    int MessageBox(const char* text, const char* caption, UINT type) override {
-        if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {        // test run: no modal dialogs
+    int MessageBox(const char* text, const char* caption, UINT type) override
+    {
+        if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) { // test run: no modal dialogs
             qWarning("[MessageBox] %s: %s", caption ? caption : "", text ? text : "");
             return (type & 0x0F) == MB_YESNO || (type & 0x0F) == MB_YESNOCANCEL ? IDNO : IDOK;
         }
@@ -593,70 +628,84 @@ public:
         box.setWindowTitle(caption ? caption : "RMT");
         box.setText(text ? text : "");
         switch (type & 0xF0) {
-        case MB_ICONERROR: box.setIcon(QMessageBox::Critical); break;
-        case MB_ICONWARNING: box.setIcon(QMessageBox::Warning); break;
-        case MB_ICONQUESTION: box.setIcon(QMessageBox::Question); break;
-        case MB_ICONINFORMATION: box.setIcon(QMessageBox::Information); break;
+            case MB_ICONERROR: box.setIcon(QMessageBox::Critical); break;
+            case MB_ICONWARNING: box.setIcon(QMessageBox::Warning); break;
+            case MB_ICONQUESTION: box.setIcon(QMessageBox::Question); break;
+            case MB_ICONINFORMATION: box.setIcon(QMessageBox::Information); break;
         }
         switch (type & 0x0F) {
-        case MB_OKCANCEL: box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel); break;
-        case MB_YESNO: box.setStandardButtons(QMessageBox::Yes | QMessageBox::No); break;
-        case MB_YESNOCANCEL: box.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel); break;
-        default: box.setStandardButtons(QMessageBox::Ok);
+            case MB_OKCANCEL: box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel); break;
+            case MB_YESNO: box.setStandardButtons(QMessageBox::Yes | QMessageBox::No); break;
+            case MB_YESNOCANCEL: box.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel); break;
+            default: box.setStandardButtons(QMessageBox::Ok);
         }
         switch (box.exec()) {
-        case QMessageBox::Yes: return IDYES;
-        case QMessageBox::No: return IDNO;
-        case QMessageBox::Cancel: return IDCANCEL;
-        default: return IDOK;
+            case QMessageBox::Yes: return IDYES;
+            case QMessageBox::No: return IDNO;
+            case QMessageBox::Cancel: return IDCANCEL;
+            default: return IDOK;
         }
     }
 
     HCURSOR LoadCursor(UINT id) override { return (HCURSOR)(uintptr_t)id; }
 
-    void SetCursor(HCURSOR cursor) override {
+    void SetCursor(HCURSOR cursor) override
+    {
         switch ((UINT)(uintptr_t)cursor) {
-        case IDC_CURSORGOTO:
-        case IDC_CURSORDLG:
-        case IDC_CURSORCHANNELONOFF: m_widget->setCursor(Qt::PointingHandCursor); break;
-        case IDC_CURSORENVVOLUME: m_widget->setCursor(Qt::SizeVerCursor); break;
-        case IDC_CURSORSETPOS: m_widget->setCursor(Qt::CrossCursor); break;
-        case 32514: m_widget->setCursor(Qt::WaitCursor); break;     // IDC_WAIT
-        default: m_widget->setCursor(Qt::ArrowCursor);
+            case IDC_CURSORGOTO:
+            case IDC_CURSORDLG:
+            case IDC_CURSORCHANNELONOFF: m_widget->setCursor(Qt::PointingHandCursor); break;
+            case IDC_CURSORENVVOLUME: m_widget->setCursor(Qt::SizeVerCursor); break;
+            case IDC_CURSORSETPOS: m_widget->setCursor(Qt::CrossCursor); break;
+            case 32514: m_widget->setCursor(Qt::WaitCursor); break; // IDC_WAIT
+            default: m_widget->setCursor(Qt::ArrowCursor);
         }
     }
 
-    short GetKeyState(int vk) override {
+    short GetKeyState(int vk) override
+    {
         Qt::KeyboardModifiers m = QGuiApplication::queryKeyboardModifiers();
         bool down;
         switch (vk) {
-        case VK_SHIFT: case VK_LSHIFT: case VK_RSHIFT: down = m & Qt::ShiftModifier; break;
-        case VK_CONTROL: case VK_LCONTROL: case VK_RCONTROL: down = m & Qt::ControlModifier; break;
-        case VK_MENU: case VK_LMENU: case VK_RMENU: down = m & Qt::AltModifier; break;
-        case VK_CAPITAL: return 0;                                  // toggle state unknown
-        default: down = m_keysDown.count(vk) > 0;
+            case VK_SHIFT:
+            case VK_LSHIFT:
+            case VK_RSHIFT: down = m & Qt::ShiftModifier; break;
+            case VK_CONTROL:
+            case VK_LCONTROL:
+            case VK_RCONTROL: down = m & Qt::ControlModifier; break;
+            case VK_MENU:
+            case VK_LMENU:
+            case VK_RMENU: down = m & Qt::AltModifier; break;
+            case VK_CAPITAL: return 0; // toggle state unknown
+            default: down = m_keysDown.count(vk) > 0;
         }
         return down ? (short)0x8000 : 0;
     }
 
     UINT MapVirtualKeyToChar(UINT vk) override { return RmtVirtualKeyToChar(vk); }
 
-    void SetWindowText(CWnd* wnd, const char* text) override {
-        if (wnd == &m_frame) m_win->setWindowTitle(text);
-        else if (wnd == &m_frame.m_wndStatusBar) m_win->statusBar()->showMessage(text);
+    void SetWindowText(CWnd* wnd, const char* text) override
+    {
+        if (wnd == &m_frame)
+            m_win->setWindowTitle(text);
+        else if (wnd == &m_frame.m_wndStatusBar)
+            m_win->statusBar()->showMessage(text);
     }
 
-    void ShowControlBar(CControlBar* bar, BOOL show) override {
+    void ShowControlBar(CControlBar* bar, BOOL show) override
+    {
         if (QWidget* w = ControlBarWidget(bar)) w->setVisible(show);
     }
-    BOOL IsControlBarVisible(const CControlBar* bar) override {
+    BOOL IsControlBarVisible(const CControlBar* bar) override
+    {
         QWidget* w = ControlBarWidget(bar);
         return w && !w->isHidden();
     }
     void SetStatusText(int, const char* text) override { m_win->statusBar()->showMessage(text); }
 
     bool FileDialog(bool open, const char* title, const char* initialDir, const char* fileName,
-                    const char* filter, DWORD flags, int& filterIndex, CString& path) override {
+                    const char* filter, DWORD flags, int& filterIndex, CString& path) override
+    {
         // MFC filter "Name (*.a)|*.a;*.b|...||" -> Qt name filter "Name (*.a *.A *.b *.B)":
         // the patterns come from the second field, in both cases (Linux file
         // names are case sensitive, Atari files are often upper case)
@@ -678,7 +727,7 @@ public:
         }
         int index = filterIndex >= 1 && filterIndex <= filters.size() ? filterIndex : 1;
 
-        if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {        // test run: no modal dialogs
+        if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) { // test run: no modal dialogs
             // RMT_QT_FILEDIALOG="a.rmt,b.txt" answers the file dialogs in turn,
             // with the filter that matches the file, or the one given as
             // "file@N" (1-based); none left: cancel
@@ -692,11 +741,17 @@ public:
             bool forced = false;
             if (at > 0) {
                 int n = answer.mid(at + 1).toInt(&forced);
-                if (forced && n >= 1 && n <= filters.size()) { index = n; answer = answer.left(at); }
-                else forced = false;
+                if (forced && n >= 1 && n <= filters.size()) {
+                    index = n;
+                    answer = answer.left(at);
+                } else
+                    forced = false;
             }
             for (int i = 0; !forced && i < patternLists.size(); i++)
-                if (QDir::match(patternLists[i].join(' '), QFileInfo(answer).fileName())) { index = i + 1; break; }
+                if (QDir::match(patternLists[i].join(' '), QFileInfo(answer).fileName())) {
+                    index = i + 1;
+                    break;
+                }
             qWarning("[FileDialog] %s: %s (filter %d)", title ? title : "", qPrintable(answer), index);
             path = answer.toLocal8Bit().constData();
             filterIndex = index;
@@ -728,7 +783,8 @@ public:
         return true;
     }
 
-    INT_PTR DoModal(CDialog* dlg) override {
+    INT_PTR DoModal(CDialog* dlg) override
+    {
         INT_PTR result = RmtQtRunDialog(m_win, dlg);
         m_widget->setFocus();
         return result;
@@ -793,8 +849,10 @@ void RmtViewWidget::mousePressEvent(QMouseEvent* e)
     if (!m_bridge->m_started) return;
     UINT f = RmtQtBridge::MouseFlags(e->buttons(), e->modifiers());
     CPoint p(e->pos().x(), e->pos().y());
-    if (e->button() == Qt::LeftButton) m_bridge->m_view.OnLButtonDown(f, p);
-    else if (e->button() == Qt::RightButton) m_bridge->m_view.OnRButtonDown(f, p);
+    if (e->button() == Qt::LeftButton)
+        m_bridge->m_view.OnLButtonDown(f, p);
+    else if (e->button() == Qt::RightButton)
+        m_bridge->m_view.OnRButtonDown(f, p);
 }
 
 void RmtViewWidget::mouseReleaseEvent(QMouseEvent* e)
@@ -802,8 +860,10 @@ void RmtViewWidget::mouseReleaseEvent(QMouseEvent* e)
     if (!m_bridge->m_started) return;
     UINT f = RmtQtBridge::MouseFlags(e->buttons(), e->modifiers());
     CPoint p(e->pos().x(), e->pos().y());
-    if (e->button() == Qt::LeftButton) m_bridge->m_view.OnLButtonUp(f, p);
-    else if (e->button() == Qt::RightButton) m_bridge->m_view.OnRButtonUp(f, p);
+    if (e->button() == Qt::LeftButton)
+        m_bridge->m_view.OnLButtonUp(f, p);
+    else if (e->button() == Qt::RightButton)
+        m_bridge->m_view.OnRButtonUp(f, p);
 }
 
 void RmtViewWidget::mouseDoubleClickEvent(QMouseEvent* e)
@@ -811,8 +871,10 @@ void RmtViewWidget::mouseDoubleClickEvent(QMouseEvent* e)
     if (!m_bridge->m_started) return;
     UINT f = RmtQtBridge::MouseFlags(e->buttons(), e->modifiers());
     CPoint p(e->pos().x(), e->pos().y());
-    if (e->button() == Qt::LeftButton) m_bridge->m_view.OnLButtonDblClk(f, p);
-    else if (e->button() == Qt::RightButton) m_bridge->m_view.OnRButtonDblClk(f, p);
+    if (e->button() == Qt::LeftButton)
+        m_bridge->m_view.OnLButtonDblClk(f, p);
+    else if (e->button() == Qt::RightButton)
+        m_bridge->m_view.OnRButtonDblClk(f, p);
 }
 
 void RmtViewWidget::mouseMoveEvent(QMouseEvent* e)
@@ -862,7 +924,8 @@ RmtMainWindow::RmtMainWindow() : m_bridge(new RmtQtBridge(this))
 
 RmtMainWindow::~RmtMainWindow()
 {
-    for (auto& t : m_bridge->m_timers) if (t.second) t.second->stop();
+    for (auto& t : m_bridge->m_timers)
+        if (t.second) t.second->stop();
     if (m_bridge->m_started) m_bridge->m_view.OnDestroy();
     g_rmtHost = nullptr;
 }

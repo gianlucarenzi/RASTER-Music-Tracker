@@ -1,6 +1,6 @@
 //
 // AudioBackend.h - Cross-platform audio abstraction layer
-// 
+//
 // Decouples RMT from Windows-only DirectSound
 // Allows multiple backends: DirectSound (Windows), PortAudio (cross-platform)
 //
@@ -22,15 +22,14 @@ typedef struct tWAVEFORMATEX WAVEFORMATEX;
 /**
  * @brief Audio format descriptor (cross-platform compatible)
  */
-struct AudioFormat
-{
+struct AudioFormat {
     uint16_t channels;          ///< 1 = mono, 2 = stereo
     uint32_t sample_rate;       ///< Samples per second (44100, 48000, etc)
     uint16_t bits_per_sample;   ///< 8 or 16
     uint16_t block_align;       ///< Bytes per sample frame
     uint32_t avg_bytes_per_sec; ///< Sample rate * block align
 
-    AudioFormat() : channels(0), sample_rate(0), bits_per_sample(0), 
+    AudioFormat() : channels(0), sample_rate(0), bits_per_sample(0),
                     block_align(0), avg_bytes_per_sec(0) {}
 
     AudioFormat(uint16_t ch, uint32_t sr, uint16_t bps)
@@ -55,8 +54,7 @@ struct AudioFormat
  * - Buffer management
  * - Audio output
  */
-class IAudioBackend
-{
+class IAudioBackend {
 public:
     virtual ~IAudioBackend() = default;
 
@@ -152,8 +150,7 @@ public:
  * 
  * Creates appropriate backend for current platform
  */
-class AudioBackendFactory
-{
+class AudioBackendFactory {
 public:
     /**
      * Create native audio backend for current platform

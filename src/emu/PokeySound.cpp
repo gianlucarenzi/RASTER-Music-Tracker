@@ -46,10 +46,11 @@ void PokeyChip::Reset()
 void PokeyChip::Write(int reg, uint8_t value)
 {
     if (reg < 8) {
-        if (reg & 1) m_audc[reg >> 1] = value;
-        else m_audf[reg >> 1] = value;
-    }
-    else if (reg == 8) {
+        if (reg & 1)
+            m_audc[reg >> 1] = value;
+        else
+            m_audf[reg >> 1] = value;
+    } else if (reg == 8) {
         m_audctl = value;
     }
 }
@@ -67,9 +68,12 @@ void PokeyChip::Pulse(int ch)
 {
     uint8_t c = m_audc[ch];
     if ((c & 0x80) || s_poly5[m_poly5]) {
-        if (c & 0x20) m_out[ch] ^= 1;
-        else if (c & 0x40) m_out[ch] = s_poly4[m_poly4];
-        else m_out[ch] = (m_audctl & 0x80) ? s_poly9[m_poly9] : s_poly17[m_poly17];
+        if (c & 0x20)
+            m_out[ch] ^= 1;
+        else if (c & 0x40)
+            m_out[ch] = s_poly4[m_poly4];
+        else
+            m_out[ch] = (m_audctl & 0x80) ? s_poly9[m_poly9] : s_poly17[m_poly17];
     }
     if (ch == 2 && (m_audctl & 0x04)) m_hp[0] = m_out[0];
     if (ch == 3 && (m_audctl & 0x02)) m_hp[1] = m_out[1];
@@ -108,13 +112,16 @@ int PokeyChip::Cycle()
         tick = 1;
         m_base = (m_audctl & 0x01) ? 114 : 28;
     }
-    ClockPair(2, tick, 0x20, 0x08);                 // first: 3/4 latch the filters of 1/2
+    ClockPair(2, tick, 0x20, 0x08); // first: 3/4 latch the filters of 1/2
     ClockPair(0, tick, 0x40, 0x10);
 
     int sum = 0;
     for (int ch = 0; ch < 4; ch++) {
         uint8_t c = m_audc[ch];
-        if (c & 0x10) { sum += c & 0x0F; continue; }  // volume only
+        if (c & 0x10) {
+            sum += c & 0x0F;
+            continue;
+        } // volume only
         int bit = m_out[ch];
         if (ch == 0 && (m_audctl & 0x04)) bit ^= m_hp[0];
         if (ch == 1 && (m_audctl & 0x02)) bit ^= m_hp[1];
@@ -167,17 +174,21 @@ int PokeySound::Generate(int cycles, uint8_t* buffer, int format)
         v[0] = n ? (double)sum0 / n : 0.0;
         v[1] = m_stereo ? (n ? (double)sum1 / n : 0.0) : v[0];
         for (int ch = 0; ch < 2; ch++) {
-            m_dc[ch] += (v[ch] - m_dc[ch]) * 0.0005;   // POKEY output is 0..60: keep it centred
-            double out = (v[ch] - m_dc[ch]) / 60.0;     // -1..1
+            m_dc[ch] += (v[ch] - m_dc[ch]) * 0.0005; // POKEY output is 0..60: keep it centred
+            double out = (v[ch] - m_dc[ch]) / 60.0;  // -1..1
             if (out > 1.0) out = 1.0;
             if (out < -1.0) out = -1.0;
             if (format == 8) {
                 buffer[bytes++] = (uint8_t)(128 + (int)(out * 127.0));
-            }
-            else {
+            } else {
                 int16_t w = (int16_t)(out * 32767.0);
-                if (format == -16) { buffer[bytes++] = (uint8_t)(w >> 8); buffer[bytes++] = (uint8_t)w; }
-                else { buffer[bytes++] = (uint8_t)w; buffer[bytes++] = (uint8_t)(w >> 8); }
+                if (format == -16) {
+                    buffer[bytes++] = (uint8_t)(w >> 8);
+                    buffer[bytes++] = (uint8_t)w;
+                } else {
+                    buffer[bytes++] = (uint8_t)w;
+                    buffer[bytes++] = (uint8_t)(w >> 8);
+                }
             }
         }
     }

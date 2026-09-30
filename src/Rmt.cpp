@@ -27,7 +27,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 extern void SetProgramFolderPath(const CString& folderPath); // See Global.cpp
-extern CStatusBar* g_statusBar; // See GuiHelpers.cpp
+extern CStatusBar* g_statusBar;                              // See GuiHelpers.cpp
 
 // Some information for the about box is supplied by components outside this file
 extern CString g_about6502;
@@ -39,6 +39,7 @@ extern CSong g_Song;
 /////////////////////////////////////////////////////////////////////////////
 // CRmtApp
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CRmtApp, CWinApp)
 
     // Standard file based document commands
@@ -50,11 +51,12 @@ BEGIN_MESSAGE_MAP(CRmtApp, CWinApp)
     ON_COMMAND(ID_HELP_ONLINE_HELP, &CRmtApp::OnHelpOnlineHelp)
     ON_COMMAND(ID_HELP_ABOUT_APP, &CRmtApp::OnHelpAboutApp)
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CRmtApp construction
 
-CRmtApp::CRmtApp() :CWinApp("RMT")
+CRmtApp::CRmtApp() : CWinApp("RMT")
 {
     // Place all significant initialization in InitInstance.
 }
@@ -89,7 +91,7 @@ BOOL CRmtApp::InitInstance()
     pDocTemplate = new CSingleDocTemplate(
         IDR_MAINFRAME,
         RUNTIME_CLASS(CRmtDoc),
-        RUNTIME_CLASS(CMainFrame),       // main SDI frame window
+        RUNTIME_CLASS(CMainFrame), // main SDI frame window
         RUNTIME_CLASS(CRmtView));
     AddDocTemplate(pDocTemplate);
 
@@ -108,8 +110,7 @@ BOOL CRmtApp::InitInstance()
 
 
     // INITIAL 6502 INITIALIZATION (DLL)
-    if (!g_Atari.Init())
-    {
+    if (!g_Atari.Init()) {
         g_Atari.DeInit();
         exit(1);
     }
@@ -142,8 +143,7 @@ BOOL CRmtApp::InitInstance()
 
     // Dispatch the standard commands specified on the command line.
     // Will return FALSE if the app was launched with /RegServer, /Register, /Unregserver or /Unregister.
-    if (!ProcessShellCommand(cmdInfo))
-    {
+    if (!ProcessShellCommand(cmdInfo)) {
         return FALSE;
     }
 
@@ -159,9 +159,9 @@ BOOL CRmtApp::InitInstance()
 
     // Dispatch additional interactive commands specified on the command line.
     switch (cmdInfo.m_nShellCommand) {
-    case CCommandLineInfo::FileOpen:
-        g_Song.FileOpen(cmdInfo.m_strFileName, FALSE);
-        break;
+        case CCommandLineInfo::FileOpen:
+            g_Song.FileOpen(cmdInfo.m_strFileName, FALSE);
+            break;
     }
 
     // Dispatch additional automatic commands specified on the command line.
@@ -178,7 +178,8 @@ BOOL CRmtApp::InitInstance()
     return TRUE;
 }
 
-CString CRmtApp::GetVersionAndBuild() const {
+CString CRmtApp::GetVersionAndBuild() const
+{
     CString version;
     CString result;
 
@@ -188,13 +189,13 @@ CString CRmtApp::GetVersionAndBuild() const {
     return result;
 }
 
-void CRmtApp::OpenOnlineHelp() const {
+void CRmtApp::OpenOnlineHelp() const
+{
     CShell::OpenFile("https://html-preview.github.io/?url=https://github.com/raster-atari-org/RASTER-Music-Tracker/blob/1.35/doc//rmt_en.html");
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CRmtApp message handlers
-
 
 
 void CRmtApp::OnHelpHelpTopics()
@@ -204,7 +205,6 @@ void CRmtApp::OnHelpHelpTopics()
 
 void CRmtApp::OnHelpOnlineHelp()
 {
-
     OpenOnlineHelp();
 }
 

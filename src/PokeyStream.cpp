@@ -23,8 +23,7 @@ CPokeyStream::CPokeyStream()
 
 CPokeyStream::~CPokeyStream()
 {
-    if (m_StreamBuffer)
-    {
+    if (m_StreamBuffer) {
         free(m_StreamBuffer);
         m_StreamBuffer = NULL;
     }
@@ -32,8 +31,7 @@ CPokeyStream::~CPokeyStream()
 
 void CPokeyStream::Clear()
 {
-    if (m_StreamBuffer)
-    {
+    if (m_StreamBuffer) {
         free(m_StreamBuffer);
         m_StreamBuffer = NULL;
     }
@@ -49,11 +47,9 @@ void CPokeyStream::Clear()
 
 void CPokeyStream::StartRecording(const CSong& song, CAtariTrackerDriver* atariTrackerDriver)
 {
-
     m_AtariTrackerDriver = atariTrackerDriver;
 
-    if (m_StreamBuffer)
-    {
+    if (m_StreamBuffer) {
         free(m_StreamBuffer);
         m_StreamBuffer = NULL;
     }
@@ -96,46 +92,41 @@ int CPokeyStream::SwitchIntoStop()
 void CPokeyStream::CallFromPlay(int playerState, int trackLine, int songLine)
 {
     // The SAP-R dumper initialisation flag was set
-    if (m_recordState == STREAM_STATE::START)
-    {
-        memset(m_PlayCount, 0, sizeof(m_PlayCount));	// Reset lines play counter first
+    if (m_recordState == STREAM_STATE::START) {
+        memset(m_PlayCount, 0, sizeof(m_PlayCount)); // Reset lines play counter first
         if (playerState == PLAY_BLOCK)
-            m_PlayCount[trackLine] += 1;				// Increment the track line play count early, so it will be detected as the selection block loop
+            m_PlayCount[trackLine] += 1; // Increment the track line play count early, so it will be detected as the selection block loop
         else
-            m_PlayCount[songLine] += 1;					// Increment the line play count early, to ensure that same line will be detected again as the loop point
-        m_recordState = STREAM_STATE::RECORD;			// Set the SAPR dumper with the "is currently recording data" flag 
+            m_PlayCount[songLine] += 1;       // Increment the line play count early, to ensure that same line will be detected again as the loop point
+        m_recordState = STREAM_STATE::RECORD; // Set the SAPR dumper with the "is currently recording data" flag
     }
 }
 
 bool CPokeyStream::TrackSongLine(int trackedInstance)
 {
-    if (m_recordState == STREAM_STATE::RECORD)			// The SAPR dumper is running with the "is currently recording data" flag 
+    if (m_recordState == STREAM_STATE::RECORD) // The SAPR dumper is running with the "is currently recording data" flag
     {
-        m_PlayCount[trackedInstance] += 1;				// Increment the position counter by 1
+        m_PlayCount[trackedInstance] += 1; // Increment the position counter by 1
 
         // If the Songline is played for the first time, the current frames count will be used for its index
-        if (m_SongLoopedCounter < 1)
-        {
+        if (m_SongLoopedCounter < 1) {
             // At least 1 Songline will be played, increment the count early
             m_SonglineCounter++;
             m_OffsetPerSongline[m_SonglineCounter] = m_FrameCounter;
         }
 
-        int count = m_PlayCount[trackedInstance];		// Fetch that line play count for the next step
-        if (count > 1)
-        {
+        int count = m_PlayCount[trackedInstance]; // Fetch that line play count for the next step
+        if (count > 1) {
             // A value above 1 means a full playback loop has been completed, the line play count incremented twice
-            m_SongLoopedCounter++;						// Increment the dumper iteration count by 1
-            m_recordState = STREAM_STATE::WRITE;		// Set the "write SAP-R data to file" flag
-            if (m_SongLoopedCounter == 1)
-            {
-                memset(m_PlayCount, 0, sizeof(m_PlayCount));	// Reset the lines play count before the next step 
-                m_PlayCount[trackedInstance] += 1;				// Increment the line play count early, to ensure that same line will be detected again as the loop point for the next dumper iteration 
+            m_SongLoopedCounter++;               // Increment the dumper iteration count by 1
+            m_recordState = STREAM_STATE::WRITE; // Set the "write SAP-R data to file" flag
+            if (m_SongLoopedCounter == 1) {
+                memset(m_PlayCount, 0, sizeof(m_PlayCount)); // Reset the lines play count before the next step
+                m_PlayCount[trackedInstance] += 1;           // Increment the line play count early, to ensure that same line will be detected again as the loop point for the next dumper iteration
 
                 SwitchIntoRecording();
             }
-            if (m_SongLoopedCounter == 2)
-            {
+            if (m_SongLoopedCounter == 2) {
                 SwitchIntoStop();
                 return true;
             }
@@ -146,24 +137,20 @@ bool CPokeyStream::TrackSongLine(int trackedInstance)
 
 bool CPokeyStream::CallFromPlayBeat(int trackedInstance)
 {
-    if (m_recordState == STREAM_STATE::RECORD)
-    {
-        // The SAPR dumper is running with the "is currently recording data" flag 
-        m_PlayCount[trackedInstance] += 1;			// Increment the position counter by 1
+    if (m_recordState == STREAM_STATE::RECORD) {
+        // The SAPR dumper is running with the "is currently recording data" flag
+        m_PlayCount[trackedInstance] += 1; // Increment the position counter by 1
 
-        int count = m_PlayCount[trackedInstance];		// Fetch that line play count for the next step
-        if (count > 1)
-        {
+        int count = m_PlayCount[trackedInstance]; // Fetch that line play count for the next step
+        if (count > 1) {
             // A value above 1 means a full playback loop has been completed, the line play count incremented twice
-            m_SongLoopedCounter++;						// Increment the dumper iteration count by 1
-            m_recordState = STREAM_STATE::WRITE;		// Set the "write SAP-R data to file" flag
-            if (m_SongLoopedCounter == 1)
-            {
-                memset(m_PlayCount, 0, sizeof(m_PlayCount));	// Reset the lines play count before the next step 
-                m_PlayCount[trackedInstance] += 1;					// Increment the line play count early, to ensure that same line will be detected again as the loop point for the next dumper iteration 
+            m_SongLoopedCounter++;               // Increment the dumper iteration count by 1
+            m_recordState = STREAM_STATE::WRITE; // Set the "write SAP-R data to file" flag
+            if (m_SongLoopedCounter == 1) {
+                memset(m_PlayCount, 0, sizeof(m_PlayCount)); // Reset the lines play count before the next step
+                m_PlayCount[trackedInstance] += 1;           // Increment the line play count early, to ensure that same line will be detected again as the loop point for the next dumper iteration
             }
-            if (m_SongLoopedCounter == 2)
-            {
+            if (m_SongLoopedCounter == 2) {
                 return true;
             }
         }
@@ -177,13 +164,12 @@ void CPokeyStream::Record()
         return;
     }
     if (m_recordState == STREAM_STATE::START) {
-        return;		// Too soon, must first be initialised to get a constant rate every time, this prevents writing garbage in memory for the first few frames
+        return; // Too soon, must first be initialised to get a constant rate every time, this prevents writing garbage in memory for the first few frames
     }
 
-    int offsetIntoSAPRBuffer = m_FrameCounter * m_FrameSize;	// 4 AUDC, 4 AUDF, 1 AUDCTL + Second POKEY if used
+    int offsetIntoSAPRBuffer = m_FrameCounter * m_FrameSize; // 4 AUDC, 4 AUDF, 1 AUDCTL + Second POKEY if used
 
-    if (offsetIntoSAPRBuffer > m_BufferSize - m_FrameSize + 1)
-    {
+    if (offsetIntoSAPRBuffer > m_BufferSize - m_FrameSize + 1) {
         // Buffer is too small, grow it
         m_BufferSize *= 2;
         m_StreamBuffer = (unsigned char*)realloc(m_StreamBuffer, m_BufferSize);
@@ -191,28 +177,27 @@ void CPokeyStream::Record()
 
     // Dump Pokey sound registers to position defined by the frames counter
     // AUDF1, AUDC1, AUDF2, AUDC2, AUDF3, AUDC3, AUDF4, AUDC4, AUDCTL
-    for (int i = 0; i < 9; i++)
-    {
-        int j = (m_FrameSize == 18) ? 9 : 0;		// Slight offset for i count, memory can then be aligned as it is expected
+    for (int i = 0; i < 9; i++) {
+        int j = (m_FrameSize == 18) ? 9 : 0; // Slight offset for i count, memory can then be aligned as it is expected
 
         // Copy data from the 1st Pokey
         // 0 offset in mono
         // 9 offset in stereo
         // TODO: Why is the 1st Pokey the 2nd in the stream??
         m_StreamBuffer[offsetIntoSAPRBuffer + i + j] = m_AtariTrackerDriver->GetByteAt(0xd200 + i);
-        if (i == 1)	// AUDC1
-        {	// Test SKCTL ($D20F), if Two-Tone is expected, set the Volume Only bit in the current AUDC1 offset
+        if (i == 1) // AUDC1
+        {           // Test SKCTL ($D20F), if Two-Tone is expected, set the Volume Only bit in the current AUDC1 offset
             m_StreamBuffer[offsetIntoSAPRBuffer + i + j] |= (m_AtariTrackerDriver->GetByteAt(0xd20F) == 0x8B) ? 0x10 : 0x00;
         }
 
         if (m_FrameSize == 9) {
-            continue;	// No second POKEY 
+            continue; // No second POKEY
         }
 
         // Copy data from the 2nd Pokey
         m_StreamBuffer[offsetIntoSAPRBuffer + i] = m_AtariTrackerDriver->GetByteAt(0xd210 + i);
-        if (i == 1)	//AUDC1
-        {	// Test SKCTL ($D21F), if Two-Tone is expected, set the Volume Only bit in the current AUDC1 offset
+        if (i == 1) //AUDC1
+        {           // Test SKCTL ($D21F), if Two-Tone is expected, set the Volume Only bit in the current AUDC1 offset
             m_StreamBuffer[offsetIntoSAPRBuffer + i] |= (m_AtariTrackerDriver->GetByteAt(0xd21F) == 0x8B) ? 0x10 : 0x00;
         }
     }
@@ -223,8 +208,7 @@ void CPokeyStream::Record()
     }
 
     // Count the frames played in each Songline, until the first loop point is found
-    if (m_SongLoopedCounter < 1)
-    {
+    if (m_SongLoopedCounter < 1) {
         // Increment the frames counter for the current songline
         m_FramesPerSongline[m_SonglineCounter]++;
     }
@@ -235,8 +219,7 @@ void CPokeyStream::Record()
 
 void CPokeyStream::WriteToFile(std::ofstream& ou, int frames, int offset) const
 {
-    if (m_StreamBuffer == NULL)
-    {
+    if (m_StreamBuffer == NULL) {
         return;
     }
 
@@ -247,17 +230,16 @@ void CPokeyStream::WriteToFile(std::ofstream& ou, int frames, int offset) const
 
 void CPokeyStream::FinishedRecording()
 {
-    m_recordState = STREAM_STATE::STOP;		// Reset the SAPR dump flag now it is done
-    m_FrameCounter = 0;						// Also reset the framecount once finished
-    m_SongLoopedCounter = 0;				// Reset the playback counter
+    m_recordState = STREAM_STATE::STOP; // Reset the SAPR dump flag now it is done
+    m_FrameCounter = 0;                 // Also reset the framecount once finished
+    m_SongLoopedCounter = 0;            // Reset the playback counter
 
     // Clear the allocated memory for the SAP-R dumper, TODO: manage memory dynamically instead
-    if (m_StreamBuffer)
-    {
+    if (m_StreamBuffer) {
         free(m_StreamBuffer);
         m_StreamBuffer = NULL;
     }
 
-    m_AtariTrackerDriver->Init();	//reset the Atari memory 
-    SetChannelOnOff(-1, 1);	//switch all channels back on, since they were purposefully turned off during the recording
+    m_AtariTrackerDriver->Init(); //reset the Atari memory
+    SetChannelOnOff(-1, 1);       //switch all channels back on, since they were purposefully turned off during the recording
 }

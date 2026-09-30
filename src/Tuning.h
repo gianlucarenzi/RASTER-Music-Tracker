@@ -9,27 +9,23 @@
 #include "C6502.h"
 
 
-
-
 //Table construction structure
-struct TTuning
-{
+struct TTuning {
     int table_64khz;
     int table_15khz;
     int table_179mhz;
     int table_16bit;
 };
 
-class CTuning
-{
+class CTuning {
 public:
-    // Temperament definitions, used for tuning calculations 
+    // Temperament definitions, used for tuning calculations
     typedef int Temperament;
 
-    static constexpr Temperament NO_TEMPERAMENT = 0;                // No temperament assumes the value of 0, as Equal Temperament
-    static constexpr Temperament TUNING_PRESETS = 29;				// Total number of temperaments available
-    static constexpr Temperament TUNING_CUSTOM = TUNING_PRESETS;	// Custom Temperament using Ratio is assumed otherwise
-    static constexpr size_t  PRESETS_LENGTH = 20 + 1; 				// Length of the largest preset table, used for the 2 dimensional array boundaries 
+    static constexpr Temperament NO_TEMPERAMENT = 0;             // No temperament assumes the value of 0, as Equal Temperament
+    static constexpr Temperament TUNING_PRESETS = 29;            // Total number of temperaments available
+    static constexpr Temperament TUNING_CUSTOM = TUNING_PRESETS; // Custom Temperament using Ratio is assumed otherwise
+    static constexpr size_t PRESETS_LENGTH = 20 + 1;             // Length of the largest preset table, used for the 2 dimensional array boundaries
 
     typedef double Pitch;
     typedef int AUDF;
@@ -43,7 +39,6 @@ public:
     Pitch GetPOKEYPPitch(int audc, AUDF audf, int audctl, int channel);
 
 private:
-
     // Multiply by notes per octave to transpose the table
     const TTuning dist_2_bell{ 1, 0, 4, 2 };
     const TTuning dist_4_smooth{ 1, 0, 2, 2 };
@@ -53,15 +48,14 @@ private:
     const TTuning dist_c_gritty{ 1, 0, 6, 2 };
     const TTuning dist_c_unstable{ 3, 0, 8, 2 };
 
-    const double temperament_preset[TUNING_PRESETS][PRESETS_LENGTH] =
-    {
+    const double temperament_preset[TUNING_PRESETS][PRESETS_LENGTH] = {
         //No Temperament for the first slot, leave it empty
         { 0 },
 
         //Thomas Young 1799's Well Temperament no.1
         { 1, 1.055709, 1.119770, 1.187690, 1.253887, 1.334739, 1.407637, 1.496513, 1.583581, 1.675715, 1.781546, 1.878851, 2 },
 
-        //Thomas Young 1799's Well Temperament no.2 
+        //Thomas Young 1799's Well Temperament no.2
         { 1, 1.055880, 1.119929, 1.187865, 1.254242, 1.334839, 1.407840, 1.496616, 1.583819, 1.676105, 1.781797, 1.879240, 2 },
 
         //Thomas Young 1807's Well Temperament
@@ -70,7 +64,7 @@ private:
         //Andreas Werckmeister's temperament III (the most famous one, 1681)
         { 1, 1.053497, 1.117403, 1.185185, 1.252827, 1.333333, 1.404663, 1.494927, 1.580246, 1.670436, 1.777777, 1.879240, 2 },
 
-        // Tempérament Égal à Quintes Justes 
+        // Tempérament Égal à Quintes Justes
         { 1, 1.059634, 1.122824, 1.189782, 1.260734, 1.335916, 1.415582, 1.5, 1.589451, 1.684236, 1.784674, 1.891101, 2.003875 },
 
         // Alembert's and Rousseau's Tempérament Ordinaire (1752/1767)
@@ -163,6 +157,4 @@ private:
         const TTuning dist_c_gritty{ 12, 0, 72, 24 };
         const TTuning dist_c_unstable{ 36, 0, 96, 24 };
     */
-
-
 };

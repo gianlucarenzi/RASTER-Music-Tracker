@@ -21,8 +21,7 @@ int CAtariIO::LoadBinaryBlock(std::ifstream& in, byte* memory, MemoryAddress& fr
     if (!LoadWord(in, fromAddr)) {
         return 0;
     }
-    if (fromAddr == 0xffff)
-    {
+    if (fromAddr == 0xffff) {
         // Skip the binary block header (0xFFFF)
         if (!LoadWord(in, fromAddr)) { return 0; }
     }
@@ -47,9 +46,9 @@ int CAtariIO::LoadBinaryFile(const char* fname, byte* memory, MemoryAddress& min
         return 0;
     }
     fsize = 0;
-    minadr = 0xffff; maxadr = 0; //the opposite limits of the minimum and maximum address
-    while (!fin.eof())
-    {
+    minadr = 0xffff;
+    maxadr = 0; //the opposite limits of the minimum and maximum address
+    while (!fin.eof()) {
         blen = LoadBinaryBlock(fin, memory, bfrom, bto);
         if (blen <= 0) break;
         if (bfrom < minadr) minadr = bfrom;
@@ -62,8 +61,7 @@ int CAtariIO::LoadBinaryFile(const char* fname, byte* memory, MemoryAddress& min
 
 int CAtariIO::LoadDataAsBinaryFile(unsigned char* data, MemorySize size, byte* memory, MemoryAddress& minadr, MemoryAddress& maxadr)
 {
-    if (!data)
-    {
+    if (!data) {
         return 0;
     }
 
@@ -71,9 +69,9 @@ int CAtariIO::LoadDataAsBinaryFile(unsigned char* data, MemorySize size, byte* m
     int akp = 0;
     MemoryAddress bfrom, bto;
 
-    minadr = 0xffff; maxadr = 0; //the opposite limits of the minimum and maximum address
-    while ((MemorySize)akp < size)
-    {
+    minadr = 0xffff;
+    maxadr = 0; //the opposite limits of the minimum and maximum address
+    while ((MemorySize)akp < size) {
         bfrom = data[akp] | (data[akp + 1] << 8);
         akp += 2;
         if (bfrom == 0xffff) continue;
@@ -105,8 +103,7 @@ int CAtariIO::SaveBinaryBlock(std::ofstream& out, const byte* memory, MemoryAddr
 {
     //from "fromadr" to "toadr" inclusive
     if (fromAddr > toAddr) return 0;
-    if (withBinaryBlockHeader)
-    {
+    if (withBinaryBlockHeader) {
         out.put((char)0xff);
         out.put((char)0xff);
     }

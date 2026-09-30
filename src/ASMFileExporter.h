@@ -3,11 +3,8 @@
 #include "Song.h"
 #include "ASMFile.h"
 
-class CASMFileExporter
-{
-
+class CASMFileExporter {
 public:
-
     /// <summary>
     /// Export the RMT module as assembler
     /// </summary>
@@ -41,7 +38,6 @@ public:
         BOOL gvf,
         BOOL nos,
         bool bWantSizeInfoOnly);
+
 private:
-
 };
-

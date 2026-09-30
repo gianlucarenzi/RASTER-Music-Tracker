@@ -17,8 +17,7 @@
 /**
  * @brief MIDI message types
  */
-enum class MidiMessageType
-{
+enum class MidiMessageType {
     NoteOff = 0x80,
     NoteOn = 0x90,
     PolyKeyPressure = 0xA0,
@@ -33,16 +32,15 @@ enum class MidiMessageType
 /**
  * @brief MIDI event descriptor
  */
-struct MidiEvent
-{
+struct MidiEvent {
     MidiMessageType type;
-    uint8_t channel;      // 0-15 (MIDI channels 1-16)
-    uint8_t data1;        // Note number, CC, program, etc.
-    uint8_t data2;        // Velocity, CC value, etc.
-    uint32_t timestamp;   // Milliseconds since start
-    
+    uint8_t channel;    // 0-15 (MIDI channels 1-16)
+    uint8_t data1;      // Note number, CC, program, etc.
+    uint8_t data2;      // Velocity, CC value, etc.
+    uint32_t timestamp; // Milliseconds since start
+
     MidiEvent() : type(MidiMessageType::Unknown), channel(0), data1(0), data2(0), timestamp(0) {}
-    
+
     MidiEvent(MidiMessageType t, uint8_t ch, uint8_t d1, uint8_t d2)
         : type(t), channel(ch), data1(d1), data2(d2), timestamp(0) {}
 };
@@ -56,8 +54,7 @@ struct MidiEvent
  * - MIDI message transmission
  * - MIDI message reception
  */
-class IMidiBackend
-{
+class IMidiBackend {
 public:
     virtual ~IMidiBackend() = default;
 
@@ -177,8 +174,7 @@ public:
  * 
  * Creates platform-appropriate MIDI backend instances
  */
-class MidiBackendFactory
-{
+class MidiBackendFactory {
 public:
     /**
      * Create the default MIDI backend for current platform

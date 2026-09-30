@@ -1,0 +1,57 @@
+# RMT code style: K&R.
+# Braces go on their own line only for function definitions; everywhere
+# else they stay on the line of the statement, and "} else {" is cuddled.
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: c++17
+
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+IndentCaseLabels: true
+NamespaceIndentation: None
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel: false
+  AfterClass: false
+  AfterControlStatement: Never
+  AfterEnum: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
+  BeforeLambdaBody: false
+  BeforeWhile: false
+  IndentBraces: false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+# Keep the existing line layout: no re-wrapping, no include reordering
+# (PlatformTypes.h / stdafx.h must stay first), short one-liners allowed.
+ColumnLimit: 0
+SortIncludes: false
+SortUsingDeclarations: false
+ReflowComments: false
+AllowShortBlocksOnASingleLine: Always
+AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortLoopsOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: All
+AllowShortLambdasOnASingleLine: All
+AllowShortEnumsOnASingleLine: true
+KeepEmptyLinesAtTheStartOfBlocks: false
+MaxEmptyLinesToKeep: 2
+
+PointerAlignment: Left
+SpaceBeforeParens: ControlStatements
+AlignTrailingComments: true
+AlignConsecutiveMacros: true
+AlignEscapedNewlines: Left
+Cpp11BracedListStyle: false

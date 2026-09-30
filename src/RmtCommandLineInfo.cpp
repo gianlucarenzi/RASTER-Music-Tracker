@@ -2,12 +2,9 @@
 #include "RmtCommandLineInfo.h"
 
 
+CRmtCommandLineInfo::CRmtCommandLineInfo(void) : m_scriptFileSpecified(false), m_testFileSpecified(false){};
 
-CRmtCommandLineInfo::CRmtCommandLineInfo(void) : m_scriptFileSpecified(false), m_testFileSpecified(false) {
-};
-
-CRmtCommandLineInfo::~CRmtCommandLineInfo(void) {
-};
+CRmtCommandLineInfo::~CRmtCommandLineInfo(void){};
 
 
 bool CRmtCommandLineInfo::IsScriptFileSpecified() const
@@ -56,7 +53,8 @@ void CRmtCommandLineInfo::ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLa
     CCommandLineInfo::ParseParam(pszParam, bFlag, bLast);
 }
 
-CString CRmtCommandLineInfo::GetSwitchName(const CString& switchString) {
+CString CRmtCommandLineInfo::GetSwitchName(const CString& switchString)
+{
     int nPos = switchString.Find(':');
     if (nPos != -1) {
         return switchString.Left(nPos);
@@ -64,11 +62,11 @@ CString CRmtCommandLineInfo::GetSwitchName(const CString& switchString) {
     return switchString;
 }
 
-CString CRmtCommandLineInfo::GetSwitchValue(const CString& switchString) {
+CString CRmtCommandLineInfo::GetSwitchValue(const CString& switchString)
+{
     int nPos = switchString.Find(':');
     if (nPos != -1) {
         return switchString.Mid(nPos + 1);
     }
     return "";
 }
-

@@ -9,7 +9,7 @@
 
 #include "C6502.h"
 
-#include "tracker_obx.h"				// The ASM generated C header file
+#include "tracker_obx.h" // The ASM generated C header file
 
 // bass16bit low byte, bass 0C, bass 0E, clean tones 0A and 0,2,4,8, bass16bit hi byte, this might require different addresses? What is this even used for anyway?
 static constexpr MemoryAddress RMT_FRQTABLES = RMTPLAYR_PAGE_DISTORTION_2;
@@ -29,8 +29,6 @@ static constexpr MemoryAddress RMT_ATA_DRIVERVERSION = RMTPLAYR_DRIVERVERSION;
 
 
 class CAtari {
-
-
 public:
     static constexpr size_t MEMORY_SIZE = 0x10000;
 
@@ -71,9 +69,7 @@ public:
     void JSR(C6502::Address& adr, C6502::Register& a, C6502::Register& x, C6502::Register& y, C6502::CycleCount& cycles);
 
 private:
-
     byte m_memory[MEMORY_SIZE];
 
     BOOL m_ntsc;
-
 };

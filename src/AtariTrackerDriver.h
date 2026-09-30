@@ -4,7 +4,6 @@
 #include "TrackerDriverVersion.h"
 
 class CAtariTrackerDriver {
-
 public:
     CAtariTrackerDriver(CAtari& atari);
 
@@ -23,8 +22,4 @@ public:
 
 private:
     CAtari* m_atari;
-
 };
-
-
-

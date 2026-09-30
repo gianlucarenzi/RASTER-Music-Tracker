@@ -46,6 +46,7 @@
 // Basic Windows SDK typedefs
 // ---------------------------------------------------------------------------
 
+// clang-format off
 typedef int                BOOL;
 typedef unsigned char       BYTE;
 typedef unsigned char       byte;
@@ -85,6 +86,7 @@ typedef char*               LPTSTR;
 typedef char                TCHAR;
 typedef void*               LPVOID;
 typedef const void*         LPCVOID;
+// clang-format on
 
 #ifndef TRUE
 #define TRUE 1
@@ -106,42 +108,42 @@ typedef const void*         LPCVOID;
 #define IMPLEMENT_DYNAMIC(x, base)
 // DECLARE_MESSAGE_MAP / BEGIN_MESSAGE_MAP ...: see CCmdTarget below
 #define TEXT(x) x
-#define _T(x) x
+#define _T(x)   x
 
 // Standard command IDs of MFC (afxres.h), used by the menus and message maps
-#define ID_FILE_NEW             0xE100
-#define ID_FILE_OPEN            0xE101
-#define ID_FILE_CLOSE           0xE102
-#define ID_FILE_SAVE            0xE103
-#define ID_FILE_SAVE_AS         0xE104
-#define ID_FILE_PAGE_SETUP      0xE105
-#define ID_FILE_PRINT_SETUP     0xE106
-#define ID_FILE_PRINT           0xE107
-#define ID_FILE_PRINT_DIRECT    0xE108
-#define ID_FILE_PRINT_PREVIEW   0xE109
-#define ID_FILE_MRU_FILE1       0xE110
-#define ID_EDIT_CLEAR           0xE120
-#define ID_EDIT_COPY            0xE122
-#define ID_EDIT_CUT             0xE123
-#define ID_EDIT_PASTE           0xE125
-#define ID_EDIT_SELECT_ALL      0xE12A
-#define ID_EDIT_UNDO            0xE12B
-#define ID_EDIT_REDO            0xE12C
-#define ID_APP_ABOUT            0xE140
-#define ID_APP_EXIT             0xE141
-#define ID_VIEW_TOOLBAR         0xE800
-#define ID_VIEW_STATUS_BAR      0xE801
-#define ID_VIEW_REBAR           0xE804
-#define AFX_IDW_TOOLBAR         0xE800
-#define AFX_IDW_STATUS_BAR      0xE801
+#define ID_FILE_NEW           0xE100
+#define ID_FILE_OPEN          0xE101
+#define ID_FILE_CLOSE         0xE102
+#define ID_FILE_SAVE          0xE103
+#define ID_FILE_SAVE_AS       0xE104
+#define ID_FILE_PAGE_SETUP    0xE105
+#define ID_FILE_PRINT_SETUP   0xE106
+#define ID_FILE_PRINT         0xE107
+#define ID_FILE_PRINT_DIRECT  0xE108
+#define ID_FILE_PRINT_PREVIEW 0xE109
+#define ID_FILE_MRU_FILE1     0xE110
+#define ID_EDIT_CLEAR         0xE120
+#define ID_EDIT_COPY          0xE122
+#define ID_EDIT_CUT           0xE123
+#define ID_EDIT_PASTE         0xE125
+#define ID_EDIT_SELECT_ALL    0xE12A
+#define ID_EDIT_UNDO          0xE12B
+#define ID_EDIT_REDO          0xE12C
+#define ID_APP_ABOUT          0xE140
+#define ID_APP_EXIT           0xE141
+#define ID_VIEW_TOOLBAR       0xE800
+#define ID_VIEW_STATUS_BAR    0xE801
+#define ID_VIEW_REBAR         0xE804
+#define AFX_IDW_TOOLBAR       0xE800
+#define AFX_IDW_STATUS_BAR    0xE801
 
 #define TRACE(...) ((void)0)
 
 // Dialog / message-box results (subset actually used)
-#define IDOK      1
-#define IDCANCEL  2
-#define IDYES     6
-#define IDNO      7
+#define IDOK     1
+#define IDCANCEL 2
+#define IDYES    6
+#define IDNO     7
 
 // ---------------------------------------------------------------------------
 // Virtual-key codes (subset actually referenced by GUI_Song.cpp/GUI_Instruments.cpp/
@@ -151,115 +153,115 @@ typedef const void*         LPCVOID;
 // (VK_BACKSPACE/VK_ENTER/VK_PAGE_UP/VK_PAGE_DOWN are already defined in
 // Global.h with the same real values.)
 // ---------------------------------------------------------------------------
-#define VK_BACK      0x08
-#define VK_TAB       0x09
-#define VK_ESCAPE    0x1B
-#define VK_SPACE     0x20
-#define VK_PRIOR     0x21
-#define VK_NEXT      0x22
-#define VK_END       0x23
-#define VK_HOME      0x24
-#define VK_LEFT      0x25
-#define VK_UP        0x26
-#define VK_RIGHT     0x27
-#define VK_DOWN      0x28
-#define VK_INSERT    0x2D
-#define VK_DELETE    0x2E
-#define VK_0 0x30
-#define VK_1 0x31
-#define VK_2 0x32
-#define VK_3 0x33
-#define VK_4 0x34
-#define VK_5 0x35
-#define VK_6 0x36
-#define VK_7 0x37
-#define VK_8 0x38
-#define VK_9 0x39
-#define VK_A 0x41
-#define VK_B 0x42
-#define VK_C 0x43
-#define VK_D 0x44
-#define VK_E 0x45
-#define VK_F 0x46
-#define VK_G 0x47
-#define VK_H 0x48
-#define VK_I 0x49
-#define VK_J 0x4A
-#define VK_K 0x4B
-#define VK_L 0x4C
-#define VK_M 0x4D
-#define VK_N 0x4E
-#define VK_O 0x4F
-#define VK_P 0x50
-#define VK_Q 0x51
-#define VK_R 0x52
-#define VK_S 0x53
-#define VK_T 0x54
-#define VK_U 0x55
-#define VK_V 0x56
-#define VK_W 0x57
-#define VK_X 0x58
-#define VK_Y 0x59
-#define VK_Z 0x5A
-#define VK_MULTIPLY  0x6A
-#define VK_ADD       0x6B
-#define VK_SUBTRACT  0x6D
-#define VK_DIVIDE    0x6F
-#define VK_F1  0x70
-#define VK_F2  0x71
-#define VK_F3  0x72
-#define VK_F4  0x73
-#define VK_CAPITAL   0x14
-#define VK_OEM_PLUS  0xBB
-#define VK_OEM_MINUS 0xBD
-#define VK_RETURN    0x0D
-#define VK_SHIFT     0x10
-#define VK_CONTROL   0x11
-#define VK_MENU      0x12
-#define VK_PAUSE     0x13
-#define VK_LSHIFT    0xA0
-#define VK_RSHIFT    0xA1
-#define VK_LCONTROL  0xA2
-#define VK_RCONTROL  0xA3
-#define VK_LMENU     0xA4
-#define VK_RMENU     0xA5
-#define VK_NUMPAD0   0x60
-#define VK_DECIMAL   0x6E
-#define VK_F5  0x74
-#define VK_F6  0x75
-#define VK_F7  0x76
-#define VK_F8  0x77
-#define VK_F9  0x78
-#define VK_F10 0x79
-#define VK_F11 0x7A
-#define VK_F12 0x7B
-#define VK_NUMLOCK   0x90
+#define VK_BACK             0x08
+#define VK_TAB              0x09
+#define VK_ESCAPE           0x1B
+#define VK_SPACE            0x20
+#define VK_PRIOR            0x21
+#define VK_NEXT             0x22
+#define VK_END              0x23
+#define VK_HOME             0x24
+#define VK_LEFT             0x25
+#define VK_UP               0x26
+#define VK_RIGHT            0x27
+#define VK_DOWN             0x28
+#define VK_INSERT           0x2D
+#define VK_DELETE           0x2E
+#define VK_0                0x30
+#define VK_1                0x31
+#define VK_2                0x32
+#define VK_3                0x33
+#define VK_4                0x34
+#define VK_5                0x35
+#define VK_6                0x36
+#define VK_7                0x37
+#define VK_8                0x38
+#define VK_9                0x39
+#define VK_A                0x41
+#define VK_B                0x42
+#define VK_C                0x43
+#define VK_D                0x44
+#define VK_E                0x45
+#define VK_F                0x46
+#define VK_G                0x47
+#define VK_H                0x48
+#define VK_I                0x49
+#define VK_J                0x4A
+#define VK_K                0x4B
+#define VK_L                0x4C
+#define VK_M                0x4D
+#define VK_N                0x4E
+#define VK_O                0x4F
+#define VK_P                0x50
+#define VK_Q                0x51
+#define VK_R                0x52
+#define VK_S                0x53
+#define VK_T                0x54
+#define VK_U                0x55
+#define VK_V                0x56
+#define VK_W                0x57
+#define VK_X                0x58
+#define VK_Y                0x59
+#define VK_Z                0x5A
+#define VK_MULTIPLY         0x6A
+#define VK_ADD              0x6B
+#define VK_SUBTRACT         0x6D
+#define VK_DIVIDE           0x6F
+#define VK_F1               0x70
+#define VK_F2               0x71
+#define VK_F3               0x72
+#define VK_F4               0x73
+#define VK_CAPITAL          0x14
+#define VK_OEM_PLUS         0xBB
+#define VK_OEM_MINUS        0xBD
+#define VK_RETURN           0x0D
+#define VK_SHIFT            0x10
+#define VK_CONTROL          0x11
+#define VK_MENU             0x12
+#define VK_PAUSE            0x13
+#define VK_LSHIFT           0xA0
+#define VK_RSHIFT           0xA1
+#define VK_LCONTROL         0xA2
+#define VK_RCONTROL         0xA3
+#define VK_LMENU            0xA4
+#define VK_RMENU            0xA5
+#define VK_NUMPAD0          0x60
+#define VK_DECIMAL          0x6E
+#define VK_F5               0x74
+#define VK_F6               0x75
+#define VK_F7               0x76
+#define VK_F8               0x77
+#define VK_F9               0x78
+#define VK_F10              0x79
+#define VK_F11              0x7A
+#define VK_F12              0x7B
+#define VK_NUMLOCK          0x90
 #define VK_MEDIA_NEXT_TRACK 0xB0
 #define VK_MEDIA_PREV_TRACK 0xB1
 #define VK_MEDIA_STOP       0xB2
 #define VK_MEDIA_PLAY_PAUSE 0xB3
-#define VK_OEM_1      0xBA
-#define VK_OEM_COMMA  0xBC
-#define VK_OEM_PERIOD 0xBE
-#define VK_OEM_2      0xBF
-#define VK_OEM_3      0xC0
-#define VK_OEM_4      0xDB
-#define VK_OEM_5      0xDC
-#define VK_OEM_6      0xDD
-#define VK_OEM_7      0xDE
-#define VK_OEM_102    0xE2
+#define VK_OEM_1            0xBA
+#define VK_OEM_COMMA        0xBC
+#define VK_OEM_PERIOD       0xBE
+#define VK_OEM_2            0xBF
+#define VK_OEM_3            0xC0
+#define VK_OEM_4            0xDB
+#define VK_OEM_5            0xDC
+#define VK_OEM_6            0xDD
+#define VK_OEM_7            0xDE
+#define VK_OEM_102          0xE2
 
 // mouse key state flags (WM_*BUTTON* wParam)
-#define MK_LBUTTON  0x0001
-#define MK_RBUTTON  0x0002
-#define MK_SHIFT    0x0004
-#define MK_CONTROL  0x0008
-#define MK_MBUTTON  0x0010
+#define MK_LBUTTON 0x0001
+#define MK_RBUTTON 0x0002
+#define MK_SHIFT   0x0004
+#define MK_CONTROL 0x0008
+#define MK_MBUTTON 0x0010
 
 // window messages actually posted / sent by the GUI code
-#define WM_CLOSE    0x0010
-#define WM_COMMAND  0x0111
-#define WM_TIMER    0x0113
+#define WM_CLOSE   0x0010
+#define WM_COMMAND 0x0111
+#define WM_TIMER   0x0113
 
 #define MB_OK              0x00000000L
 #define MB_OKCANCEL        0x00000001L
@@ -277,7 +279,7 @@ typedef const void*         LPCVOID;
 // ---------------------------------------------------------------------------
 
 typedef uint32_t COLORREF;
-#define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))
+#define RGB(r, g, b) ((COLORREF)(((BYTE)(r) | ((WORD)((BYTE)(g)) << 8)) | (((DWORD)(BYTE)(b)) << 16)))
 
 // ---------------------------------------------------------------------------
 // CString - minimal std::string-backed replacement.
@@ -303,15 +305,21 @@ public:
     CString(char c) : m_data(1, c) {}
     CString(const std::string& s) : m_data(s) {}
 
-    CString& operator=(const char* s) { m_data = (s ? s : ""); return *this; }
+    CString& operator=(const char* s)
+    {
+        m_data = (s ? s : "");
+        return *this;
+    }
 
     // --- printf-style formatting -------------------------------------------------
     template <typename... Args>
-    void Format(const char* fmt, Args... args) {
+    void Format(const char* fmt, Args... args)
+    {
         m_data = FormatToString(fmt, ConvertArg(args)...);
     }
     template <typename... Args>
-    void AppendFormat(const char* fmt, Args... args) {
+    void AppendFormat(const char* fmt, Args... args)
+    {
         m_data += FormatToString(fmt, ConvertArg(args)...);
     }
 
@@ -323,42 +331,50 @@ public:
     void SetAt(int idx, char ch) { m_data.at((size_t)idx) = ch; }
     void Empty() { m_data.clear(); }
 
-    CString Left(int count) const {
+    CString Left(int count) const
+    {
         if (count < 0) count = 0;
         return CString(m_data.substr(0, (size_t)count));
     }
-    CString Right(int count) const {
+    CString Right(int count) const
+    {
         if (count < 0) count = 0;
         size_t len = m_data.length();
         size_t n = (size_t)count > len ? len : (size_t)count;
         return CString(m_data.substr(len - n, n));
     }
-    CString Mid(int first) const {
+    CString Mid(int first) const
+    {
         if (first < 0) first = 0;
         if ((size_t)first >= m_data.length()) return CString();
         return CString(m_data.substr((size_t)first));
     }
-    CString Mid(int first, int count) const {
+    CString Mid(int first, int count) const
+    {
         if (first < 0) first = 0;
         if (count < 0) count = 0;
         if ((size_t)first >= m_data.length()) return CString();
         return CString(m_data.substr((size_t)first, (size_t)count));
     }
 
-    int Find(char ch, int start = 0) const {
+    int Find(char ch, int start = 0) const
+    {
         auto pos = m_data.find(ch, (size_t)start);
         return pos == std::string::npos ? -1 : (int)pos;
     }
-    int Find(const char* sub, int start = 0) const {
+    int Find(const char* sub, int start = 0) const
+    {
         auto pos = m_data.find(sub, (size_t)start);
         return pos == std::string::npos ? -1 : (int)pos;
     }
-    int ReverseFind(char ch) const {
+    int ReverseFind(char ch) const
+    {
         auto pos = m_data.rfind(ch);
         return pos == std::string::npos ? -1 : (int)pos;
     }
 
-    int Replace(const char* oldStr, const char* newStr) {
+    int Replace(const char* oldStr, const char* newStr)
+    {
         if (!oldStr || !*oldStr) return 0;
         int count = 0;
         size_t pos = 0;
@@ -370,34 +386,49 @@ public:
         }
         return count;
     }
-    int Replace(char oldCh, char newCh) {
+    int Replace(char oldCh, char newCh)
+    {
         int count = 0;
-        for (auto& c : m_data) { if (c == oldCh) { c = newCh; count++; } }
+        for (auto& c : m_data) {
+            if (c == oldCh) {
+                c = newCh;
+                count++;
+            }
+        }
         return count;
     }
 
-    CString& MakeUpper() {
+    CString& MakeUpper()
+    {
         for (auto& c : m_data) c = (char)toupper((unsigned char)c);
         return *this;
     }
-    CString& MakeLower() {
+    CString& MakeLower()
+    {
         for (auto& c : m_data) c = (char)tolower((unsigned char)c);
         return *this;
     }
-    CString& Trim() {
+    CString& Trim()
+    {
         TrimLeftInPlace();
         TrimRightInPlace();
         return *this;
     }
-    CString& TrimRight() { TrimRightInPlace(); return *this; }
+    CString& TrimRight()
+    {
+        TrimRightInPlace();
+        return *this;
+    }
 
-    char* GetBuffer(int minLength = 0) {
+    char* GetBuffer(int minLength = 0)
+    {
         if (minLength > 0 && (size_t)minLength > m_data.size()) {
             m_data.resize((size_t)minLength);
         }
         return m_data.data();
     }
-    void ReleaseBuffer(int newLength = -1) {
+    void ReleaseBuffer(int newLength = -1)
+    {
         if (newLength < 0) {
             m_data.resize(std::strlen(m_data.c_str()));
         } else {
@@ -406,7 +437,8 @@ public:
     }
 
     int Compare(const char* other) const { return m_data.compare(other ? other : ""); }
-    int CompareNoCase(const char* other) const {
+    int CompareNoCase(const char* other) const
+    {
         std::string a = m_data, b(other ? other : "");
         for (auto& c : a) c = (char)tolower((unsigned char)c);
         for (auto& c : b) c = (char)tolower((unsigned char)c);
@@ -420,19 +452,33 @@ public:
     // --- conversions / operators ----------------------------------------
     operator const char*() const { return m_data.c_str(); }
 
-    CString& operator+=(const CString& other) { m_data += other.m_data; return *this; }
-    CString& operator+=(const char* s) { if (s) m_data += s; return *this; }
-    CString& operator+=(char c) { m_data += c; return *this; }
+    CString& operator+=(const CString& other)
+    {
+        m_data += other.m_data;
+        return *this;
+    }
+    CString& operator+=(const char* s)
+    {
+        if (s) m_data += s;
+        return *this;
+    }
+    CString& operator+=(char c)
+    {
+        m_data += c;
+        return *this;
+    }
 
     const std::string& str() const { return m_data; }
 
 private:
-    void TrimLeftInPlace() {
+    void TrimLeftInPlace()
+    {
         size_t i = 0;
         while (i < m_data.size() && std::isspace((unsigned char)m_data[i])) i++;
         m_data.erase(0, i);
     }
-    void TrimRightInPlace() {
+    void TrimRightInPlace()
+    {
         size_t n = m_data.size();
         while (n > 0 && std::isspace((unsigned char)m_data[n - 1])) n--;
         m_data.erase(n);
@@ -447,7 +493,8 @@ private:
     static T ConvertArg(T v) { return v; }
 
     template <typename... Args>
-    static std::string FormatToString(const char* fmt, Args... args) {
+    static std::string FormatToString(const char* fmt, Args... args)
+    {
         int size = std::snprintf(nullptr, 0, fmt, args...);
         if (size < 0) return std::string();
         std::vector<char> buf((size_t)size + 1);
@@ -475,8 +522,12 @@ inline bool operator<(const CString& a, const CString& b) { return a.str() < b.s
 // GDI-ish minimal shims: CPoint / CRect / CPen / CBitmap / CBrush
 // ---------------------------------------------------------------------------
 
-struct POINT { int x, y; };
-struct RECT { int left, top, right, bottom; };
+struct POINT {
+    int x, y;
+};
+struct RECT {
+    int left, top, right, bottom;
+};
 typedef RECT* LPRECT;
 typedef const RECT* LPCRECT;
 
@@ -498,20 +549,38 @@ public:
     CRect(CPoint tl, CPoint br) : RECT{ tl.x, tl.y, br.x, br.y } {}
     BOOL PtInRect(CPoint p) const { return p.x >= left && p.x < right && p.y >= top && p.y < bottom; }
     BOOL IsRectEmpty() const { return right <= left || bottom <= top; }
-    void OffsetRect(int dx, int dy) { left += dx; right += dx; top += dy; bottom += dy; }
-    void InflateRect(int dx, int dy) { left -= dx; right += dx; top -= dy; bottom += dy; }
+    void OffsetRect(int dx, int dy)
+    {
+        left += dx;
+        right += dx;
+        top += dy;
+        bottom += dy;
+    }
+    void InflateRect(int dx, int dy)
+    {
+        left -= dx;
+        right += dx;
+        top -= dy;
+        bottom += dy;
+    }
     operator LPRECT() { return this; }
     operator LPCRECT() const { return this; }
-    void SetRect(int l, int t, int r, int b) { left = l; top = t; right = r; bottom = b; }
+    void SetRect(int l, int t, int r, int b)
+    {
+        left = l;
+        top = t;
+        right = r;
+        bottom = b;
+    }
     int Width() const { return right - left; }
     int Height() const { return bottom - top; }
     CPoint TopLeft() const { return CPoint(left, top); }
     CPoint BottomRight() const { return CPoint(right, bottom); }
 };
 
-#define PS_SOLID 0
-#define SRCCOPY  0x00CC0020L
-#define HALFTONE 4
+#define PS_SOLID     0
+#define SRCCOPY      0x00CC0020L
+#define HALFTONE     4
 #define COLORONCOLOR 3
 
 #ifndef MAKEINTRESOURCE
@@ -524,7 +593,8 @@ public:
 bool RmtFindResource(UINT id, const unsigned char** data, size_t* size);
 
 // Pixel format of CBitmap / CDC: 0xFFRRGGBB (QImage::Format_RGB32 compatible)
-inline uint32_t RmtPixel(COLORREF c) {
+inline uint32_t RmtPixel(COLORREF c)
+{
     return 0xFF000000u | ((c & 0xFFu) << 16) | (c & 0xFF00u) | ((c >> 16) & 0xFFu);
 }
 
@@ -532,8 +602,15 @@ class CPen {
 public:
     CPen() = default;
     CPen(int style, int width, COLORREF color) : m_style(style), m_width(width), m_color(color) {}
-    BOOL CreatePen(int style, int width, COLORREF color) { m_style = style; m_width = width; m_color = color; return TRUE; }
+    BOOL CreatePen(int style, int width, COLORREF color)
+    {
+        m_style = style;
+        m_width = width;
+        m_color = color;
+        return TRUE;
+    }
     COLORREF GetColor() const { return m_color; }
+
 private:
     int m_style = PS_SOLID;
     int m_width = 1;
@@ -548,20 +625,29 @@ public:
     CBitmap() = default;
 
     BOOL CreateCompatibleBitmap(CDC*, int w, int h) { return Create(w, h); }
-    BOOL Create(int w, int h) {
+    BOOL Create(int w, int h)
+    {
         if (w <= 0 || h <= 0) return FALSE;
-        m_w = w; m_h = h;
+        m_w = w;
+        m_h = h;
         m_px.assign((size_t)w * h, 0xFF000000u);
         return TRUE;
     }
     // Bitmap resource: MAKEINTRESOURCE(IDB_...)
     BOOL LoadBitmap(LPCTSTR name) { return LoadBitmap((UINT)(uintptr_t)name); }
-    BOOL LoadBitmap(UINT id) {
-        const unsigned char* data; size_t size;
+    BOOL LoadBitmap(UINT id)
+    {
+        const unsigned char* data;
+        size_t size;
         return RmtFindResource(id, &data, &size) && LoadBMP(data, size);
     }
-    BOOL LoadBMP(const unsigned char* data, size_t size);   // Windows .bmp, 1/4/8/24/32 bit
-    BOOL DeleteObject() { m_px.clear(); m_w = m_h = 0; return TRUE; }
+    BOOL LoadBMP(const unsigned char* data, size_t size); // Windows .bmp, 1/4/8/24/32 bit
+    BOOL DeleteObject()
+    {
+        m_px.clear();
+        m_w = m_h = 0;
+        return TRUE;
+    }
 
     int Width() const { return m_w; }
     int Height() const { return m_h; }
@@ -577,8 +663,13 @@ class CBrush {
 public:
     CBrush() = default;
     explicit CBrush(COLORREF c) : m_color(c) {}
-    BOOL CreateSolidBrush(COLORREF c) { m_color = c; return TRUE; }
+    BOOL CreateSolidBrush(COLORREF c)
+    {
+        m_color = c;
+        return TRUE;
+    }
     COLORREF GetColor() const { return m_color; }
+
 private:
     COLORREF m_color = 0;
 };
@@ -594,21 +685,41 @@ private:
 
 class CDC {
 public:
-    void* m_hDC = nullptr;                      // non-null once created
+    void* m_hDC = nullptr; // non-null once created
 
     virtual ~CDC() = default;
 
-    BOOL CreateCompatibleDC(CDC*) { m_hDC = this; return TRUE; }
-    BOOL DeleteDC() { m_hDC = nullptr; m_bitmap = nullptr; return TRUE; }
+    BOOL CreateCompatibleDC(CDC*)
+    {
+        m_hDC = this;
+        return TRUE;
+    }
+    BOOL DeleteDC()
+    {
+        m_hDC = nullptr;
+        m_bitmap = nullptr;
+        return TRUE;
+    }
 
-    CBitmap* SelectObject(CBitmap* bmp) { CBitmap* prev = m_bitmap; m_bitmap = bmp; return prev; }
-    CPen* SelectObject(CPen* pen) { CPen* prev = m_pen; m_pen = pen; return prev; }
+    CBitmap* SelectObject(CBitmap* bmp)
+    {
+        CBitmap* prev = m_bitmap;
+        m_bitmap = bmp;
+        return prev;
+    }
+    CPen* SelectObject(CPen* pen)
+    {
+        CPen* prev = m_pen;
+        m_pen = pen;
+        return prev;
+    }
     CBitmap* GetBitmap() const { return m_bitmap; }
 
     void FillSolidRect(int x, int y, int cx, int cy, COLORREF color) { Fill(x, y, x + cx, y + cy, RmtPixel(color)); }
     void FillSolidRect(const CRect& r, COLORREF color) { Fill(r.left, r.top, r.right, r.bottom, RmtPixel(color)); }
 
-    void FrameRect(const CRect& r, CBrush* brush) {
+    void FrameRect(const CRect& r, CBrush* brush)
+    {
         uint32_t c = RmtPixel(brush ? brush->GetColor() : 0);
         Fill(r.left, r.top, r.right, r.top + 1, c);
         Fill(r.left, r.bottom - 1, r.right, r.bottom, c);
@@ -616,16 +727,28 @@ public:
         Fill(r.right - 1, r.top, r.right, r.bottom, c);
     }
 
-    CPoint MoveTo(int x, int y) { CPoint prev(m_curX, m_curY); m_curX = x; m_curY = y; return prev; }
+    CPoint MoveTo(int x, int y)
+    {
+        CPoint prev(m_curX, m_curY);
+        m_curX = x;
+        m_curY = y;
+        return prev;
+    }
     BOOL LineTo(int x, int y);
 
     BOOL BitBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, DWORD rop);
     BOOL StretchBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, int ws, int hs, DWORD rop);
-    int SetStretchBltMode(int mode) { int prev = m_stretchMode; m_stretchMode = mode; return prev; }
+    int SetStretchBltMode(int mode)
+    {
+        int prev = m_stretchMode;
+        m_stretchMode = mode;
+        return prev;
+    }
 
 private:
     void Fill(int l, int t, int r, int b, uint32_t c);
-    void Plot(int x, int y, uint32_t c) {
+    void Plot(int x, int y, uint32_t c)
+    {
         if (m_bitmap && x >= 0 && y >= 0 && x < m_bitmap->Width() && y < m_bitmap->Height())
             m_bitmap->Bits()[(size_t)y * m_bitmap->Width() + x] = c;
     }
@@ -645,7 +768,7 @@ private:
 
 struct CDataExchange;
 struct tagMSG;
-typedef struct tagMSG MSG;                  // as <windows.h> and qcoreapplication.h
+typedef struct tagMSG MSG; // as <windows.h> and qcoreapplication.h
 struct CREATESTRUCT;
 typedef CREATESTRUCT* LPCREATESTRUCT;
 struct MINMAXINFO;
@@ -670,10 +793,10 @@ struct IRmtHost {
     virtual CDC* GetDC(CWnd* wnd) = 0;
     virtual UINT_PTR SetTimer(CWnd* wnd, UINT_PTR id, UINT ms) = 0;
     virtual BOOL KillTimer(CWnd* wnd, UINT_PTR id) = 0;
-    virtual void PostCommand(UINT id) = 0;                  // WM_COMMAND
-    virtual void Close() = 0;                               // WM_CLOSE
+    virtual void PostCommand(UINT id) = 0; // WM_COMMAND
+    virtual void Close() = 0;              // WM_CLOSE
     virtual int MessageBox(const char* text, const char* caption, UINT type) = 0;
-    virtual HCURSOR LoadCursor(UINT id) = 0;                // IDC_* of resource.h, or system IDC_ARROW/IDC_WAIT
+    virtual HCURSOR LoadCursor(UINT id) = 0; // IDC_* of resource.h, or system IDC_ARROW/IDC_WAIT
     virtual void SetCursor(HCURSOR cursor) = 0;
     virtual short GetKeyState(int vk) = 0;
     virtual UINT MapVirtualKeyToChar(UINT vk) = 0;
@@ -713,7 +836,11 @@ public:
     virtual void Enable(BOOL on = TRUE) { m_bEnabled = on; }
     virtual void SetCheck(int check = 1) { m_nCheck = check; }
     virtual void SetRadio(BOOL on = TRUE) { m_nCheck = on ? 1 : 0; }
-    virtual void SetText(LPCTSTR text) { m_strText = text; m_bTextSet = true; }
+    virtual void SetText(LPCTSTR text)
+    {
+        m_strText = text;
+        m_bTextSet = true;
+    }
 };
 
 class CCmdTarget;
@@ -721,8 +848,8 @@ typedef void (CCmdTarget::*RmtCmdFn)();
 typedef void (CCmdTarget::*RmtUpdFn)(CCmdUI*);
 struct RmtMsgEntry {
     UINT id;
-    RmtCmdFn cmd;           // ON_COMMAND
-    RmtUpdFn upd;           // ON_UPDATE_COMMAND_UI
+    RmtCmdFn cmd; // ON_COMMAND
+    RmtUpdFn upd; // ON_UPDATE_COMMAND_UI
 };
 
 class CCmdTarget {
@@ -731,18 +858,27 @@ public:
     virtual const RmtMsgEntry* GetMessageEntries() const { return nullptr; }
 
     // run the ON_COMMAND handler of id; FALSE if there is none
-    BOOL OnCmdMsg(UINT id) {
+    BOOL OnCmdMsg(UINT id)
+    {
         for (const RmtMsgEntry* e = GetMessageEntries(); e && e->id; e++)
-            if (e->id == id && e->cmd) { (this->*(e->cmd))(); return TRUE; }
+            if (e->id == id && e->cmd) {
+                (this->*(e->cmd))();
+                return TRUE;
+            }
         return FALSE;
     }
     // run the ON_UPDATE_COMMAND_UI handler of ui->m_nID; FALSE if there is none
-    BOOL OnUpdateCmdUI(CCmdUI* ui) {
+    BOOL OnUpdateCmdUI(CCmdUI* ui)
+    {
         for (const RmtMsgEntry* e = GetMessageEntries(); e && e->id; e++)
-            if (e->id == ui->m_nID && e->upd) { (this->*(e->upd))(ui); return TRUE; }
+            if (e->id == ui->m_nID && e->upd) {
+                (this->*(e->upd))(ui);
+                return TRUE;
+            }
         return FALSE;
     }
-    BOOL HasCommand(UINT id) const {
+    BOOL HasCommand(UINT id) const
+    {
         for (const RmtMsgEntry* e = GetMessageEntries(); e && e->id; e++)
             if (e->id == id && e->cmd) return TRUE;
         return FALSE;
@@ -750,15 +886,22 @@ public:
 };
 
 #define DECLARE_MESSAGE_MAP() \
-    public: const RmtMsgEntry* GetMessageEntries() const override;
-#define BEGIN_MESSAGE_MAP(theClass, baseClass) \
-    const RmtMsgEntry* theClass::GetMessageEntries() const { \
-        using ThisClass [[maybe_unused]] = theClass; \
+public:                       \
+    const RmtMsgEntry* GetMessageEntries() const override;
+#define BEGIN_MESSAGE_MAP(theClass, baseClass)             \
+    const RmtMsgEntry* theClass::GetMessageEntries() const \
+    {                                                      \
+        using ThisClass [[maybe_unused]] = theClass;       \
         static const RmtMsgEntry entries[] = {
-#define END_MESSAGE_MAP() \
-            { 0, nullptr, nullptr } }; \
-        return entries; }
-#define ON_COMMAND(id, fn) { (UINT)(id), static_cast<RmtCmdFn>(&ThisClass::fn), nullptr },
+#define END_MESSAGE_MAP()   \
+    {                       \
+        0, nullptr, nullptr \
+    }                       \
+    }                       \
+    ;                       \
+    return entries;         \
+    }
+#define ON_COMMAND(id, fn)           { (UINT)(id), static_cast<RmtCmdFn>(&ThisClass::fn), nullptr },
 #define ON_UPDATE_COMMAND_UI(id, fn) { (UINT)(id), nullptr, static_cast<RmtUpdFn>(&ThisClass::fn) },
 #define ON_CBN_SELCHANGE(id, fn)
 #define ON_CBN_CLOSEUP(id, fn)
@@ -797,22 +940,37 @@ public:
     HWND m_hWnd = nullptr;
     virtual ~CWnd() = default;
 
-    void GetClientRect(LPRECT r) const { if (g_rmtHost) g_rmtHost->GetClientRect(this, r); else *r = RECT{ 0, 0, 0, 0 }; }
-    void Invalidate(BOOL = TRUE) { if (g_rmtHost) g_rmtHost->Invalidate(this); }
+    void GetClientRect(LPRECT r) const
+    {
+        if (g_rmtHost)
+            g_rmtHost->GetClientRect(this, r);
+        else
+            *r = RECT{ 0, 0, 0, 0 };
+    }
+    void Invalidate(BOOL = TRUE)
+    {
+        if (g_rmtHost) g_rmtHost->Invalidate(this);
+    }
     void UpdateWindow() {}
     CDC* GetDC() { return g_rmtHost ? g_rmtHost->GetDC(this) : nullptr; }
     int ReleaseDC(CDC*) { return 1; }
     UINT_PTR SetTimer(UINT_PTR id, UINT ms, void*) { return g_rmtHost ? g_rmtHost->SetTimer(this, id, ms) : 0; }
     BOOL KillTimer(UINT_PTR id) { return g_rmtHost ? g_rmtHost->KillTimer(this, id) : FALSE; }
-    BOOL PostMessage(UINT msg, WPARAM wParam = 0, LPARAM = 0) {
+    BOOL PostMessage(UINT msg, WPARAM wParam = 0, LPARAM = 0)
+    {
         if (!g_rmtHost) return FALSE;
-        if (msg == WM_COMMAND) g_rmtHost->PostCommand((UINT)(wParam & 0xFFFF));
-        else if (msg == WM_CLOSE) g_rmtHost->Close();
+        if (msg == WM_COMMAND)
+            g_rmtHost->PostCommand((UINT)(wParam & 0xFFFF));
+        else if (msg == WM_CLOSE)
+            g_rmtHost->Close();
         return TRUE;
     }
     LRESULT SendMessage(UINT msg, WPARAM wParam = 0, LPARAM lParam = 0) { return PostMessage(msg, wParam, lParam); }
     int MessageBox(LPCTSTR text, LPCTSTR caption = nullptr, UINT type = 0);
-    void SetWindowText(LPCTSTR text) { if (g_rmtHost) g_rmtHost->SetWindowText(this, text); }
+    void SetWindowText(LPCTSTR text)
+    {
+        if (g_rmtHost) g_rmtHost->SetWindowText(this, text);
+    }
     CWnd* SetFocus() { return this; }
     BOOL GetSafeHwnd() const { return m_hWnd != nullptr; }
     BOOL IsWindowVisible() const { return TRUE; }
@@ -843,13 +1001,20 @@ class CToolBar : public CControlBar {};
 class CReBar : public CControlBar {};
 class CStatusBar : public CControlBar {
 public:
-    BOOL SetPaneText(int pane, LPCTSTR text, BOOL = TRUE) { if (g_rmtHost) g_rmtHost->SetStatusText(pane, text); return TRUE; }
+    BOOL SetPaneText(int pane, LPCTSTR text, BOOL = TRUE)
+    {
+        if (g_rmtHost) g_rmtHost->SetStatusText(pane, text);
+        return TRUE;
+    }
 };
 
 class CFrameWnd : public CWnd {
 public:
     virtual ~CFrameWnd() = default;
-    void ShowControlBar(CControlBar* bar, BOOL show, BOOL /*delay*/) { if (g_rmtHost) g_rmtHost->ShowControlBar(bar, show); }
+    void ShowControlBar(CControlBar* bar, BOOL show, BOOL /*delay*/)
+    {
+        if (g_rmtHost) g_rmtHost->ShowControlBar(bar, show);
+    }
 };
 
 class CDocument : public CCmdTarget {
@@ -860,7 +1025,11 @@ public:
     const CString& GetTitle() const { return m_strTitle; }
     void SetModifiedFlag(BOOL modified = TRUE) { m_bModified = modified; }
     BOOL IsModified() const { return m_bModified; }
-    void UpdateAllViews(void*, LPARAM = 0, void* = nullptr) { if (g_rmtHost) g_rmtHost->Invalidate(nullptr); }
+    void UpdateAllViews(void*, LPARAM = 0, void* = nullptr)
+    {
+        if (g_rmtHost) g_rmtHost->Invalidate(nullptr);
+    }
+
 private:
     CString m_strTitle;
     BOOL m_bModified = FALSE;
@@ -914,7 +1083,7 @@ public:
     explicit CDialog(UINT nIDTemplate, CWnd* /*pParentWnd*/ = nullptr) : m_nIDTemplate(nIDTemplate) {}
     virtual ~CDialog() = default;
 
-    UINT m_nIDTemplate = 0;         // IDD_* of the dialog
+    UINT m_nIDTemplate = 0; // IDD_* of the dialog
 
     virtual INT_PTR DoModal();
     virtual void DoDataExchange(CDataExchange*) {}
@@ -939,8 +1108,8 @@ struct OPENFILENAME_STUB {
     int nFilterIndex = 0;
 };
 
-#define OFN_HIDEREADONLY      0x00000004L
-#define OFN_OVERWRITEPROMPT   0x00000002L
+#define OFN_HIDEREADONLY    0x00000004L
+#define OFN_OVERWRITEPROMPT 0x00000002L
 
 class CFileDialog : public CDialog {
 public:
@@ -950,13 +1119,16 @@ public:
                 DWORD dwFlags = 0,
                 LPCTSTR lpszFilter = nullptr,
                 CWnd* pParentWnd = nullptr)
-        : m_bOpen(bOpenFileDialog), m_fileName(lpszFileName), m_flags(dwFlags), m_filter(lpszFilter) {
-        (void)lpszDefExt; (void)pParentWnd;
+        : m_bOpen(bOpenFileDialog), m_fileName(lpszFileName), m_flags(dwFlags), m_filter(lpszFilter)
+    {
+        (void)lpszDefExt;
+        (void)pParentWnd;
     }
 
     INT_PTR DoModal() override;
     CString GetPathName() const { return m_path; }
-    CString GetFileName() const {
+    CString GetFileName() const
+    {
         int pos = m_path.ReverseFind('/');
         if (pos < 0) pos = m_path.ReverseFind('\\');
         return pos < 0 ? m_path : m_path.Mid(pos + 1);
@@ -984,46 +1156,58 @@ struct CFileStatus {
 
 class CFile {
 public:
-    enum OpenFlags { modeRead = 0, modeWrite = 1, modeReadWrite = 2, modeCreate = 0x1000 };
+    enum OpenFlags { modeRead = 0,
+                     modeWrite = 1,
+                     modeReadWrite = 2,
+                     modeCreate = 0x1000 };
 
     CFile() = default;
-    CFile(const char* path, UINT mode) : m_path(path ? path : "") {
+    CFile(const char* path, UINT mode) : m_path(path ? path : "")
+    {
         auto flags = (mode & modeWrite) ? (std::ios::in | std::ios::out | std::ios::binary | std::ios::trunc)
-                                         : (std::ios::in | std::ios::binary);
+                                        : (std::ios::in | std::ios::binary);
         m_stream.open(m_path, flags);
     }
     ~CFile() { Close(); }
 
-    static BOOL GetStatus(const char* path, CFileStatus& status) {
+    static BOOL GetStatus(const char* path, CFileStatus& status)
+    {
         std::error_code ec;
         auto sz = std::filesystem::file_size(path ? path : "", ec);
         if (ec) return FALSE;
         status.m_size = (long)sz;
         return TRUE;
     }
-    static BOOL Remove(const char* path) {
+    static BOOL Remove(const char* path)
+    {
         std::error_code ec;
         return std::filesystem::remove(path ? path : "", ec) ? TRUE : FALSE;
     }
 
-    UINT Read(void* buffer, UINT count) {
+    UINT Read(void* buffer, UINT count)
+    {
         if (!m_stream.is_open()) return 0;
         m_stream.read((char*)buffer, count);
         return (UINT)m_stream.gcount();
     }
 
-    long GetLength() const {
+    long GetLength() const
+    {
         std::error_code ec;
         auto sz = std::filesystem::file_size(m_path, ec);
         return ec ? 0 : (long)sz;
     }
 
-    CString GetFileName() const {
+    CString GetFileName() const
+    {
         std::filesystem::path p(m_path);
         return CString(p.filename().string());
     }
 
-    void Close() { if (m_stream.is_open()) m_stream.close(); }
+    void Close()
+    {
+        if (m_stream.is_open()) m_stream.close();
+    }
 
 private:
     std::string m_path;
@@ -1035,6 +1219,7 @@ public:
     void SetSize(long size) { m_data.resize(size > 0 ? (size_t)size : 0); }
     byte* GetData() { return m_data.empty() ? nullptr : m_data.data(); }
     long GetSize() const { return (long)m_data.size(); }
+
 private:
     std::vector<byte> m_data;
 };
@@ -1053,12 +1238,14 @@ public:
     CWnd* GetMainWnd() { return g_rmtHost ? (CWnd*)g_rmtHost->GetMainWnd() : nullptr; }
 };
 
-inline CWinApp* AfxGetApp() {
+inline CWinApp* AfxGetApp()
+{
     static CWinApp s_app;
     return &s_app;
 }
 inline CWnd* AfxGetMainWnd() { return g_rmtHost ? (CWnd*)g_rmtHost->GetMainWnd() : nullptr; }
-inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0) {
+inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0)
+{
     if (g_rmtHost) return g_rmtHost->MessageBox(text, "RMT", type);
     std::fprintf(stderr, "[AfxMessageBox] %s\n", text ? text : "");
     (void)type;
@@ -1071,7 +1258,7 @@ inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0) {
 class CRmtApp {
 public:
     CString GetVersionAndBuild() const;
-    void OpenOnlineHelp();          // frontend (opens the help URL)
+    void OpenOnlineHelp(); // frontend (opens the help URL)
 };
 extern CRmtApp g_app;
 
@@ -1082,14 +1269,18 @@ extern CRmtApp g_app;
 // behaviour is not runtime-critical for this build.
 // ---------------------------------------------------------------------------
 
-inline int MessageBox(HWND, const char* text, const char* caption, UINT type) {
+inline int MessageBox(HWND, const char* text, const char* caption, UINT type)
+{
     if (g_rmtHost) return g_rmtHost->MessageBox(text, caption, type);
     std::fprintf(stderr, "[MessageBox] %s: %s\n", caption ? caption : "", text ? text : "");
     return (type & 0x0F) == MB_YESNO || (type & 0x0F) == MB_YESNOCANCEL ? IDYES : IDOK;
 }
 inline int CWnd::MessageBox(LPCTSTR text, LPCTSTR caption, UINT type) { return ::MessageBox(m_hWnd, text, caption, type); }
 
-inline void GetWindowRect(HWND, CRect* rect) { if (rect) *rect = CRect(0, 0, 0, 0); }
+inline void GetWindowRect(HWND, CRect* rect)
+{
+    if (rect) *rect = CRect(0, 0, 0, 0);
+}
 
 inline HMODULE LoadLibrary(const char*) { return nullptr; }
 inline void* GetProcAddress(HMODULE, const char*) { return nullptr; }
@@ -1098,21 +1289,25 @@ inline BOOL FreeLibrary(HMODULE) { return TRUE; }
 inline DWORD GetLastError() { return 0; }
 inline DWORD FormatMessage(DWORD, LPCVOID, DWORD, DWORD, LPTSTR, DWORD, void*) { return 0; }
 inline void LocalFree(void*) {}
-inline HANDLE ShellExecute(HWND, const char*, const char*, const char*, const char*, int) {
+inline HANDLE ShellExecute(HWND, const char*, const char*, const char*, const char*, int)
+{
     // Always report "success" (handle value > 32) so callers never take the
     // Win32-error-reporting branch (FormatMessage/GetLastError) which is not
     // meaningfully implementable here.
     return (HANDLE)(intptr_t)33;
 }
-#define SW_SHOWNORMAL 1
+#define SW_SHOWNORMAL                  1
 #define FORMAT_MESSAGE_ALLOCATE_BUFFER 0x00000100
 #define FORMAT_MESSAGE_FROM_SYSTEM     0x00001000
 #define FORMAT_MESSAGE_IGNORE_INSERTS  0x00000200
-#define MAKELANGID(p, s) 0
-#define LANG_NEUTRAL 0
-#define SUBLANG_DEFAULT 0
+#define MAKELANGID(p, s)               0
+#define LANG_NEUTRAL                   0
+#define SUBLANG_DEFAULT                0
 
-inline void ZeroMemory(void* dst, size_t size) { std::memset(dst, 0, size); }
+inline void ZeroMemory(void* dst, size_t size)
+{
+    std::memset(dst, 0, size);
+}
 
 // Sleep() / GetTickCount()
 void Sleep(DWORD ms);
@@ -1121,32 +1316,49 @@ void Sleep(DWORD ms);
 // code of RmtView.cpp, over the RtMidi input ports (RmtMidiRt.cpp, which is
 // also the MIDI IN of CRmtMidi). szPname is longer than the 32 characters of
 // Windows: ALSA port names often are.
-struct MIDIINCAPS { WORD wMid; WORD wPid; UINT vDriverVersion; char szPname[256]; DWORD dwSupport; };
-#define MMSYSERR_NOERROR 0
+struct MIDIINCAPS {
+    WORD wMid;
+    WORD wPid;
+    UINT vDriverVersion;
+    char szPname[256];
+    DWORD dwSupport;
+};
+#define MMSYSERR_NOERROR     0
 #define MMSYSERR_BADDEVICEID 2
 UINT midiInGetNumDevs();
 UINT midiInGetDevCaps(UINT_PTR id, MIDIINCAPS* caps, UINT size);
 
-#define LOWORD(l) ((WORD)((DWORD_PTR)(l) & 0xffff))
+#define LOWORD(l) ((WORD)((DWORD_PTR)(l)&0xffff))
 #define HIWORD(l) ((WORD)(((DWORD_PTR)(l) >> 16) & 0xffff))
 
 #define IDC_ARROW ((LPCTSTR)(intptr_t)32512)
-#define IDC_WAIT ((LPCTSTR)(intptr_t)32514)
-inline HCURSOR LoadCursor(HINSTANCE, LPCTSTR id) { return g_rmtHost ? g_rmtHost->LoadCursor((UINT)(uintptr_t)id) : nullptr; }
-inline HCURSOR SetCursor(HCURSOR c) { if (g_rmtHost) g_rmtHost->SetCursor(c); return nullptr; }
+#define IDC_WAIT  ((LPCTSTR)(intptr_t)32514)
+inline HCURSOR LoadCursor(HINSTANCE, LPCTSTR id)
+{
+    return g_rmtHost ? g_rmtHost->LoadCursor((UINT)(uintptr_t)id) : nullptr;
+}
+inline HCURSOR SetCursor(HCURSOR c)
+{
+    if (g_rmtHost) g_rmtHost->SetCursor(c);
+    return nullptr;
+}
 inline BOOL EnableWindow(HWND, BOOL) { return TRUE; }
 inline BOOL UpdateWindow(HWND) { return TRUE; }
 inline short GetKeyState(int vk) { return g_rmtHost ? g_rmtHost->GetKeyState(vk) : 0; }
 inline short GetAsyncKeyState(int vk) { return GetKeyState(vk); }
 
 #define MAPVK_VK_TO_CHAR 2
-inline UINT MapVirtualKeyEx(UINT vk, UINT type, HANDLE) { return g_rmtHost && type == MAPVK_VK_TO_CHAR ? g_rmtHost->MapVirtualKeyToChar(vk) : 0; }
+inline UINT MapVirtualKeyEx(UINT vk, UINT type, HANDLE)
+{
+    return g_rmtHost && type == MAPVK_VK_TO_CHAR ? g_rmtHost->MapVirtualKeyToChar(vk) : 0;
+}
 
 inline void OutputDebugString(const char* s) { std::fprintf(stderr, "%s", s ? s : ""); }
 
 inline int _strcmpi(const char* a, const char* b) { return strcasecmp(a, b); }
 
-inline BOOL DeleteFile(const char* path) {
+inline BOOL DeleteFile(const char* path)
+{
     std::error_code ec;
     return std::filesystem::remove(path ? path : "", ec) ? TRUE : FALSE;
 }
@@ -1163,7 +1375,8 @@ public:
 
     static CTime GetCurrentTime() { return CTime(std::time(nullptr)); }
 
-    CString Format(const char* fmt) const {
+    CString Format(const char* fmt) const
+    {
         char buf[128];
         std::tm tmVal{};
 #if defined(_WIN32)
@@ -1186,7 +1399,7 @@ private:
 // simply never firing the callback is safe for a non-interactive build.
 // ---------------------------------------------------------------------------
 
-typedef void (CALLBACK* LPTIMECALLBACK)(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR);
+typedef void(CALLBACK* LPTIMECALLBACK)(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR);
 #define TIME_PERIODIC 1
 #define TIME_ONESHOT  0
 // multimedia timers on a thread (MfcAudio.cpp)
@@ -1199,13 +1412,13 @@ UINT timeKillEvent(UINT id);
 // ---------------------------------------------------------------------------
 
 struct WAVEFORMATEX {
-    WORD  wFormatTag = 0;
-    WORD  nChannels = 0;
+    WORD wFormatTag = 0;
+    WORD nChannels = 0;
     DWORD nSamplesPerSec = 0;
     DWORD nAvgBytesPerSec = 0;
-    WORD  nBlockAlign = 0;
-    WORD  wBitsPerSample = 0;
-    WORD  cbSize = 0;
+    WORD nBlockAlign = 0;
+    WORD wBitsPerSample = 0;
+    WORD cbSize = 0;
 };
 #define WAVE_FORMAT_PCM 1
 
@@ -1222,17 +1435,17 @@ struct DSBCAPS {
     DWORD dwBufferBytes = 0;
 };
 
-#define DS_OK 0L
-#define DS_ERR_GENERIC (-1L)
-#define DSSCL_PRIORITY 2
-#define DSBCAPS_PRIMARYBUFFER 1
+#define DS_OK                       0L
+#define DS_ERR_GENERIC              (-1L)
+#define DSSCL_PRIORITY              2
+#define DSBCAPS_PRIMARYBUFFER       1
 #define DSBCAPS_GETCURRENTPOSITION2 0x00010000
-#define DSBCAPS_LOCHARDWARE 0x00000004
-#define DSBCAPS_LOCSOFTWARE 0x00000008
-#define DSBCAPS_GLOBALFOCUS 0x00008000
-#define DSBCAPS_STICKYFOCUS 0x00004000
-#define DSBLOCK_FROMWRITECURSOR 0x00000001
-#define DSBPLAY_LOOPING 0x00000001
+#define DSBCAPS_LOCHARDWARE         0x00000004
+#define DSBCAPS_LOCSOFTWARE         0x00000008
+#define DSBCAPS_GLOBALFOCUS         0x00008000
+#define DSBCAPS_STICKYFOCUS         0x00004000
+#define DSBLOCK_FROMWRITECURSOR     0x00000001
+#define DSBPLAY_LOOPING             0x00000001
 
 // DirectSound outside Windows (MfcAudio.cpp): a secondary buffer is a ring
 // that PortAudio plays (when available and g_rmtAudioOutput is true), with
@@ -1246,9 +1459,18 @@ class IDirectSoundBuffer {
 public:
     IDirectSoundBuffer(DWORD bytes, const WAVEFORMATEX* format);
     ~IDirectSoundBuffer();
-    HRESULT SetFormat(const WAVEFORMATEX* format) { if (format) m_format = *format; return DS_OK; }
-    HRESULT GetCaps(DSBCAPS* caps) { if (caps) caps->dwBufferBytes = (DWORD)m_data.size(); return DS_OK; }
-    HRESULT Lock(DWORD offset, DWORD bytes, void** ppData1, DWORD* pSize1, void** ppData2, DWORD* pSize2, DWORD) {
+    HRESULT SetFormat(const WAVEFORMATEX* format)
+    {
+        if (format) m_format = *format;
+        return DS_OK;
+    }
+    HRESULT GetCaps(DSBCAPS* caps)
+    {
+        if (caps) caps->dwBufferBytes = (DWORD)m_data.size();
+        return DS_OK;
+    }
+    HRESULT Lock(DWORD offset, DWORD bytes, void** ppData1, DWORD* pSize1, void** ppData2, DWORD* pSize2, DWORD)
+    {
         DWORD size = (DWORD)m_data.size();
         if (ppData2) *ppData2 = nullptr;
         if (pSize2) *pSize2 = 0;
@@ -1258,20 +1480,27 @@ public:
         DWORD first = std::min(bytes, size - offset);
         *ppData1 = m_data.data() + offset;
         *pSize1 = first;
-        if (bytes > first && ppData2 && pSize2) { *ppData2 = m_data.data(); *pSize2 = bytes - first; }
+        if (bytes > first && ppData2 && pSize2) {
+            *ppData2 = m_data.data();
+            *pSize2 = bytes - first;
+        }
         return DS_OK;
     }
     HRESULT Unlock(void* p1, DWORD s1, void* p2, DWORD s2);
     HRESULT Play(DWORD, DWORD, DWORD flags);
     HRESULT Stop();
     HRESULT GetCurrentPosition(DWORD* playCursor, DWORD* writeCursor);
-    HRESULT Release() { delete this; return DS_OK; }
+    HRESULT Release()
+    {
+        delete this;
+        return DS_OK;
+    }
 
     // PortAudio side
     std::vector<unsigned char> m_data;
     WAVEFORMATEX m_format;
-    std::atomic<DWORD> m_play{ 0 };         // byte offset the device reads next
-    DWORD m_cursor = 0;                     // instant mode: end of the last write
+    std::atomic<DWORD> m_play{ 0 }; // byte offset the device reads next
+    DWORD m_cursor = 0;             // instant mode: end of the last write
 private:
     RmtAudioStream* m_stream = nullptr;
 };
@@ -1280,7 +1509,8 @@ typedef IDirectSoundBuffer* LPDIRECTSOUNDBUFFER;
 class IDirectSound {
 public:
     HRESULT SetCooperativeLevel(HWND, DWORD) { return DS_OK; }
-    HRESULT CreateSoundBuffer(const DSBUFFERDESC* desc, LPDIRECTSOUNDBUFFER* buffer, void*) {
+    HRESULT CreateSoundBuffer(const DSBUFFERDESC* desc, LPDIRECTSOUNDBUFFER* buffer, void*)
+    {
         if (!buffer) return DS_ERR_GENERIC;
         *buffer = new IDirectSoundBuffer(desc ? desc->dwBufferBytes : 0, desc ? desc->lpwfxFormat : nullptr);
         return DS_OK;
@@ -1289,10 +1519,10 @@ public:
 };
 typedef IDirectSound* LPDIRECTSOUND;
 
-inline HRESULT DirectSoundCreate(void*, LPDIRECTSOUND* ds, void*) {
+inline HRESULT DirectSoundCreate(void*, LPDIRECTSOUND* ds, void*)
+{
     static IDirectSound device;
     if (!ds) return DS_ERR_GENERIC;
     *ds = &device;
     return DS_OK;
 }
-

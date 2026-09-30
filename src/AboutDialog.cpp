@@ -28,12 +28,14 @@ void CAboutDialog::DoDataExchange(CDataExchange* pDX)
     //}}AFX_DATA_MAP
 }
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CAboutDialog, CDialog)
     //{{AFX_MSG_MAP(CAboutDialog)
         // No message handlers
     //}}AFX_MSG_MAP
     ON_STN_CLICKED(IDC_RMT_REPOSITORY, &CAboutDialog::OnStnClickedRmtRepository)
 END_MESSAGE_MAP()
+// clang-format on
 
 void CAboutDialog::Show(const CString& about6502, const CString& aboutPokey)
 {
@@ -53,5 +55,3 @@ void CAboutDialog::OnStnClickedRmtRepository()
 {
     CShell::OpenFile(m_rmtrepository);
 }
-
-

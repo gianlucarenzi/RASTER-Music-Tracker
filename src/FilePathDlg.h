@@ -10,40 +10,38 @@
 /////////////////////////////////////////////////////////////////////////////
 // CFilePathDlg dialog
 
-class CFilePathDlg : public CDialog
-{
-// Construction
+class CFilePathDlg : public CDialog {
+    // Construction
 public:
-	CFilePathDlg(CWnd* pParent = NULL);   // standard constructor
+    CFilePathDlg(CWnd* pParent = NULL); // standard constructor
 
-	void ActiveIndex(int idx);
+    void ActiveIndex(int idx);
 
-// Dialog Data
-	//{{AFX_DATA(CFilePathDlg)
-	enum { IDD = IDD_FILEPATHDLG };
-	CListBox	m_drivelist;
-	CListBox	m_dirlist;
-	CString	m_path;
-	//}}AFX_DATA
+    // Dialog Data
+    //{{AFX_DATA(CFilePathDlg)
+    enum { IDD = IDD_FILEPATHDLG };
+    CListBox m_drivelist;
+    CListBox m_dirlist;
+    CString m_path;
+    //}}AFX_DATA
 
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CFilePathDlg)
-	protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
-
-// Implementation
+    // Overrides
+    // ClassWizard generated virtual function overrides
+    //{{AFX_VIRTUAL(CFilePathDlg)
 protected:
+    virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
+                                                     //}}AFX_VIRTUAL
 
-	// Generated message map functions
-	//{{AFX_MSG(CFilePathDlg)
-	virtual BOOL OnInitDialog();
-	afx_msg void OnDblclkDirlist();
-	afx_msg void OnDblclkDrivelist();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+    // Implementation
+protected:
+    // Generated message map functions
+    //{{AFX_MSG(CFilePathDlg)
+    virtual BOOL OnInitDialog();
+    afx_msg void OnDblclkDirlist();
+    afx_msg void OnDblclkDrivelist();
+    //}}AFX_MSG
+    DECLARE_MESSAGE_MAP()
 };
 
 //{{AFX_INSERT_LOCATION}}

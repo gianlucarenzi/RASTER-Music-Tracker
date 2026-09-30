@@ -32,8 +32,8 @@ static int PortAudioCallbackWrapper(
     void* userData)
 {
     // Call the static method implementation
-    return PortAudioBackend::AudioCallbackImpl(input, output, frameCount, 
-                                              timeInfo, statusFlags, userData);
+    return PortAudioBackend::AudioCallbackImpl(input, output, frameCount,
+                                               timeInfo, statusFlags, userData);
 }
 }
 
@@ -62,13 +62,10 @@ int PortAudioBackend::AudioCallbackImpl(
     size_t read_pos = self->m_read_pos;
     size_t write_pos = self->m_write_pos;
 
-    if (read_pos == write_pos)
-    {
+    if (read_pos == write_pos) {
         // Buffer underrun - output silence
         memset(out, 0, bytes_needed);
-    }
-    else if (read_pos < write_pos)
-    {
+    } else if (read_pos < write_pos) {
         // Simple case: data is contiguous
         size_t available = write_pos - read_pos;
         size_t to_copy = std::min(bytes_needed, available);
@@ -78,16 +75,13 @@ int PortAudioBackend::AudioCallbackImpl(
         // Pad with silence if not enough data
         if (to_copy < bytes_needed)
             memset(out + to_copy, 0, bytes_needed - to_copy);
-    }
-    else
-    {
+    } else {
         // Wrap-around case
         size_t part1 = self->BUFFER_SIZE - read_pos;
         size_t to_copy = std::min(bytes_needed, part1);
         memcpy(out, &self->m_buffer[read_pos], to_copy);
 
-        if (to_copy < bytes_needed)
-        {
+        if (to_copy < bytes_needed) {
             size_t remaining = bytes_needed - to_copy;
             size_t part2 = std::min(remaining, write_pos);
             memcpy(out + to_copy, self->m_buffer, part2);
@@ -98,9 +92,7 @@ int PortAudioBackend::AudioCallbackImpl(
                 memset(out + to_copy, 0, bytes_needed - to_copy);
 
             self->m_read_pos = part2;
-        }
-        else
-        {
+        } else {
             self->m_read_pos = (read_pos + to_copy) % self->BUFFER_SIZE;
         }
     }
@@ -120,8 +112,7 @@ PortAudioBackend::PortAudioBackend()
 PortAudioBackend::~PortAudioBackend()
 {
     Deinit();
-    if (m_buffer)
-    {
+    if (m_buffer) {
         delete[] m_buffer;
         m_buffer = nullptr;
     }
@@ -129,8 +120,7 @@ PortAudioBackend::~PortAudioBackend()
 
 bool PortAudioBackend::Init(const AudioFormat& format)
 {
-    if (!format.IsValid())
-    {
+    if (!format.IsValid()) {
         m_error_message = "Invalid audio format";
         return false;
     }
@@ -159,17 +149,14 @@ AudioFormat PortAudioBackend::GetFormat() const
 
 bool PortAudioBackend::Start()
 {
-    if (!m_is_initialized)
-    {
+    if (!m_is_initialized) {
         m_error_message = "Audio not initialized";
         return false;
     }
 
-    if (m_stream)
-    {
+    if (m_stream) {
         PaError err = Pa_StartStream((PaStream*)m_stream);
-        if (err != paNoError)
-        {
+        if (err != paNoError) {
             m_error_message = std::string("PortAudio start error: ") + Pa_GetErrorText(err);
             return false;
         }
@@ -183,8 +170,7 @@ void PortAudioBackend::Stop()
 {
     m_is_playing = false;
 
-    if (m_stream)
-    {
+    if (m_stream) {
         Pa_StopStream((PaStream*)m_stream);
     }
 }
@@ -207,13 +193,10 @@ size_t PortAudioBackend::Write(const void* data, size_t length)
     size_t write_pos = m_write_pos;
     const uint8_t* src = (const uint8_t*)data;
 
-    if (write_pos + length <= BUFFER_SIZE)
-    {
+    if (write_pos + length <= BUFFER_SIZE) {
         // Simple case: no wrap-around
         memcpy(&m_buffer[write_pos], src, length);
-    }
-    else
-    {
+    } else {
         // Wrap-around case
         size_t part1 = BUFFER_SIZE - write_pos;
         memcpy(&m_buffer[write_pos], src, part1);
@@ -256,15 +239,13 @@ bool PortAudioBackend::InitPortAudio()
 {
     // Initialize PortAudio
     PaError err = Pa_Initialize();
-    if (err != paNoError)
-    {
+    if (err != paNoError) {
         m_error_message = std::string("PortAudio init error: ") + Pa_GetErrorText(err);
         return false;
     }
 
     // Create output stream
-    if (!CreateStream(m_format))
-    {
+    if (!CreateStream(m_format)) {
         Pa_Terminate();
         return false;
     }
@@ -281,8 +262,7 @@ void PortAudioBackend::DeinitPortAudio()
     DestroyStream();
 
     PaError err = Pa_Terminate();
-    if (err != paNoError)
-    {
+    if (err != paNoError) {
         m_error_message = std::string("PortAudio terminate error: ") + Pa_GetErrorText(err);
     }
 
@@ -296,8 +276,7 @@ bool PortAudioBackend::CreateStream(const AudioFormat& format)
 {
     PaStreamParameters outputParams;
     outputParams.device = Pa_GetDefaultOutputDevice();
-    if (outputParams.device == paNoDevice)
-    {
+    if (outputParams.device == paNoDevice) {
         m_error_message = "No default output device found";
         return false;
     }
@@ -309,17 +288,15 @@ bool PortAudioBackend::CreateStream(const AudioFormat& format)
 
     PaError err = Pa_OpenStream(
         (PaStream**)&m_stream,
-        nullptr,  // No input
+        nullptr, // No input
         &outputParams,
         format.sample_rate,
         PORTAUDIO_FRAMES_PER_BUFFER,
         paClipOff,
         PortAudioCallbackWrapper,
-        this
-    );
+        this);
 
-    if (err != paNoError)
-    {
+    if (err != paNoError) {
         m_error_message = std::string("PortAudio open stream error: ") + Pa_GetErrorText(err);
         m_stream = nullptr;
         return false;
@@ -330,8 +307,7 @@ bool PortAudioBackend::CreateStream(const AudioFormat& format)
 
 void PortAudioBackend::DestroyStream()
 {
-    if (m_stream)
-    {
+    if (m_stream) {
         Pa_CloseStream((PaStream*)m_stream);
         m_stream = nullptr;
     }

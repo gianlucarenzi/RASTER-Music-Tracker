@@ -9,9 +9,9 @@
 #endif
 
 #ifdef _WIN32
-    #define PREFER_DIRECTSOUND 1
+#define PREFER_DIRECTSOUND 1
 #else
-    #define PREFER_DIRECTSOUND 0
+#define PREFER_DIRECTSOUND 0
 #endif
 
 std::unique_ptr<IAudioBackend> AudioBackendFactory::Create()

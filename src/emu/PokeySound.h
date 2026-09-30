@@ -22,9 +22,9 @@ class PokeyChip {
 public:
     PokeyChip() { Reset(); }
     void Reset();
-    void Write(int reg, uint8_t value);         // 0..0x0F
-    int Cycle();                                // one machine cycle, returns the output level 0..60
-    uint8_t Random() const;                     // RANDOM ($D20A)
+    void Write(int reg, uint8_t value); // 0..0x0F
+    int Cycle();                        // one machine cycle, returns the output level 0..60
+    uint8_t Random() const;             // RANDOM ($D20A)
 
 private:
     uint8_t m_audf[4], m_audc[4], m_audctl;
@@ -42,7 +42,7 @@ public:
     static constexpr int SAMPLE_RATE = 44100;
 
     void Initialize(bool stereo);
-    void SetMainClock(int hz) { m_clock = hz; }    // PAL 1773447 (default), NTSC 1789790
+    void SetMainClock(int hz) { m_clock = hz; } // PAL 1773447 (default), NTSC 1789790
     void PutByte(int addr, int data);
     int GetRandom(int addr) const;
     // cycles of the 6502 clock -> samples; returns the bytes written
@@ -52,8 +52,8 @@ private:
     PokeyChip m_chip[2];
     bool m_stereo = false;
     int m_clock = 1773447;
-    long long m_acc = 0;                        // cycle / sample fraction
-    double m_dc[2] = { 0.0, 0.0 };              // DC level removed from the output
+    long long m_acc = 0;           // cycle / sample fraction
+    double m_dc[2] = { 0.0, 0.0 }; // DC level removed from the output
 };
 
 } // namespace rmt_emu

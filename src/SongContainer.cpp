@@ -4,7 +4,8 @@
 #include "GuiHelpers.h"
 #include "RuntimeException.h"
 
-CSongContainer::CSongContainer(CSong& song) {
+CSongContainer::CSongContainer(CSong& song)
+{
     m_song = &song;
     m_pokeyStreamReady = false;
 
@@ -13,7 +14,8 @@ CSongContainer::CSongContainer(CSong& song) {
     }
 }
 
-CSongContainer::~CSongContainer() {
+CSongContainer::~CSongContainer()
+{
     // The dump switched all channels off: FinishedRecording() switches them
     // back on, resets the tracker driver and frees the stream buffer
     if (m_pokeyStreamReady) {
@@ -21,15 +23,18 @@ CSongContainer::~CSongContainer() {
     }
 }
 
-CSong& CSongContainer::GetSong() {
+CSong& CSongContainer::GetSong()
+{
     return *m_song;
 }
 
-const CPokeyStream& CSongContainer::GetPokeyStream() {
+const CPokeyStream& CSongContainer::GetPokeyStream()
+{
     return GetModifiablePokeyStream();
 }
 
-CPokeyStream& CSongContainer::GetModifiablePokeyStream() {
+CPokeyStream& CSongContainer::GetModifiablePokeyStream()
+{
     if (!m_pokeyStreamReady) {
         SendInfoMessage("Generating stream data ...");
         m_song->DumpSongToPokeyStream(m_pokeyStream, PLAY_SONG, 0, 0);

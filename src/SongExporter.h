@@ -7,8 +7,7 @@
 
 extern CString g_rmtmsxtext;
 
-class CXEXFile
-{
+class CXEXFile {
 public:
     static const size_t ATARI_TEXT_SIZE = 5 * 40;
     char songname[SONG_NAME_MAX_LEN + 1];
@@ -25,7 +24,6 @@ public:
 };
 
 class CSongExporter {
-
 public:
     CSongExporter();
 
@@ -83,4 +81,3 @@ private:
     static int BruteforceOptimalLZSS(unsigned char* src, int srclen, unsigned char* dst);
     static bool ShowXEXExportDialog(const CSong& song, CXEXFile& xexFile);
 };
-

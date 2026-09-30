@@ -8,12 +8,10 @@
 
 #include "Notes.h"
 
-class CTracks
-{
+class CTracks {
 public:
-
     typedef int TrackNumber; // Starting with 0
-    typedef int LineNumber; // Starting with 0
+    typedef int LineNumber;  // Starting with 0
 
     CTracks();
     ~CTracks();
@@ -40,7 +38,14 @@ public:
     int GetInstr(TrackNumber track, int line) const { return IsValidTrack(track) && IsValidLine(line) ? m_track[track].instr[line] : -1; };
     int GetVol(TrackNumber track, int line) { return IsValidTrack(track) && IsValidLine(line) ? m_track[track].volume[line] : -1; };
     int GetSpeed(TrackNumber track, int line) const { return IsValidTrack(track) && IsValidLine(line) ? m_track[track].speed[line] : -1; };
-    void GetNoteInstrVolSpeed(int* buff, TrackNumber track, int line) const { if (!(IsValidTrack(track) && IsValidLine(line))) return; buff[0] = m_track[track].note[line]; buff[1] = m_track[track].instr[line]; buff[2] = m_track[track].volume[line]; buff[3] = m_track[track].speed[line]; };
+    void GetNoteInstrVolSpeed(int* buff, TrackNumber track, int line) const
+    {
+        if (!(IsValidTrack(track) && IsValidLine(line))) return;
+        buff[0] = m_track[track].note[line];
+        buff[1] = m_track[track].instr[line];
+        buff[2] = m_track[track].volume[line];
+        buff[3] = m_track[track].speed[line];
+    };
     BOOL SetEnd(TrackNumber track, int line);
     int GetLastLine(TrackNumber track) const;
     int GetLength(TrackNumber track) const;
@@ -52,8 +57,9 @@ public:
 
     TTrack* GetTrack(TrackNumber track) { return IsValidTrack(track) ? &m_track[track] : NULL; };
 
-    const TTrack* GetConstTrack(TrackNumber track) const {
-        return  IsValidTrack(track) ? &m_track[track] : NULL;
+    const TTrack* GetConstTrack(TrackNumber track) const
+    {
+        return IsValidTrack(track) ? &m_track[track] : NULL;
     };
 
     void GetTracksAll(TTracksAll* toTracks) const;
@@ -84,7 +90,10 @@ public:
 
     //int m_maxTrackLength;
     int GetMaxTrackLength() const { return m_maxTrackLength; };
-    void SetMaxTrackLength(int length) { if (IsValidLength(length)) m_maxTrackLength = length; };
+    void SetMaxTrackLength(int length)
+    {
+        if (IsValidLength(length)) m_maxTrackLength = length;
+    };
 
 private:
     int m_maxTrackLength;

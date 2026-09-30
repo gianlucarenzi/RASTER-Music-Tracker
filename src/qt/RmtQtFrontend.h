@@ -31,7 +31,7 @@ protected:
     void wheelEvent(QWheelEvent* e) override;
     void focusInEvent(QFocusEvent* e) override;
     void focusOutEvent(QFocusEvent* e) override;
-    bool focusNextPrevChild(bool) override { return false; }  // Tab belongs to the tracker
+    bool focusNextPrevChild(bool) override { return false; } // Tab belongs to the tracker
 
 private:
     RmtQtBridge* m_bridge;

@@ -22,20 +22,21 @@
 // Text taken verbatim from Rmt.rc.
 // ---------------------------------------------------------------------------
 
-BOOL CString::LoadString(UINT id) {
+BOOL CString::LoadString(UINT id)
+{
     switch (id) {
-    case IDS_RMT_VERSION: // == IDS_RMTVERSION
-        m_data = RMT_VERSION_STRING;
-        return TRUE;
-    case IDS_RMT_AUTHOR:
-        m_data = "by Radek Sterba, (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)";
-        return TRUE;
-    case IDS_RMT_REPOSITORY:
-        m_data = "https://github.com/raster-atari-org/RASTER-Music-Tracker";
-        return TRUE;
-    default:
-        m_data = "";
-        return FALSE;
+        case IDS_RMT_VERSION: // == IDS_RMTVERSION
+            m_data = RMT_VERSION_STRING;
+            return TRUE;
+        case IDS_RMT_AUTHOR:
+            m_data = "by Radek Sterba, (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)";
+            return TRUE;
+        case IDS_RMT_REPOSITORY:
+            m_data = "https://github.com/raster-atari-org/RASTER-Music-Tracker";
+            return TRUE;
+        default:
+            m_data = "";
+            return FALSE;
     }
 }
 
@@ -49,11 +50,13 @@ CRmtApp g_app;
 
 IRmtHost* g_rmtHost = nullptr;
 
-INT_PTR CDialog::DoModal() {
+INT_PTR CDialog::DoModal()
+{
     return g_rmtHost ? g_rmtHost->DoModal(this) : IDCANCEL;
 }
 
-INT_PTR CFileDialog::DoModal() {
+INT_PTR CFileDialog::DoModal()
+{
     if (!g_rmtHost) return IDCANCEL;
     const char* fileName = m_ofn.lpstrFile && *m_ofn.lpstrFile ? m_ofn.lpstrFile : m_fileName.GetString();
     int filterIndex = m_ofn.nFilterIndex;
@@ -66,7 +69,8 @@ INT_PTR CFileDialog::DoModal() {
     return IDOK;
 }
 
-CString CRmtApp::GetVersionAndBuild() const {
+CString CRmtApp::GetVersionAndBuild() const
+{
     CString version;
     version.LoadString(IDS_RMTVERSION);
     CString result;
@@ -83,7 +87,8 @@ static uint16_t rd16(const unsigned char* p) { return (uint16_t)(p[0] | (p[1] <<
 
 // Windows .bmp (BITMAPFILEHEADER + BITMAPINFOHEADER), uncompressed,
 // 1/4/8 bit with palette, 24/32 bit; bottom-up or top-down
-BOOL CBitmap::LoadBMP(const unsigned char* d, size_t size) {
+BOOL CBitmap::LoadBMP(const unsigned char* d, size_t size)
+{
     if (!d || size < 54 || d[0] != 'B' || d[1] != 'M') return FALSE;
     uint32_t bits = rd32(d + 10), hdr = rd32(d + 14);
     int w = (int)rd32(d + 18), h = (int)rd32(d + 22);
@@ -104,11 +109,11 @@ BOOL CBitmap::LoadBMP(const unsigned char* d, size_t size) {
         for (int x = 0; x < w; x++) {
             uint32_t idx;
             switch (bpp) {
-            case 1:  idx = (row[x >> 3] >> (7 - (x & 7))) & 1; break;
-            case 4:  idx = (row[x >> 1] >> ((x & 1) ? 0 : 4)) & 15; break;
-            case 8:  idx = row[x]; break;
-            case 24: out[x] = 0xFF000000u | (row[x * 3 + 2] << 16) | (row[x * 3 + 1] << 8) | row[x * 3]; continue;
-            default: out[x] = 0xFF000000u | (row[x * 4 + 2] << 16) | (row[x * 4 + 1] << 8) | row[x * 4]; continue;
+                case 1: idx = (row[x >> 3] >> (7 - (x & 7))) & 1; break;
+                case 4: idx = (row[x >> 1] >> ((x & 1) ? 0 : 4)) & 15; break;
+                case 8: idx = row[x]; break;
+                case 24: out[x] = 0xFF000000u | (row[x * 3 + 2] << 16) | (row[x * 3 + 1] << 8) | row[x * 3]; continue;
+                default: out[x] = 0xFF000000u | (row[x * 4 + 2] << 16) | (row[x * 4 + 1] << 8) | row[x * 4]; continue;
             }
             const unsigned char* c = pal + 4 * (idx < ncol ? idx : 0);
             out[x] = 0xFF000000u | (c[2] << 16) | (c[1] << 8) | c[0];
@@ -117,7 +122,8 @@ BOOL CBitmap::LoadBMP(const unsigned char* d, size_t size) {
     return TRUE;
 }
 
-void CDC::Fill(int l, int t, int r, int b, uint32_t c) {
+void CDC::Fill(int l, int t, int r, int b, uint32_t c)
+{
     if (!m_bitmap || !m_bitmap->Bits()) return;
     if (l < 0) l = 0;
     if (t < 0) t = 0;
@@ -130,7 +136,8 @@ void CDC::Fill(int l, int t, int r, int b, uint32_t c) {
 }
 
 // Bresenham, the end point is not drawn (GDI)
-BOOL CDC::LineTo(int x1, int y1) {
+BOOL CDC::LineTo(int x1, int y1)
+{
     uint32_t c = RmtPixel(m_pen ? m_pen->GetColor() : 0);
     int x = m_curX, y = m_curY;
     int dx = abs(x1 - x), dy = -abs(y1 - y);
@@ -138,15 +145,22 @@ BOOL CDC::LineTo(int x1, int y1) {
     while (x != x1 || y != y1) {
         Plot(x, y, c);
         int e2 = 2 * err;
-        if (e2 >= dy) { err += dy; x += sx; }
-        if (e2 <= dx) { err += dx; y += sy; }
+        if (e2 >= dy) {
+            err += dy;
+            x += sx;
+        }
+        if (e2 <= dx) {
+            err += dx;
+            y += sy;
+        }
     }
     m_curX = x1;
     m_curY = y1;
     return TRUE;
 }
 
-BOOL CDC::BitBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, DWORD) {
+BOOL CDC::BitBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, DWORD)
+{
     CBitmap* sb = src ? src->m_bitmap : nullptr;
     if (!m_bitmap || !m_bitmap->Bits() || !sb || !sb->Bits()) return FALSE;
     // clip the rectangle once against both bitmaps, then copy whole rows
@@ -164,7 +178,8 @@ BOOL CDC::BitBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, DWORD) {
 }
 
 // nearest neighbour
-BOOL CDC::StretchBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, int ws, int hs, DWORD rop) {
+BOOL CDC::StretchBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, int ws, int hs, DWORD rop)
+{
     CBitmap* sb = src ? src->m_bitmap : nullptr;
     if (w == ws && h == hs) return BitBlt(x, y, w, h, src, xs, ys, rop);
     if (!m_bitmap || !m_bitmap->Bits() || !sb || !sb->Bits() || w <= 0 || h <= 0) return FALSE;
@@ -188,4 +203,7 @@ BOOL CDC::StretchBlt(int x, int y, int w, int h, CDC* src, int xs, int ys, int w
 #include <thread>
 #include <chrono>
 
-void Sleep(DWORD ms) { std::this_thread::sleep_for(std::chrono::milliseconds(ms)); }
+void Sleep(DWORD ms)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+}

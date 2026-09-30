@@ -4,11 +4,8 @@
 
 #include "Memory.h"
 
-class CAtariIO
-{
-
+class CAtariIO {
 public:
-
     /// <summary>
     /// Load an Atari binary block. Max [4-6] byte header + the indicated number of bytes
     /// HEADER, FROM, TO
@@ -26,6 +23,4 @@ public:
 
 private:
     static bool LoadWord(std::ifstream& in, MemoryWord& w);
-
 };
-

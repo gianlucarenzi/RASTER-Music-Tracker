@@ -30,8 +30,7 @@ class RtMidiIn;
  * - WASAPI on Windows
  * - CoreMIDI on macOS
  */
-class RtMidiBackend : public IMidiBackend
-{
+class RtMidiBackend : public IMidiBackend {
 public:
     RtMidiBackend();
     virtual ~RtMidiBackend();
@@ -58,8 +57,8 @@ public:
 
 private:
     // RtMidi objects (opaque pointers, real types only visible in .cpp)
-    RtMidiOut* m_midiOut;      ///< RtMidiOut instance
-    RtMidiIn* m_midiIn;        ///< RtMidiIn instance
+    RtMidiOut* m_midiOut; ///< RtMidiOut instance
+    RtMidiIn* m_midiIn;   ///< RtMidiIn instance
 
     int m_port_count;
     int m_current_port;

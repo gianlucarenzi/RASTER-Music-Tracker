@@ -15,7 +15,7 @@
 /// <param name = "audf"> POKEY Frequency, either 8-bit or 16-bit </param>
 /// <param name = "audctl"> POKEY modes used to generate the frequencies, typically, 15Khz/64Khz clock, 1.79mHz clock, 16-bit mode, etc </param>
 /// <param name = "channel"> POKEY channel number, multiple parameters might give different results </param>
-/// <returns> POKEY audio pitch (in Hertz) </returns> 
+/// <returns> POKEY audio pitch (in Hertz) </returns>
 CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int channel)
 {
     // variables for pitch calculation, divisors must never be 0!
@@ -23,7 +23,7 @@ CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int chan
     int coarse_divisor = 1;
     int cycle = 1;
 
-    // register variables 
+    // register variables
     int distortion = audc & 0xf0;
     //int skctl = 0;	//not yet implemented in calculations
     //bool TWO_TONE = (skctl == 0x8B) ? 1 : 0;
@@ -39,7 +39,7 @@ CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int chan
     //combined modes for some special output...
     bool JOIN_16BIT = ((JOIN_12 && CH1_179 && (channel == 1 || channel == 5)) || (JOIN_34 && CH3_179 && (channel == 3 || channel == 7))) ? 1 : 0;
     bool CLOCK_179 = ((CH1_179 && (channel == 0 || channel == 4)) || (CH3_179 && (channel == 2 || channel == 6))) ? 1 : 0;
-    if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0;	//override, these 2 take priority over 15khz mode if they are enabled at the same time
+    if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0; //override, these 2 take priority over 15khz mode if they are enabled at the same time
 
     /*
     //TODO: Sawtooth generation needs to be optimal in order to compromise the high pitched hiss versus the tuning accuracy
@@ -51,12 +51,15 @@ CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int chan
 
     //TODO: apply Two-Tone timer offset into calculations when channel 1+2 are linked in 1.79mhz mode
     //This would help generating tables using patterns discovered by synthpopalooza
-    if (JOIN_16BIT) cycle = 7;
-    else if (CLOCK_179) cycle = 4;
-    else coarse_divisor = (CLOCK_15) ? 114 : 28;
+    if (JOIN_16BIT)
+        cycle = 7;
+    else if (CLOCK_179)
+        cycle = 4;
+    else
+        coarse_divisor = (CLOCK_15) ? 114 : 28;
 
     //Many combinations depend entirely on the Modulo of POKEY frequencies to generate different tones
-    //If a known value provide unstable results, it may be avoided on purpose 
+    //If a known value provide unstable results, it may be avoided on purpose
     bool MOD3 = ((audf + cycle) % 3 == 0);
     bool MOD5 = ((audf + cycle) % 5 == 0);
     bool MOD7 = ((audf + cycle) % 7 == 0);
@@ -64,46 +67,43 @@ CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int chan
     bool MOD31 = ((audf + cycle) % 31 == 0);
     bool MOD73 = ((audf + cycle) % 73 == 0);
 
-    switch (distortion)
-    {
-    case 0x00:
-        if (POLY9)
-        {
-            divisor = 255.5;	//Metallic Buzzy
-            if (MOD7 || (!CLOCK_15 && !CLOCK_179 && !JOIN_16BIT)) divisor = 36.5;	//seems to only sound "uniform" in 64kHz mode for some reason 
-            if (MOD31 || MOD73) return 0;	//MOD31 and MOD73 values are invalid 
-        }
-        break;
+    switch (distortion) {
+        case 0x00:
+            if (POLY9) {
+                divisor = 255.5;                                                      //Metallic Buzzy
+                if (MOD7 || (!CLOCK_15 && !CLOCK_179 && !JOIN_16BIT)) divisor = 36.5; //seems to only sound "uniform" in 64kHz mode for some reason
+                if (MOD31 || MOD73) return 0;                                         //MOD31 and MOD73 values are invalid
+            }
+            break;
 
-    case 0x20:
-    case 0x60:	//Duplicate of Distortion 2
-        divisor = 31;
-        if (MOD31) return 0;
-        break;
+        case 0x20:
+        case 0x60: //Duplicate of Distortion 2
+            divisor = 31;
+            if (MOD31) return 0;
+            break;
 
-    case 0x40:
-        divisor = 232.5;		//Buzzy tones, neither MOD3 or MOD5 or MOD31
-        if (MOD3 || CLOCK_15) divisor = 77.5;	//Smooth tones, MOD3 but not MOD5 or MOD31
-        if (MOD5) divisor = 46.5;	//Unstable tones #1, MOD5 but not MOD3 or MOD31
-        if (MOD31) divisor = (MOD3 || MOD5) ? 2.5 : 7.5;	//Unstables Tones #2 and #3, MOD31, with MOD3 or MOD5 
-        if (MOD15 || (MOD5 && CLOCK_15)) return 0;	//Both MOD3 and MOD5 at once are invalid 
-        break;
+        case 0x40:
+            divisor = 232.5;                                 //Buzzy tones, neither MOD3 or MOD5 or MOD31
+            if (MOD3 || CLOCK_15) divisor = 77.5;            //Smooth tones, MOD3 but not MOD5 or MOD31
+            if (MOD5) divisor = 46.5;                        //Unstable tones #1, MOD5 but not MOD3 or MOD31
+            if (MOD31) divisor = (MOD3 || MOD5) ? 2.5 : 7.5; //Unstables Tones #2 and #3, MOD31, with MOD3 or MOD5
+            if (MOD15 || (MOD5 && CLOCK_15)) return 0;       //Both MOD3 and MOD5 at once are invalid
+            break;
 
-    case 0x80:
-        if (POLY9)
-        {
-            divisor = 255.5;	//Metallic Buzzy
-            if (MOD7 || (!CLOCK_15 && !CLOCK_179 && !JOIN_16BIT)) divisor = 36.5;	//seems to only sound "uniform" in 64kHz mode for some reason 
-            if (MOD73) return 0;	//MOD73 values are invalid
-        }
-        break;
+        case 0x80:
+            if (POLY9) {
+                divisor = 255.5;                                                      //Metallic Buzzy
+                if (MOD7 || (!CLOCK_15 && !CLOCK_179 && !JOIN_16BIT)) divisor = 36.5; //seems to only sound "uniform" in 64kHz mode for some reason
+                if (MOD73) return 0;                                                  //MOD73 values are invalid
+            }
+            break;
 
-    case 0xC0:
-        divisor = 7.5;	//Gritty tones, neither MOD3 or MOD5
-        if (MOD3 || CLOCK_15) divisor = 2.5;	//Buzzy tones, MOD3 but not MOD5
-        if (MOD5) divisor = 1.5;	//Unstable Buzzy tones, MOD5 but not MOD3
-        if (MOD15 || (MOD5 && CLOCK_15)) return 0;	//Both MOD3 and MOD5 at once are invalid 
-        break;
+        case 0xC0:
+            divisor = 7.5;                             //Gritty tones, neither MOD3 or MOD5
+            if (MOD3 || CLOCK_15) divisor = 2.5;       //Buzzy tones, MOD3 but not MOD5
+            if (MOD5) divisor = 1.5;                   //Unstable Buzzy tones, MOD5 but not MOD3
+            if (MOD15 || (MOD5 && CLOCK_15)) return 0; //Both MOD3 and MOD5 at once are invalid
+            break;
     }
     return GetPitch(audf, coarse_divisor, divisor, cycle);
 }
@@ -111,8 +111,8 @@ CTuning::Pitch CTuning::GetPOKEYPPitch(int audc, AUDF audf, int audctl, int chan
 /// <summary> Generate a POKEY Frequencies lookup table using the given parameters </summary>
 /// <param name = "table"> Memory address the table will be written to, typically the emulated Atari memory </param>
 /// <param name = "length"> Length of the table in number of semitones, 16-bit tables will use twice number of bytes </param>
-/// <param name = "semitone"> Number of semitones above base note, useful for transposing a table to a different key/octave </param> 
-/// <param name = "timbre"> POKEY sound timbre output using the Distortion as well as the modulo of the Frequency </param> 
+/// <param name = "semitone"> Number of semitones above base note, useful for transposing a table to a different key/octave </param>
+/// <param name = "timbre"> POKEY sound timbre output using the Distortion as well as the modulo of the Frequency </param>
 /// <param name = "audctl"> POKEY modes used to generate the frequencies, typically, 15Khz/64Khz clock, 1.79mHz clock, 16-bit mode, etc </param>
 void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, int audctl)
 {
@@ -121,7 +121,7 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
     int coarse_divisor = 1;
     int cycle = 1;
 
-    //register variables 
+    //register variables
     //int distortion = timbre & 0xF0;
     //int skctl = 0;	//not yet implemented in calculations
     //bool TWO_TONE = (skctl == 0x8B) ? 1 : 0;
@@ -134,20 +134,23 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
     bool CH1_179 = audctl & 0x40;
     [[maybe_unused]] bool POLY9 = audctl & 0x80;
 
-    //combined modes for some special output... 
+    //combined modes for some special output...
     //the channel number doesn't actually matter for creating tables, so the parameter is omitted
     bool JOIN_16BIT = ((JOIN_12 && CH1_179) || (JOIN_34 && CH3_179)) ? 1 : 0;
     bool CLOCK_179 = (CH1_179 || CH3_179) ? 1 : 0;
-    if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0;	//override, these 2 take priority over 15khz mode if they are enabled at the same time
+    if (JOIN_16BIT || CLOCK_179) CLOCK_15 = 0; //override, these 2 take priority over 15khz mode if they are enabled at the same time
 
     //TODO: apply Two-Tone timer offset into calculations when channel 1+2 are linked in 1.79mhz mode
     //This would help generating tables using patterns discovered by synthpopalooza
-    if (JOIN_16BIT) cycle = 7;
-    else if (CLOCK_179) cycle = 4;
-    else coarse_divisor = (CLOCK_15) ? 114 : 28;
+    if (JOIN_16BIT)
+        cycle = 7;
+    else if (CLOCK_179)
+        cycle = 4;
+    else
+        coarse_divisor = (CLOCK_15) ? 114 : 28;
 
     //Many combinations depend entirely on the Modulo of POKEY frequencies to generate different tones
-    //If a known value provide unstable results, it may be avoided on purpose 
+    //If a known value provide unstable results, it may be avoided on purpose
     bool MOD3 = 0;
     bool MOD5 = 0;
     [[maybe_unused]] bool MOD7 = 0;
@@ -156,67 +159,64 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
     [[maybe_unused]] bool MOD73 = 0;
 
     //Use the modulo flags to make sure the correct timbre will be output
-    switch (timbre)
-    {
-    case TIMBRE_PINK_NOISE:
-        break;
+    switch (timbre) {
+        case TIMBRE_PINK_NOISE:
+            break;
 
-    case TIMBRE_BROWNIAN_NOISE:
-        divisor = 36.5;	//Brownian noise, not MOD31 and not MOD73
-        break;
+        case TIMBRE_BROWNIAN_NOISE:
+            divisor = 36.5; //Brownian noise, not MOD31 and not MOD73
+            break;
 
-    case TIMBRE_FUZZY_NOISE:
-        divisor = 255.5;	//Fuzzy noise, not MOD7, not MOD31 and not MOD73
-        break;
+        case TIMBRE_FUZZY_NOISE:
+            divisor = 255.5; //Fuzzy noise, not MOD7, not MOD31 and not MOD73
+            break;
 
-    case TIMBRE_BELL:
-        divisor = 31;	//Bell tones, not MOD31
-        break;
+        case TIMBRE_BELL:
+            divisor = 31; //Bell tones, not MOD31
+            break;
 
-    case TIMBRE_BUZZY_4:
-        divisor = 232.5;	//Buzzy tones, neither MOD3 or MOD5 or MOD31
-        break;
+        case TIMBRE_BUZZY_4:
+            divisor = 232.5; //Buzzy tones, neither MOD3 or MOD5 or MOD31
+            break;
 
-    case TIMBRE_SMOOTH_4:
-        divisor = 77.5;	//Smooth tones, MOD3 but not MOD5 or MOD31
-        break;
+        case TIMBRE_SMOOTH_4:
+            divisor = 77.5; //Smooth tones, MOD3 but not MOD5 or MOD31
+            break;
 
-    case TIMBRE_WHITE_NOISE:
-        break;
+        case TIMBRE_WHITE_NOISE:
+            break;
 
-    case TIMBRE_METALLIC_NOISE:
-        divisor = 36.5;	//Metallic noise, not MOD73
-        break;
+        case TIMBRE_METALLIC_NOISE:
+            divisor = 36.5; //Metallic noise, not MOD73
+            break;
 
-    case TIMBRE_BUZZY_NOISE:
-        divisor = 255.5;	//Buzzy noise, not MOD7 and not MOD73
-        break;
+        case TIMBRE_BUZZY_NOISE:
+            divisor = 255.5; //Buzzy noise, not MOD7 and not MOD73
+            break;
 
-    case TIMBRE_PURE:
-        break;
+        case TIMBRE_PURE:
+            break;
 
-    case TIMBRE_GRITTY_C:
-        divisor = 7.5;	//Gritty tones, neither MOD3 or MOD5
-        break;
+        case TIMBRE_GRITTY_C:
+            divisor = 7.5; //Gritty tones, neither MOD3 or MOD5
+            break;
 
-    case TIMBRE_BUZZY_C:
-        divisor = 2.5;	//Buzzy tones, MOD3 but not MOD5
-        break;
+        case TIMBRE_BUZZY_C:
+            divisor = 2.5; //Buzzy tones, MOD3 but not MOD5
+            break;
 
-    case TIMBRE_UNSTABLE_C:
-        divisor = 1.5;	//Unstable Buzzy tones, MOD5 but not MOD3
-        break;
+        case TIMBRE_UNSTABLE_C:
+            divisor = 1.5; //Unstable Buzzy tones, MOD5 but not MOD3
+            break;
 
-    default:
-        //Distortion A is assumed if no valid parameter is supplied 
-        break;
-
+        default:
+            //Distortion A is assumed if no valid parameter is supplied
+            break;
     }
 
-    //generate the table using all the initialised parameters 
-    for (int i = 0; i < length; i++)
-    {
-        //get the current semitone 
+    //generate the table using all the initialised parameters
+    for (int i = 0; i < length; i++) {
+        //get the current semitone
         auto note = i + semitone;
 
         //calculate the reference pitch using the semitone as an offset
@@ -225,7 +225,7 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
         //get the nearest POKEY frequency using the reference pitch
         auto audf = GetAUDF(pitch, coarse_divisor, divisor, cycle);
 
-        //TODO: insert whatever delta method that could be suitable here... 
+        //TODO: insert whatever delta method that could be suitable here...
         MOD3 = ((audf + cycle) % 3 == 0);
         MOD5 = ((audf + cycle) % 5 == 0);
         MOD7 = ((audf + cycle) % 7 == 0);
@@ -233,41 +233,38 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
         MOD31 = ((audf + cycle) % 31 == 0);
         MOD73 = ((audf + cycle) % 73 == 0);
 
-        switch (timbre)
-        {
-        case TIMBRE_BELL:
-            if (MOD31) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
-            break;
+        switch (timbre) {
+            case TIMBRE_BELL:
+                if (MOD31) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
+                break;
 
-        case TIMBRE_BUZZY_4:
-            if (MOD3 || MOD5 || MOD31) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
-            break;
+            case TIMBRE_BUZZY_4:
+                if (MOD3 || MOD5 || MOD31) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
+                break;
 
-        case TIMBRE_SMOOTH_4:
-            if (!(MOD3 || CLOCK_15) || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
-            if (!JOIN_16BIT && audf > 0xFF)
-            {	//use the buzzy timbre on the lower range instead
-                audf = GetAUDF(pitch, coarse_divisor, 232.5, cycle);
-                MOD3 = ((audf + cycle) % 3 == 0);
-                MOD5 = ((audf + cycle) % 5 == 0);
-                if (MOD3 || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, 232.5, cycle, TIMBRE_BUZZY_4);
-            }
-            break;
+            case TIMBRE_SMOOTH_4:
+                if (!(MOD3 || CLOCK_15) || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
+                if (!JOIN_16BIT && audf > 0xFF) { //use the buzzy timbre on the lower range instead
+                    audf = GetAUDF(pitch, coarse_divisor, 232.5, cycle);
+                    MOD3 = ((audf + cycle) % 3 == 0);
+                    MOD5 = ((audf + cycle) % 5 == 0);
+                    if (MOD3 || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, 232.5, cycle, TIMBRE_BUZZY_4);
+                }
+                break;
 
-        case TIMBRE_GRITTY_C:
-            if (MOD3 || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
-            break;
+            case TIMBRE_GRITTY_C:
+                if (MOD3 || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
+                break;
 
-        case TIMBRE_BUZZY_C:
-            if (!(MOD3 || CLOCK_15) || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
-            if (!JOIN_16BIT && audf > 0xFF)
-            {	//use the gritty timbre on the lower range instead
-                audf = GetAUDF(pitch, coarse_divisor, 7.5, cycle);
-                MOD3 = ((audf + cycle) % 3 == 0);
-                MOD5 = ((audf + cycle) % 5 == 0);
-                if (MOD3 || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, 7.5, cycle, TIMBRE_GRITTY_C);
-            }
-            break;
+            case TIMBRE_BUZZY_C:
+                if (!(MOD3 || CLOCK_15) || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, divisor, cycle, timbre);
+                if (!JOIN_16BIT && audf > 0xFF) { //use the gritty timbre on the lower range instead
+                    audf = GetAUDF(pitch, coarse_divisor, 7.5, cycle);
+                    MOD3 = ((audf + cycle) % 3 == 0);
+                    MOD5 = ((audf + cycle) % 5 == 0);
+                    if (MOD3 || MOD5) audf = CalculateDeltaAUDF(pitch, audf, coarse_divisor, 7.5, cycle, TIMBRE_GRITTY_C);
+                }
+                break;
         }
 
         if (audf < 0) audf = 0;
@@ -275,24 +272,21 @@ void CTuning::GenerateTable(byte* table, int length, int semitone, int timbre, i
         if (JOIN_16BIT && audf > 0xFFFF) audf = 0xFFFF;
 
         // Write the POKEY frequency to the table
-        if (JOIN_16BIT)
-        {	// In 16-bit tables, 2 bytes have to be written contiguously
-            table[i * 2] = audf & 0x0FF;	// LSB
-            table[i * 2 + 1] = audf >> 8;	// MSB
-        }
-        else {
+        if (JOIN_16BIT) {                 // In 16-bit tables, 2 bytes have to be written contiguously
+            table[i * 2] = audf & 0x0FF;  // LSB
+            table[i * 2 + 1] = audf >> 8; // MSB
+        } else {
             table[i] = audf;
         }
     }
-
 }
 
 /// <summary> Calculate the POKEY audio pitch using the given parameters </summary>
 /// <param name = "audf"> POKEY Frequency, either 8-bit or 16-bit </param>
 /// <param name = "coarse_divisor"> Coarse division, 28 in 64kHz mode, 114 in 15kHz mode, 1 for no division </param>
-/// <param name = "divisor"> Fine division, variable relative to Distortion, Cycle, and frequency modulo, 1 for no division </param> 
+/// <param name = "divisor"> Fine division, variable relative to Distortion, Cycle, and frequency modulo, 1 for no division </param>
 /// <param name = "cycle"> Offset added to AUDF, 4 for 1.79mHz mode, 7 for 16-bit+1.79mHz mode, 1 for neither </param>
-/// <returns> POKEY audio pitch (in Hertz) </returns> 
+/// <returns> POKEY audio pitch (in Hertz) </returns>
 CTuning::Pitch CTuning::GetPitch(AUDF audf, int coarse_divisor, double divisor, int cycle)
 {
     return ((m_clockFrequency / (coarse_divisor * divisor)) / (audf + cycle)) / 2;
@@ -301,9 +295,9 @@ CTuning::Pitch CTuning::GetPitch(AUDF audf, int coarse_divisor, double divisor, 
 /// <summary> Find the nearest POKEY Frequency (AUDF) using the given parameters </summary>
 /// <param name = "pitch"> Source audio pitch (in Hertz) </param>
 /// <param name = "coarse_divisor"> Coarse division, 28 in 64kHz mode, 114 in 15kHz mode, 1 for no division </param>
-/// <param name = "divisor"> Fine division, variable relative to Distortion, Cycle, and frequency modulo, 1 for no division </param> 
+/// <param name = "divisor"> Fine division, variable relative to Distortion, Cycle, and frequency modulo, 1 for no division </param>
 /// <param name = "cycle"> Offset added to AUDF, 4 for 1.79mHz mode, 7 for 16-bit+1.79mHz mode, 1 for neither </param>
-/// <returns> POKEY Frequency (AUDF) </returns> 
+/// <returns> POKEY Frequency (AUDF) </returns>
 CTuning::AUDF CTuning::GetAUDF(Pitch pitch, int coarse_divisor, double divisor, int cycle)
 {
     return (int)round(((m_clockFrequency / (coarse_divisor * divisor)) / (2 * pitch)) - cycle);
@@ -313,122 +307,114 @@ CTuning::AUDF CTuning::GetAUDF(Pitch pitch, int coarse_divisor, double divisor, 
 /// <param name = "pitch"> Reference audio pitch (in Hertz) </param>
 /// <param name = "audf"> Invalid POKEY Frequency (AUDF) referenced to find the nearest compromised frequency </param>
 /// <param name = "coarse_divisor"> Coarse division, 28 in 64kHz mode, 114 in 15kHz mode, 1 for no division </param>
-/// <param name = "divisor"> Fine division, variable relative to Distortion, Cycle, and frequency modulo, 1 for no division </param> 
+/// <param name = "divisor"> Fine division, variable relative to Distortion, Cycle, and frequency modulo, 1 for no division </param>
 /// <param name = "cycle"> Offset added to AUDF, 4 for 1.79mHz mode, 7 for 16-bit+1.79mHz mode, 1 for neither </param>
 /// <param name = "timbre"> POKEY sound timbre output using the Distortion as well as the modulo of the Frequency </param>
-/// <returns> Compromised POKEY Frequency (AUDF) which is now valid within the conditions established for the generated timbre </returns> 
+/// <returns> Compromised POKEY Frequency (AUDF) which is now valid within the conditions established for the generated timbre </returns>
 CTuning::AUDF CTuning::CalculateDeltaAUDF(Pitch pitch, AUDF audf, int coarse_divisor, double divisor, int cycle, int timbre)
 {
-    //TODO: Optimise this procedure a lot more, this is poorly written, but it gets the job done for now 
+    //TODO: Optimise this procedure a lot more, this is poorly written, but it gets the job done for now
     int distortion = timbre & 0xF0;
 
-    int tmp_audf_up = audf;		//begin from the currently invalid audf
+    int tmp_audf_up = audf; //begin from the currently invalid audf
     int tmp_audf_down = audf;
     double tmp_freq_up = 0;
     double tmp_freq_down = 0;
     double PITCH = 0;
 
-    if (distortion != 0x40 && distortion != 0xC0) { tmp_audf_up++; tmp_audf_down--; }	//anything not distortion 4 or C, simpliest delta method
+    if (distortion != 0x40 && distortion != 0xC0) {
+        tmp_audf_up++;
+        tmp_audf_down--;
+    } //anything not distortion 4 or C, simpliest delta method
 
-    else if (distortion == 0x40)
-    {
-        if (timbre == TIMBRE_SMOOTH_4)	//verify MOD3 integrity
+    else if (distortion == 0x40) {
+        if (timbre == TIMBRE_SMOOTH_4) //verify MOD3 integrity
         {
-            for (int o = 0; o < 6; o++)
-            {
+            for (int o = 0; o < 6; o++) {
                 if ((tmp_audf_up + cycle) % 3 != 0 || (tmp_audf_up + cycle) % 5 == 0 || (tmp_audf_up + cycle) % 31 == 0) tmp_audf_up++;
                 if ((tmp_audf_down + cycle) % 3 != 0 || (tmp_audf_down + cycle) % 5 == 0 || (tmp_audf_down + cycle) % 31 == 0) tmp_audf_down--;
             }
-        }
-        else if (timbre == TIMBRE_BUZZY_4)
-        {
-            for (int o = 0; o < 6; o++)
-            {
+        } else if (timbre == TIMBRE_BUZZY_4) {
+            for (int o = 0; o < 6; o++) {
                 if ((tmp_audf_up + cycle) % 3 == 0 || (tmp_audf_up + cycle) % 5 == 0 || (tmp_audf_up + cycle) % 31 == 0) tmp_audf_up++;
                 if ((tmp_audf_down + cycle) % 3 == 0 || (tmp_audf_down + cycle) % 5 == 0 || (tmp_audf_down + cycle) % 31 == 0) tmp_audf_down--;
             }
-        }
-        else return 0;	//invalid parameter most likely 
+        } else
+            return 0; //invalid parameter most likely
     }
 
-    else if (distortion == 0xC0)
-    {
+    else if (distortion == 0xC0) {
         //if (CLOCK_15)
-        if (coarse_divisor == 114)	//15kHz mode
+        if (coarse_divisor == 114) //15kHz mode
         {
-            for (int o = 0; o < 3; o++)	//MOD5 must be avoided!
+            for (int o = 0; o < 3; o++) //MOD5 must be avoided!
             {
                 if ((tmp_audf_up + cycle) % 5 == 0) tmp_audf_up++;
                 if ((tmp_audf_down + cycle) % 5 == 0) tmp_audf_down--;
             }
-        }
-        else if (timbre == TIMBRE_BUZZY_C)	//verify MOD3 integrity
+        } else if (timbre == TIMBRE_BUZZY_C) //verify MOD3 integrity
         {
-            for (int o = 0; o < 6; o++)
-            {
+            for (int o = 0; o < 6; o++) {
                 if ((tmp_audf_up + cycle) % 3 != 0 || (tmp_audf_up + cycle) % 5 == 0) tmp_audf_up++;
                 if ((tmp_audf_down + cycle) % 3 != 0 || (tmp_audf_down + cycle) % 5 == 0) tmp_audf_down--;
             }
-        }
-        else if (timbre == TIMBRE_GRITTY_C)	//verify neither MOD3 or MOD5 is used
+        } else if (timbre == TIMBRE_GRITTY_C) //verify neither MOD3 or MOD5 is used
         {
-            for (int o = 0; o < 6; o++)	//get the closest compromise up and down first
+            for (int o = 0; o < 6; o++) //get the closest compromise up and down first
             {
                 if ((tmp_audf_up + cycle) % 3 == 0 || (tmp_audf_up + cycle) % 5 == 0) tmp_audf_up++;
                 if ((tmp_audf_down + cycle) % 3 == 0 || (tmp_audf_down + cycle) % 5 == 0) tmp_audf_down--;
             }
-        }
-        else if (timbre == TIMBRE_UNSTABLE_C)	//verify MOD5 integrity
+        } else if (timbre == TIMBRE_UNSTABLE_C) //verify MOD5 integrity
         {
-            for (int o = 0; o < 6; o++)	//get the closest compromise up and down first
+            for (int o = 0; o < 6; o++) //get the closest compromise up and down first
             {
                 if ((tmp_audf_up + cycle) % 3 == 0 || (tmp_audf_up + cycle) % 5 != 0) tmp_audf_up++;
                 if ((tmp_audf_down + cycle) % 3 == 0 || (tmp_audf_down + cycle) % 5 != 0) tmp_audf_down--;
             }
-        }
-        else return 0;	//invalid parameter most likely
+        } else
+            return 0; //invalid parameter most likely
     }
 
     PITCH = GetPitch(tmp_audf_up, coarse_divisor, divisor, cycle);
-    tmp_freq_up = pitch - PITCH;	//first delta, up
+    tmp_freq_up = pitch - PITCH; //first delta, up
     PITCH = GetPitch(tmp_audf_down, coarse_divisor, divisor, cycle);
-    tmp_freq_down = PITCH - pitch;	//second delta, down
+    tmp_freq_down = PITCH - pitch; //second delta, down
     PITCH = tmp_freq_down - tmp_freq_up;
 
-    if (PITCH > 0) audf = tmp_audf_up; //positive, meaning delta up is closer than delta down
-    else audf = tmp_audf_down; //negative, meaning delta down is closer than delta up
+    if (PITCH > 0)
+        audf = tmp_audf_up; //positive, meaning delta up is closer than delta down
+    else
+        audf = tmp_audf_down; //negative, meaning delta down is closer than delta up
     return audf;
 }
 
 /// <summary> Calculate the true audio pitch output using the given parameters </summary>
 /// <param name = "tuning"> Tuning base pitch (in Hertz), usually the A-4 note </param>
 /// <param name = "temperament"> Temperament used in calculations, 0 for Equal Temperament, 1 to 29 (inclusive) for Presets, otherwise Custom Ratio will be assumed </param>
-/// <param name = "basenote"> Base note/key from which the tuning is calculated, typically it is the key of A- or C- </param> 
+/// <param name = "basenote"> Base note/key from which the tuning is calculated, typically it is the key of A- or C- </param>
 /// <param name = "semitone"> Semitones added to base note for calculating higher pitches </param>
-/// <returns> True audio pitch for a given note (in Hertz) </returns> 
+/// <returns> True audio pitch for a given note (in Hertz) </returns>
 double CTuning::GetTruePitch(double tuning, Temperament temperament, int basenote, int semitone)
 {
-    int notesnum = 12;	//unless specified otherwise
-    int note = (semitone + basenote) % notesnum;	//current note
-    double ratio = 0;	//will be used for calculations
-    double octave = 2;	//an octave is usually the frequency of a note multiplied by 2
-    double multi = 1; //octave multiplyer for the ratio
+    int notesnum = 12;                           //unless specified otherwise
+    int note = (semitone + basenote) % notesnum; //current note
+    double ratio = 0;                            //will be used for calculations
+    double octave = 2;                           //an octave is usually the frequency of a note multiplied by 2
+    double multi = 1;                            //octave multiplyer for the ratio
 
     //Equal temperament is generated using the 12th root of 2
-    if (temperament == NO_TEMPERAMENT)
-    {
+    if (temperament == NO_TEMPERAMENT) {
         ratio = pow(2.0, 1.0 / 12.0);
         return (tuning / 64) * pow(ratio, semitone + basenote);
     }
-    if (temperament >= TUNING_CUSTOM)	//custom temperament will be used using ratio
+    if (temperament >= TUNING_CUSTOM) //custom temperament will be used using ratio
     {
         octave = CUSTOM[notesnum];
         ratio = CUSTOM[note];
-    }
-    else	//any temperament preset will be used
+    } else //any temperament preset will be used
     {
-        for (int i = 0; i < (int)PRESETS_LENGTH; i++)
-        {
+        for (int i = 0; i < (int)PRESETS_LENGTH; i++) {
             if (temperament_preset[temperament][i]) continue;
             notesnum = i - 1;
             break;
@@ -442,19 +428,19 @@ double CTuning::GetTruePitch(double tuning, Temperament temperament, int basenot
 }
 
 /// <summary> Initialize the tuning variables, and generate the POKEY frequencies (AUDF) lookup tables into the emulated Atari memory </summary>
-void CTuning::InitTuning() {
-    if (!g_tuning.basetuning)	//if base tuning is 0.0, make sure to reset it, else the program could crash!
+void CTuning::InitTuning()
+{
+    if (!g_tuning.basetuning) //if base tuning is 0.0, make sure to reset it, else the program could crash!
     {
         MessageBox(g_hwnd, "An invalid tuning configuration has been detected!\n\nBasetuning is zero. ", "Program error", MB_ICONERROR);
         exit(1);
     }
 
-    g_notesperoctave = 12;	//by default, an octave uses 12 semitones...
+    g_notesperoctave = 12; //by default, an octave uses 12 semitones...
 
-    if (g_tuning.temperament > NO_TEMPERAMENT && g_tuning.temperament < TUNING_CUSTOM)	//...unless it is specified otherwise in the Temperament presets
+    if (g_tuning.temperament > NO_TEMPERAMENT && g_tuning.temperament < TUNING_CUSTOM) //...unless it is specified otherwise in the Temperament presets
     {
-        for (int i = 0; i < (int)PRESETS_LENGTH; i++)
-        {
+        for (int i = 0; i < (int)PRESETS_LENGTH; i++) {
             if (temperament_preset[g_tuning.temperament][i]) { continue; }
             g_notesperoctave = i - 1;
             break;
@@ -463,7 +449,7 @@ void CTuning::InitTuning() {
 
     // calculate the custom ratio used for each semitone
     //TODO: restructure this to something much better, and flexible
-    //these individual variables are just too uncomfortable to use that way 
+    //these individual variables are just too uncomfortable to use that way
     CUSTOM[0] = (double)g_tuningRatios.UNISON;
     CUSTOM[1] = (double)g_tuningRatios.MIN_2ND;
     CUSTOM[2] = (double)g_tuningRatios.MAJ_2ND;

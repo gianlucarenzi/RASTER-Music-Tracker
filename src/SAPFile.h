@@ -3,10 +3,7 @@
 #include "Song.h"
 #include "Memory.h"
 
-class CSAPFile
-{
-
-
+class CSAPFile {
 public:
     static constexpr int MAXSUBSONGS = 128; // Maximum number of subsongs in exported SAP file
 
@@ -64,6 +61,4 @@ private:
 
     static void Normalize(CString& string);
     static CString FormatMemoryAddress(MemoryAddress address);
-
 };
-

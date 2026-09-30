@@ -70,8 +70,10 @@ int main(int argc, char** argv)
             }
             std::function<QAction*(QMenu*, uint)> findAction = [&](QMenu* m, uint id) -> QAction* {
                 for (QAction* a : m->actions()) {
-                    if (a->menu()) { if (QAction* f = findAction(a->menu(), id)) return f; }
-                    else if (!a->isSeparator() && a->data().toUInt() == id) return a;
+                    if (a->menu()) {
+                        if (QAction* f = findAction(a->menu(), id)) return f;
+                    } else if (!a->isSeparator() && a->data().toUInt() == id)
+                        return a;
                 }
                 return nullptr;
             };
@@ -80,8 +82,10 @@ int main(int argc, char** argv)
                 QAction* action = nullptr;
                 for (QAction* top : window.menuBar()->actions())
                     if (top->menu() && (action = findAction(top->menu(), id))) break;
-                if (action) action->trigger();
-                else g_rmtHost->PostCommand(id);    // not in the menu (e.g. accelerators): WM_COMMAND
+                if (action)
+                    action->trigger();
+                else
+                    g_rmtHost->PostCommand(id); // not in the menu (e.g. accelerators): WM_COMMAND
                 QCoreApplication::processEvents();
             }
         });
@@ -106,7 +110,9 @@ int main(int argc, char** argv)
 
         // IDs that would close or exit the application - skip in tests
         static const QSet<uint> skipIds = {
-            (uint)ID_FILE_EXIT, (uint)ID_WANTEXIT, (uint)ID_APP_EXIT,
+            (uint)ID_FILE_EXIT,
+            (uint)ID_WANTEXIT,
+            (uint)ID_APP_EXIT,
         };
 
         QTimer::singleShot(300, &window, [&window] {
@@ -115,8 +121,10 @@ int main(int argc, char** argv)
                 QList<QAction*> result;
                 for (QAction* a : m->actions()) {
                     if (a->isSeparator()) continue;
-                    if (a->menu()) result += collectLeafs(a->menu());
-                    else           result << a;
+                    if (a->menu())
+                        result += collectLeafs(a->menu());
+                    else
+                        result << a;
                 }
                 return result;
             };

@@ -5,7 +5,7 @@
 #include "MidiBackend.h"
 
 #ifdef _WIN32
-    #include "WindowsMidiBackend.h"
+#include "WindowsMidiBackend.h"
 #endif
 
 #include "RtMidiBackend.h"

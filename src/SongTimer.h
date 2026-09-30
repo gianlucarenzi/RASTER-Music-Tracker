@@ -6,9 +6,7 @@
 
 #include <mutex>
 
-class CSongTimer
-{
-
+class CSongTimer {
 public:
     /// <summary>
     /// Immediately kill the timer event
@@ -36,7 +34,6 @@ public:
     void WaitForTimerRoutineProcessed();
 
 private:
-
     CSong* m_song;
     UINT m_timerRoutine;
     bool volatile busyInCallback;
@@ -48,4 +45,3 @@ private:
     std::mutex m_lock;
     bool m_stopped = false;
 };
-

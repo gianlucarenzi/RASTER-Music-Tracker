@@ -14,8 +14,8 @@
 #include <vector>
 
 #ifdef _WIN32
-    #include <windows.h>     // mmsystem.h needs the Windows base types (MinGW)
-    #include <mmsystem.h>
+#include <windows.h> // mmsystem.h needs the Windows base types (MinGW)
+#include <mmsystem.h>
 #endif
 
 /**
@@ -24,8 +24,7 @@
  * Uses Windows multimedia MIDI functions
  * Available only on Windows
  */
-class WindowsMidiBackend : public IMidiBackend
-{
+class WindowsMidiBackend : public IMidiBackend {
 public:
     WindowsMidiBackend();
     virtual ~WindowsMidiBackend();
@@ -53,11 +52,11 @@ public:
 private:
     // Windows MIDI objects
 #ifdef _WIN32
-    HMIDIOUT m_hMidiOut;     ///< MIDI output device handle
-    HMIDIIN m_hMidiIn;       ///< MIDI input device handle
+    HMIDIOUT m_hMidiOut; ///< MIDI output device handle
+    HMIDIIN m_hMidiIn;   ///< MIDI input device handle
 #else
-    void* m_hMidiOut;        // Dummy for non-Windows
-    void* m_hMidiIn;         // Dummy for non-Windows
+    void* m_hMidiOut; // Dummy for non-Windows
+    void* m_hMidiIn;  // Dummy for non-Windows
 #endif
 
     int m_output_port_count;

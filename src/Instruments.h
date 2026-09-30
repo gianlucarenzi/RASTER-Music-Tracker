@@ -10,8 +10,7 @@ extern const Tshpar shpar[NUMBER_OF_PARAMS];
 
 extern const Tshenv shenv[ENVROWS];
 
-class CInstruments
-{
+class CInstruments {
 public:
     CInstruments();
     ~CInstruments();
@@ -59,11 +58,11 @@ public:
     BYTE InstrToAtaRMF(int instr, unsigned char* ata, int max);
     BOOL AtaToInstr(unsigned char* ata, int instr);
 
-    BOOL AtaV0ToInstr(unsigned char* ata, int instr);	// Due to the loading of the old version
+    BOOL AtaV0ToInstr(unsigned char* ata, int instr); // Due to the loading of the old version
 
 private:
-    TInstrument* m_instr;					// Pointer to TInstrument struct, used for instruments data
-    void DrawName(int instrNr);				// Draw the instrument name (Show edit state with cursor position)
+    TInstrument* m_instr;       // Pointer to TInstrument struct, used for instruments data
+    void DrawName(int instrNr); // Draw the instrument name (Show edit state with cursor position)
     void DrawParameter(int p, int instrNr);
     void DrawEnv(int e, int instrNr);
     void DrawNoteTableValue(int p, int instrNr);

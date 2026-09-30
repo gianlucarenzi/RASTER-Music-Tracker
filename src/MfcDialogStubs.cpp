@@ -91,7 +91,7 @@ void CInsertCopyOrCloneOfSongLinesDlg::OnOK() {}
 CFileNewDlg::CFileNewDlg(CWnd* pParent) : CDialog(CFileNewDlg::IDD, pParent)
 {
     m_maxTrackLength = 64;
-    m_comboMonoOrStereo = 1;		// 0 = mono 4 tracks, 1 = stereo 8 tracks
+    m_comboMonoOrStereo = 1; // 0 = mono 4 tracks, 1 = stereo 8 tracks
 }
 void CFileNewDlg::DoDataExchange(CDataExchange*) {}
 void CFileNewDlg::OnOK() {}
@@ -180,7 +180,8 @@ BOOL CExportRelocatableAsmForRmtPlayer::OnInitDialog() { return TRUE; }
 CSAPFileExportDialog::CSAPFileExportDialog(CWnd* pParent) : CDialog(CSAPFileExportDialog::IDD, pParent) {}
 void CSAPFileExportDialog::DoDataExchange(CDataExchange*) {}
 
-bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
+bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile)
+{
     CSAPFileExportDialog dlg;
     sapFile.Init(song);
 
@@ -191,8 +192,7 @@ bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
     song.GetSubsongParts(dlg.m_subsongs);
 
     dlg.m_title.Format("Export as SAP File of Type '%s'", (LPCTSTR)sapFile.GetType());
-    if (dlg.DoModal() != IDOK)
-    {
+    if (dlg.DoModal() != IDOK) {
         return false;
     }
 
@@ -202,29 +202,28 @@ bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
 
     // Parses the "Subsongs" line (only the number of subsongs is used, as
     // in SAPFileExportDialog.cpp)
-    CString str = dlg.m_subsongs + " ";	// Add space after the last character for parsing
+    CString str = dlg.m_subsongs + " "; // Add space after the last character for parsing
     str.MakeUpper();
     int subsongs = 0;
     byte n = 0, isn = 0;
 
-    for (int i = 0; i < str.GetLength(); i++)
-    {
+    for (int i = 0; i < str.GetLength(); i++) {
         char a = str.GetAt(i);
-        if (a >= '0' && a <= '9') { n = (n << 4) + (a - '0'); isn = 1; }
-        else
-            if (a >= 'A' && a <= 'F') { n = (n << 4) + (a - 'A' + 10); isn = 1; }
-            else
-            {
-                if (isn)
-                {
-                    subsongs++;
-                    if (subsongs >= CSAPFile::MAXSUBSONGS)
-                    {
-                        break;
-                    }
-                    isn = 0;
+        if (a >= '0' && a <= '9') {
+            n = (n << 4) + (a - '0');
+            isn = 1;
+        } else if (a >= 'A' && a <= 'F') {
+            n = (n << 4) + (a - 'A' + 10);
+            isn = 1;
+        } else {
+            if (isn) {
+                subsongs++;
+                if (subsongs >= CSAPFile::MAXSUBSONGS) {
+                    break;
                 }
+                isn = 0;
             }
+        }
     }
     sapFile.SetSongs(subsongs);
     return true;
@@ -302,7 +301,9 @@ void CRenumberInstrumentsDlg::DoDataExchange(CDataExchange*) {}
 BOOL CRenumberInstrumentsDlg::OnInitDialog() { return TRUE; }
 void CRenumberInstrumentsDlg::OnOK() {}
 
-#define RMT_EMPTY_MAP(c) BEGIN_MESSAGE_MAP(c, CDialog) END_MESSAGE_MAP()
+#define RMT_EMPTY_MAP(c)          \
+    BEGIN_MESSAGE_MAP(c, CDialog) \
+    END_MESSAGE_MAP()
 RMT_EMPTY_MAP(CEffectsDlg)
 RMT_EMPTY_MAP(COctaveSelectDlg)
 RMT_EMPTY_MAP(CVolumeSelectDlg)

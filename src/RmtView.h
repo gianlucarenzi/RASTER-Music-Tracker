@@ -11,8 +11,7 @@
 
 #include "RmtDoc.h"
 
-class CRmtView : public CView
-{
+class CRmtView : public CView {
 protected: // create from serialization only
     CRmtView();
     DECLARE_DYNCREATE(CRmtView)
@@ -36,13 +35,13 @@ public:
     // Used to handle the window size and most dynamic elements related to it
     void Resize();
 
-    int  m_width;
-    int  m_height;
+    int m_width;
+    int m_height;
 
     CBitmap m_mem_bitmap;
-    CDC		m_mem_dc;
+    CDC m_mem_dc;
     CBitmap m_gfx_bitmap;
-    CDC		m_gfx_dc;
+    CDC m_gfx_dc;
 
     CPen* m_pen1;
     CPen* m_penorig;
@@ -64,22 +63,22 @@ private:
 
     // Operations
 public:
-
     // Overrides
-        // ClassWizard generated virtual function overrides
-        //{{AFX_VIRTUAL(CRmtView)
+    // ClassWizard generated virtual function overrides
+    //{{AFX_VIRTUAL(CRmtView)
 public:
-    virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-    virtual void OnSize(UINT nType, int cx, int cy);	//allows proper window resize and adjust things related to it
+    virtual void OnDraw(CDC* pDC);                   // overridden to draw this view
+    virtual void OnSize(UINT nType, int cx, int cy); //allows proper window resize and adjust things related to it
     virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
     virtual void OnInitialUpdate();
+
 protected:
     virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
     virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
     virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
     //}}AFX_VIRTUAL
 
-// Implementation
+    // Implementation
 public:
     virtual ~CRmtView();
 #ifdef _DEBUG
@@ -88,7 +87,6 @@ public:
 #endif
 
 protected:
-
     // Generated message map functions
 protected:
     //{{AFX_MSG(CRmtView)
@@ -273,10 +271,9 @@ protected:
     //}}AFX_MSG
     afx_msg void OnWantExit();
     DECLARE_MESSAGE_MAP()
-
 };
 
-#ifndef _DEBUG  // debug version in RmtView.cpp
+#ifndef _DEBUG // debug version in RmtView.cpp
 inline CRmtDoc* CRmtView::GetDocument()
 {
     return (CRmtDoc*)m_pDocument;

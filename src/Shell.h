@@ -1,9 +1,7 @@
 #pragma once
 #include "PlatformTypes.h"
 
-class CShell
-{
+class CShell {
 public:
     static BOOL OpenFile(const CString& filePath);
 };
-

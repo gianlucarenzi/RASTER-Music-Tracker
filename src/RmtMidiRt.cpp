@@ -38,14 +38,11 @@ static std::vector<std::string> InputPortNames()
         for (unsigned int i = 0; i < count; i++) {
             std::string name = in.getPortName(i);
             size_t space = name.find_last_of(' ');
-            if (space != std::string::npos && space + 1 < name.size()
-                && name.find_first_not_of("0123456789:", space + 1) == std::string::npos
-                && name.find(':', space + 1) != std::string::npos)
+            if (space != std::string::npos && space + 1 < name.size() && name.find_first_not_of("0123456789:", space + 1) == std::string::npos && name.find(':', space + 1) != std::string::npos)
                 name.erase(space);
             names.push_back(name);
         }
-    }
-    catch (const RtMidiError&) {
+    } catch (const RtMidiError&) {
     }
     return names;
 }
@@ -61,7 +58,10 @@ static void MidiInCallback(double, std::vector<unsigned char>* message, void*)
 
 #else
 
-static std::vector<std::string> InputPortNames() { return {}; }
+static std::vector<std::string> InputPortNames()
+{
+    return {};
+}
 
 #endif
 
@@ -110,17 +110,14 @@ int CRmtMidi::MidiInit()
 
     MidiOff();
 
-    if (m_MidiInDeviceName[0] == 0)
-    {
+    if (m_MidiInDeviceName[0] == 0) {
         m_MidiInDeviceId = -1;
-        return 1;	//does not want a MIDI device
+        return 1; //does not want a MIDI device
     }
 
     std::vector<std::string> names = InputPortNames();
-    for (size_t i = 0; i < names.size(); i++)
-    {
-        if (names[i] == m_MidiInDeviceName)
-        {
+    for (size_t i = 0; i < names.size(); i++) {
+        if (names[i] == m_MidiInDeviceName) {
             m_MidiInDeviceId = (int)i;
             if (wasOnOff) MidiOn();
             return 1;
@@ -138,11 +135,10 @@ int CRmtMidi::MidiInit()
 int CRmtMidi::MidiOn()
 {
     // Init the MIDI channel buffers
-    for (int i = 0; i < 16; i++)
-    {
-        m_LastNoteOnChannel[i] = -1;	// Last pressed keys on each channel
-        m_NoteVolumeOnChannel[i] = 0;	// Volume
-        m_InstrumentOnChannel[i] = 0;	// Instrument numbers
+    for (int i = 0; i < 16; i++) {
+        m_LastNoteOnChannel[i] = -1;  // Last pressed keys on each channel
+        m_NoteVolumeOnChannel[i] = 0; // Volume
+        m_InstrumentOnChannel[i] = 0; // Instrument numbers
     }
 
     if (m_MidiInDeviceId < 0) return 0;
@@ -153,13 +149,12 @@ int CRmtMidi::MidiOn()
     try {
         in = new RtMidiIn(RtMidi::UNSPECIFIED, "RMT");
         in->openPort(m_MidiInDeviceId, "MIDI IN");
-        in->ignoreTypes(true, true, true);			// no SysEx, timing or active sensing
+        in->ignoreTypes(true, true, true); // no SysEx, timing or active sensing
         in->setCallback(MidiInCallback);
         m_MidiInHandle = in;
         m_MidiIsOn = 1;
         return 1;
-    }
-    catch (const RtMidiError&) {
+    } catch (const RtMidiError&) {
         delete in;
     }
 #endif

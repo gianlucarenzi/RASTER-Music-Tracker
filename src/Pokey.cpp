@@ -18,7 +18,7 @@ extern HWND g_hwnd;
 
 APokeySound_Initialize_PROC APokeySound_Initialize;
 APokeySound_PutByte_PROC APokeySound_PutByte;
-APokeySound_GetRandom_PROC APokeySound_GetRandom;	// Unused?
+APokeySound_GetRandom_PROC APokeySound_GetRandom; // Unused?
 APokeySound_Generate_PROC APokeySound_Generate;
 APokeySound_About_PROC APokeySound_About;
 
@@ -26,7 +26,7 @@ APokeySound_About_PROC APokeySound_About;
 Pokey_Initialise_PROC Pokey_Initialise;
 Pokey_SoundInit_PROC Pokey_SoundInit;
 Pokey_Process_PROC Pokey_Process;
-Pokey_GetByte_PROC Pokey_GetByte;	// Unused?
+Pokey_GetByte_PROC Pokey_GetByte; // Unused?
 Pokey_PutByte_PROC Pokey_PutByte;
 Pokey_About_PROC Pokey_About;
 
@@ -46,11 +46,13 @@ CPokey::~CPokey()
 }
 
 
-void CPokey::InitSound() {
+void CPokey::InitSound()
+{
     m_soundDriver = InitPokeyDll();
 }
 
-void CPokey::DeInitSound() {
+void CPokey::DeInitSound()
+{
     m_soundDriver = NONE;
     m_about = "No POKEY emulation loaded";
 
@@ -61,7 +63,8 @@ void CPokey::DeInitSound() {
     DeInitPokeyDll();
 }
 
-CString CPokey::GetAbout() const {
+CString CPokey::GetAbout() const
+{
     return m_about;
 }
 
@@ -73,8 +76,7 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
     m_about = "";
 
     // apokeysnd.dll is first loaded, will be used in priority if it is found
-    if ((m_pokey_dll = LoadLibrary("apokeysnd.dll")))
-    {
+    if ((m_pokey_dll = LoadLibrary("apokeysnd.dll"))) {
         CString warningMessage = "";
 
         APokeySound_Initialize = (APokeySound_Initialize_PROC)GetProcAddress(m_pokey_dll, "APokeySound_Initialize");
@@ -93,9 +95,8 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
         if (!APokeySound_About) warningMessage += "APokeySound_About\n";
 
         // Get "About" data from apokeysnd driver, then finalise the inisialisation
-        if (warningMessage.IsEmpty())
-        {
-            const char* name, * author, * description;
+        if (warningMessage.IsEmpty()) {
+            const char *name, *author, *description;
             APokeySound_About(&name, &author, &description);
             m_about.Format("%s\n%s\n%s", name, author, description);
             return APOKEYSND;
@@ -107,8 +108,7 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
     }
 
     // sa_pokey.dll will be loaded next if apokeysnd.dll was not found or had an error, as a fallback
-    if ((m_pokey_dll = LoadLibrary("sa_pokey.dll")))
-    {
+    if ((m_pokey_dll = LoadLibrary("sa_pokey.dll"))) {
         CString warningMessage = "";
 
         Pokey_Initialise = (Pokey_Initialise_PROC)GetProcAddress(m_pokey_dll, "Pokey_Initialise");
@@ -130,9 +130,8 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
         if (!Pokey_About) warningMessage += "Pokey_About\n";
 
         // Get "About" data from sa_pokey driver, then finalise the inisialisation
-        if (warningMessage.IsEmpty())
-        {
-            char* name, * author, * description;
+        if (warningMessage.IsEmpty()) {
+            char *name, *author, *description;
             Pokey_About(&name, &author, &description);
             m_about.Format("%s\n%s\n%s", name, author, description);
             Pokey_Initialise(0, 0);
@@ -152,51 +151,50 @@ CPokey::SoundDriver CPokey::InitPokeyDll()
     APokeySound_About = RmtBuiltin_APokeySound_About;
     s_builtinPokey = true;
     {
-        const char* name, * author, * description;
+        const char *name, *author, *description;
         APokeySound_About(&name, &author, &description);
         m_about.Format("%s\n%s\n%s", name, author, description);
     }
     return APOKEYSND;
 }
 
-void CPokey::DeInitPokeyDll() {
-
-    if (m_pokey_dll)
-    {
+void CPokey::DeInitPokeyDll()
+{
+    if (m_pokey_dll) {
         FreeLibrary(m_pokey_dll);
         m_pokey_dll = NULL;
     }
-
 }
 
-CPokey::SoundDriver CPokey::GetSoundDriver() const {
+CPokey::SoundDriver CPokey::GetSoundDriver() const
+{
     return m_soundDriver;
 }
 
-bool CPokey::IsSoundDriverLoaded() const {
+bool CPokey::IsSoundDriverLoaded() const
+{
     return m_soundDriver != NONE;
 }
 
 
-void CPokey::InitPokeys(const bool ntsc, const bool stereo, const DWORD samplesPerSec) {
+void CPokey::InitPokeys(const bool ntsc, const bool stereo, const DWORD samplesPerSec)
+{
+    if (!m_initialized || m_ntsc != ntsc || m_stereo != stereo || m_samplesPerSec != samplesPerSec) {
+        switch (GetSoundDriver()) {
+            case CPokey::SoundDriver::APOKEYSND:
+                APokeySound_Initialize(stereo);
+                if (s_builtinPokey) {
+                    RmtBuiltin_APokeySound_SetMainClock(CAtari::GetClockFrequency(ntsc)); // apokeysnd.dll: PAL only
+                }
 
-    if (!m_initialized || m_ntsc != ntsc || m_stereo != stereo || m_samplesPerSec!= samplesPerSec) {
-        switch (GetSoundDriver())
-        {
-        case CPokey::SoundDriver::APOKEYSND:
-            APokeySound_Initialize(stereo);
-            if (s_builtinPokey) {
-                RmtBuiltin_APokeySound_SetMainClock(CAtari::GetClockFrequency(ntsc));   // apokeysnd.dll: PAL only
-            }
+                break;
 
-            break;
-
-        case CPokey::SoundDriver::SA_POKEY:
-            // Currently cast to WORD, because no rate avve 64kHz are supported.
-            Pokey_SoundInit(CAtari::GetClockFrequency(ntsc), (WORD)samplesPerSec, stereo ? 2 : 1);
-            break;
-        default:
-            break;
+            case CPokey::SoundDriver::SA_POKEY:
+                // Currently cast to WORD, because no rate avve 64kHz are supported.
+                Pokey_SoundInit(CAtari::GetClockFrequency(ntsc), (WORD)samplesPerSec, stereo ? 2 : 1);
+                break;
+            default:
+                break;
         }
 
         m_initialized = true;
@@ -206,19 +204,19 @@ void CPokey::InitPokeys(const bool ntsc, const bool stereo, const DWORD samplesP
     }
 }
 
-void CPokey::PutByte(const byte address, const byte value) {
-    switch (GetSoundDriver())
-    {
-    case CPokey::SoundDriver::APOKEYSND:
+void CPokey::PutByte(const byte address, const byte value)
+{
+    switch (GetSoundDriver()) {
+        case CPokey::SoundDriver::APOKEYSND:
 
-        APokeySound_PutByte(address, value);
-        break;
+            APokeySound_PutByte(address, value);
+            break;
 
-    case CPokey::SoundDriver::SA_POKEY:
+        case CPokey::SoundDriver::SA_POKEY:
 
-        Pokey_PutByte(address, value);
-        break;
-    default:
-        break;
+            Pokey_PutByte(address, value);
+            break;
+        default:
+            break;
     }
 }

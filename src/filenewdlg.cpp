@@ -20,7 +20,7 @@ CFileNewDlg::CFileNewDlg(CWnd* pParent /*=NULL*/)
 {
     //{{AFX_DATA_INIT(CFileNewDlg)
     m_maxTrackLength = 64;
-    m_comboMonoOrStereo = 1;		// 0 = mono 4 tracks, 1 = stereo 8 tracks
+    m_comboMonoOrStereo = 1; // 0 = mono 4 tracks, 1 = stereo 8 tracks
     //}}AFX_DATA_INIT
 }
 
@@ -36,10 +36,12 @@ void CFileNewDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CFileNewDlg, CDialog)
     //{{AFX_MSG_MAP(CFileNewDlg)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CFileNewDlg message handlers
@@ -51,8 +53,7 @@ void CFileNewDlg::OnOK()
     CString s;
     ed->GetWindowText(s);
     int mtl = atoi((LPCTSTR)s);
-    if (mtl > 64 && mtl <= TRACKLEN)
-    {
+    if (mtl > 64 && mtl <= TRACKLEN) {
         int r = MessageBox("Warning:\nLength of tracks is greater than 64.\nRMT's internal module format allows for a maximum of\n256 bytes for each track. It is not recommended to use\na large number of events in long tracks.\nEach track event (note or speed command) uses about 2 bytes.\n\nWhen saving the RMT file it will report any problems with it.\n\nOk?", "New RMT module - Warning", MB_YESNO | MB_ICONQUESTION);
         if (r != IDYES) return;
     }
@@ -84,11 +85,13 @@ void CChangeMaxtracklenDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CChangeMaxtracklenDlg, CDialog)
     //{{AFX_MSG_MAP(CChangeMaxtracklenDlg)
         // NOTE: the ClassWizard will add message map macros here
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CChangeMaxtracklenDlg message handlers

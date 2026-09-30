@@ -6,7 +6,7 @@
 #include <cstring>
 
 #ifdef RTMIDI_AVAILABLE
-    #include <RtMidi.h>
+#include <RtMidi.h>
 #endif
 
 RtMidiBackend::RtMidiBackend()
@@ -59,8 +59,7 @@ bool RtMidiBackend::InitRtMidi()
         m_port_count = static_cast<int>(((RtMidiOut*)m_midiOut)->getPortCount());
 
         // Enumerate port names
-        if (!EnumeratePorts())
-        {
+        if (!EnumeratePorts()) {
             m_error_message = "Failed to enumerate MIDI ports";
             DeinitRtMidi();
             return false;
@@ -81,8 +80,7 @@ bool RtMidiBackend::InitRtMidi()
 void RtMidiBackend::DeinitRtMidi()
 {
 #ifdef RTMIDI_AVAILABLE
-    if (m_midiOut)
-    {
+    if (m_midiOut) {
         try {
             RtMidiOut* out = static_cast<RtMidiOut*>(m_midiOut);
             if (out->isPortOpen())
@@ -93,8 +91,7 @@ void RtMidiBackend::DeinitRtMidi()
         m_midiOut = nullptr;
     }
 
-    if (m_midiIn)
-    {
+    if (m_midiIn) {
         try {
             RtMidiIn* in = static_cast<RtMidiIn*>(m_midiIn);
             if (in->isPortOpen())
@@ -111,7 +108,7 @@ void RtMidiBackend::DeinitRtMidi()
     m_port_names.clear();
 }
 
-#else  // !RTMIDI_AVAILABLE
+#else // !RTMIDI_AVAILABLE
 
 // Stub implementations for when RtMidi is not available
 bool RtMidiBackend::InitRtMidi()
@@ -124,7 +121,7 @@ void RtMidiBackend::DeinitRtMidi()
 {
 }
 
-#endif  // RTMIDI_AVAILABLE
+#endif // RTMIDI_AVAILABLE
 
 int RtMidiBackend::GetPortCount() const
 {
@@ -140,14 +137,12 @@ std::string RtMidiBackend::GetPortName(int portIndex) const
 
 bool RtMidiBackend::OpenPort(int portIndex)
 {
-    if (!m_midiOut)
-    {
+    if (!m_midiOut) {
         m_error_message = "RtMidiOut not initialized";
         return false;
     }
 
-    if (portIndex < 0 || portIndex >= m_port_count)
-    {
+    if (portIndex < 0 || portIndex >= m_port_count) {
         m_error_message = "Invalid port index";
         return false;
     }
@@ -174,8 +169,7 @@ bool RtMidiBackend::OpenPort(int portIndex)
 void RtMidiBackend::ClosePort()
 {
 #ifdef RTMIDI_AVAILABLE
-    if (m_midiOut && m_current_port >= 0)
-    {
+    if (m_midiOut && m_current_port >= 0) {
         try {
             RtMidiOut* out = static_cast<RtMidiOut*>(m_midiOut);
             if (out->isPortOpen())
@@ -194,8 +188,7 @@ bool RtMidiBackend::IsPortOpen() const
 
 bool RtMidiBackend::SendNoteOn(uint8_t channel, uint8_t note, uint8_t velocity)
 {
-    if (!m_midiOut || !IsPortOpen())
-    {
+    if (!m_midiOut || !IsPortOpen()) {
         m_error_message = "No MIDI port open";
         return false;
     }
@@ -222,8 +215,7 @@ bool RtMidiBackend::SendNoteOn(uint8_t channel, uint8_t note, uint8_t velocity)
 
 bool RtMidiBackend::SendNoteOff(uint8_t channel, uint8_t note, uint8_t velocity)
 {
-    if (!m_midiOut || !IsPortOpen())
-    {
+    if (!m_midiOut || !IsPortOpen()) {
         m_error_message = "No MIDI port open";
         return false;
     }
@@ -250,8 +242,7 @@ bool RtMidiBackend::SendNoteOff(uint8_t channel, uint8_t note, uint8_t velocity)
 
 bool RtMidiBackend::SendControlChange(uint8_t channel, uint8_t controller, uint8_t value)
 {
-    if (!m_midiOut || !IsPortOpen())
-    {
+    if (!m_midiOut || !IsPortOpen()) {
         m_error_message = "No MIDI port open";
         return false;
     }
@@ -278,8 +269,7 @@ bool RtMidiBackend::SendControlChange(uint8_t channel, uint8_t controller, uint8
 
 bool RtMidiBackend::SendProgramChange(uint8_t channel, uint8_t program)
 {
-    if (!m_midiOut || !IsPortOpen())
-    {
+    if (!m_midiOut || !IsPortOpen()) {
         m_error_message = "No MIDI port open";
         return false;
     }
@@ -332,42 +322,34 @@ bool RtMidiBackend::PollMidiInput(MidiEvent& event)
         RtMidiIn* in = static_cast<RtMidiIn*>(m_midiIn);
         std::vector<unsigned char> message;
         double stamp = in->getMessage(&message);
-        
-        if (message.size() > 0)
-        {
+
+        if (message.size() > 0) {
             // Parse MIDI message
-            event.timestamp = static_cast<uint32_t>(stamp * 1000);  // Convert to ms
-            
+            event.timestamp = static_cast<uint32_t>(stamp * 1000); // Convert to ms
+
             unsigned char status = message[0];
             event.type = MidiMessageType::Unknown;
             event.channel = status & 0x0F;
-            
+
             // Determine message type
-            if ((status & 0xF0) == 0x90 && message.size() >= 3)
-            {
+            if ((status & 0xF0) == 0x90 && message.size() >= 3) {
                 event.type = MidiMessageType::NoteOn;
-                event.data1 = message[1];  // Note
-                event.data2 = message[2];  // Velocity
-            }
-            else if ((status & 0xF0) == 0x80 && message.size() >= 3)
-            {
+                event.data1 = message[1]; // Note
+                event.data2 = message[2]; // Velocity
+            } else if ((status & 0xF0) == 0x80 && message.size() >= 3) {
                 event.type = MidiMessageType::NoteOff;
-                event.data1 = message[1];  // Note
-                event.data2 = message[2];  // Velocity
-            }
-            else if ((status & 0xF0) == 0xB0 && message.size() >= 3)
-            {
+                event.data1 = message[1]; // Note
+                event.data2 = message[2]; // Velocity
+            } else if ((status & 0xF0) == 0xB0 && message.size() >= 3) {
                 event.type = MidiMessageType::ControlChange;
-                event.data1 = message[1];  // Controller
-                event.data2 = message[2];  // Value
-            }
-            else if ((status & 0xF0) == 0xC0 && message.size() >= 2)
-            {
+                event.data1 = message[1]; // Controller
+                event.data2 = message[2]; // Value
+            } else if ((status & 0xF0) == 0xC0 && message.size() >= 2) {
                 event.type = MidiMessageType::ProgramChange;
-                event.data1 = message[1];  // Program
+                event.data1 = message[1]; // Program
                 event.data2 = 0;
             }
-            
+
             return true;
         }
     } catch (const RtMidiError& e) {
@@ -395,8 +377,7 @@ bool RtMidiBackend::EnumeratePorts()
 #ifdef RTMIDI_AVAILABLE
     try {
         RtMidiOut* out = static_cast<RtMidiOut*>(m_midiOut);
-        for (int i = 0; i < m_port_count; i++)
-        {
+        for (int i = 0; i < m_port_count; i++) {
             try {
                 std::string portName = out->getPortName(i);
                 if (!portName.empty())

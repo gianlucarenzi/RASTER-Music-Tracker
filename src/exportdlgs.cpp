@@ -7,7 +7,7 @@
 #include "ASMFileExporter.h"
 
 
-extern CSong			g_Song;
+extern CSong g_Song;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,6 +41,7 @@ void CExportStrippedRMTDialog::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CExportStrippedRMTDialog, CDialog)
     //{{AFX_MSG_MAP(CExpRMTDlg)
     ON_EN_CHANGE(IDC_ADDR, OnChangeAddr)
@@ -51,6 +52,7 @@ BEGIN_MESSAGE_MAP(CExportStrippedRMTDialog, CDialog)
     ON_CBN_SELCHANGE(IDC_COMBO_ASM_FORMAT, OnCbnSelchangeComboAsmFormat)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CExpRMTDlg message handlers
@@ -80,7 +82,7 @@ BOOL CExportStrippedRMTDialog::OnInitDialog()
 
     ChangeParams();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -91,24 +93,20 @@ void CExportStrippedRMTDialog::ChangeParams()
     CString s;
     char* ptrToEndInString;
     m_ctrlExportAddress.GetWindowText(s);
-    int adr = strtoul(s, &ptrToEndInString, 16);		// Parse the HEX address
+    int adr = strtoul(s, &ptrToEndInString, 16); // Parse the HEX address
 
     int idx = m_cmbAsmFormat.GetCurSel();
     m_assemblerFormat = (AssemblerFormat)(int)m_cmbAsmFormat.GetItemData(idx);
 
     m_sfxSupport = m_ctrlWithSfx.GetCheck();
-    if (!m_sfxSupport)
-    {
-        if (adr > 0x10000 - m_moduleLengthForStrippedRMT)
-        {
+    if (!m_sfxSupport) {
+        if (adr > 0x10000 - m_moduleLengthForStrippedRMT) {
             adr = 0x10000 - m_moduleLengthForStrippedRMT;
         }
         m_exportAddr = adr;
         s.Format("=>  $%04X - $%04X , length $%04X (%u bytes)", m_exportAddr, m_exportAddr + m_moduleLengthForStrippedRMT - 1, m_moduleLengthForStrippedRMT, m_moduleLengthForStrippedRMT);
         m_c_warning.SetWindowText("Warning:\nThis output file doesn't contain any unused or empty tracks and instruments, song name and names of all instruments.");
-    }
-    else
-    {
+    } else {
         if (adr > 0x10000 - m_moduleLengthForSFX) adr = 0x10000 - m_moduleLengthForSFX;
         m_exportAddr = adr;
         s.Format("=>  $%04X - $%04X , length $%04X (%u bytes)", m_exportAddr, m_exportAddr + m_moduleLengthForSFX - 1, m_moduleLengthForSFX, m_moduleLengthForSFX);
@@ -121,7 +119,7 @@ void CExportStrippedRMTDialog::ChangeParams()
 
     BYTE* instrsav = (m_sfxSupport) ? m_savedInstrFlagsForSFX : m_savedInstrFlagsForStrippedRMT;
     BYTE* tracksav = (m_sfxSupport) ? m_savedTracksFlagsForSFX : m_savedTracksFlagsForStrippedRMT;
-    CASMFileExporter::ComposeRMTFEATstring(*m_song,  s, m_filename, instrsav, tracksav, m_sfxSupport, m_globalVolumeFade, m_noStartingSongLine, m_assemblerFormat);
+    CASMFileExporter::ComposeRMTFEATstring(*m_song, s, m_filename, instrsav, tracksav, m_sfxSupport, m_globalVolumeFade, m_noStartingSongLine, m_assemblerFormat);
     m_c_rmtfeat.SetWindowText(s);
 }
 
@@ -198,6 +196,7 @@ void CExpMSXDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CExpMSXDlg, CDialog)
     //{{AFX_MSG_MAP(CExpMSXDlg)
     ON_EN_CHANGE(IDC_EDIT, OnChangeTxtedit)
@@ -208,6 +207,7 @@ BEGIN_MESSAGE_MAP(CExpMSXDlg, CDialog)
 
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CExpMSXDlg message handlers
@@ -237,7 +237,7 @@ BOOL CExpMSXDlg::OnInitDialog()
     m_edit.SetWindowText(m_txt);
     ChangeParams();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -247,26 +247,22 @@ void CExpMSXDlg::ChangeParams()
     CString s, l, d, d4th, d5th;
     m_edit.GetWindowText(s);
     int i, from = 0, line = 0;
-    while (from < s.GetLength() && line < 5)
-    {
+    while (from < s.GetLength() && line < 5) {
         i = s.Find("\n", from);
-        if (i >= 0)
-        {
+        if (i >= 0) {
             int len = i - from;
             if (len > 40) len = 40;
             l = s.Mid(from, len) + "\x0d\x0a";
             d += l;
-            if (line != 4) d4th += l;	//without line 5
-            if (line != 3) d5th += l;	//without line 4
+            if (line != 4) d4th += l; //without line 5
+            if (line != 3) d5th += l; //without line 4
             from = i + 1;
             line++;
-        }
-        else
-        {
+        } else {
             l = s.Mid(from, 40);
             d += l;
-            if (line != 4) d4th += l;	//without line 5
-            if (line != 3) d5th += l;	//without line 4
+            if (line != 4) d4th += l; //without line 5
+            if (line != 3) d5th += l; //without line 4
             break;
         }
     }
@@ -281,8 +277,7 @@ void CExpMSXDlg::ChangeParams()
     m_scroll1.EnableWindow(meter);
     m_colorinfotext.EnableWindow(meter);
 
-    GetDlgItem(IDC_MSXSHUFFLE)->EnableWindow(meter);	//disable the checkbox
-
+    GetDlgItem(IDC_MSXSHUFFLE)->EnableWindow(meter); //disable the checkbox
 }
 
 void CExpMSXDlg::OnChangeTxtedit()
@@ -304,38 +299,38 @@ void CExpMSXDlg::OnCheck2()
 
 void CExpMSXDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
-    if (pScrollBar == &m_scroll1)
-    {
+    if (pScrollBar == &m_scroll1) {
         int c = g_msxcol / 2;
-        if (nSBCode == SB_LINELEFT) c--;
-        else
-            if (nSBCode == SB_LINERIGHT) c++;
-            else
-                if (nSBCode == SB_PAGELEFT) c += 8;
-                else
-                    if (nSBCode == SB_PAGERIGHT) c -= 8;
-                    else
-                        if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK) c = nPos;
+        if (nSBCode == SB_LINELEFT)
+            c--;
+        else if (nSBCode == SB_LINERIGHT)
+            c++;
+        else if (nSBCode == SB_PAGELEFT)
+            c += 8;
+        else if (nSBCode == SB_PAGERIGHT)
+            c -= 8;
+        else if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK)
+            c = nPos;
 
-        if (c > 127) c = 127;
-        else
-            if (c < 1) c = 1;
+        if (c > 127)
+            c = 127;
+        else if (c < 1)
+            c = 1;
 
         g_msxcol = c * 2;
         m_scroll1.SetScrollPos(c);
         CString s;
 
-        const char* bar[] = { "Gray","Rust","Orange","Red-orange","Pink","Purple","Cobalt blue","Blue",
-            "Medium blue","Dark blue","Blue-grey","Olive green","Medium green","Dark green","Orange-green","Brown" };
+        const char* bar[] = { "Gray", "Rust", "Orange", "Red-orange", "Pink", "Purple", "Cobalt blue", "Blue",
+                              "Medium blue", "Dark blue", "Blue-grey", "Olive green", "Medium green", "Dark green", "Orange-green", "Brown" };
 
         // NTSC color names may or may not be correct yet
         // const char *bar[]={"Black","Rust","Red-orange","Dark-orange","Red","Lavender","Cobalt blue","Ultramarine",
-        //	"Medium blue","Dark blue","Blue-grey","Olive green","Medium green","Dark green","Orange-green","Orange"};		
+        //	"Medium blue","Dark blue","Blue-grey","Olive green","Medium green","Dark green","Orange-green","Orange"};
 
         s.Format("%i = %s %i", g_msxcol, bar[g_msxcol / 16], g_msxcol % 16);
         m_colorinfotext.SetWindowText((LPCTSTR)s);
-    }
-    else
+    } else
         CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }
 
@@ -374,6 +369,7 @@ void CExportAsmDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CExportAsmDlg, CDialog)
     //{{AFX_MSG_MAP(CExportAsmDlg)
     ON_BN_CLICKED(IDC_RADIO1, OnRadio)
@@ -385,6 +381,7 @@ BEGIN_MESSAGE_MAP(CExportAsmDlg, CDialog)
     ON_BN_CLICKED(IDC_RADIO7, OnRadio)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CExportAsmDlg message handlers
@@ -404,15 +401,14 @@ BOOL CExportAsmDlg::OnInitDialog()
 
     OnRadio();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
 }
 
 void CExportAsmDlg::OnOK()
 {
     constexpr int SIZE = 8;
     int radioState[SIZE]{};
-    for (int i = 1; i <= SIZE - 1; i++)
-    {
+    for (int i = 1; i <= SIZE - 1; i++) {
         radioState[i] = ((CButton*)GetDlgItem(IDC_RADIO1 - 1 + i))->GetCheck();
     }
     m_exportType = radioState[1] + radioState[2] * 2;
@@ -461,6 +457,7 @@ void CExportRelocatableAsmForRmtPlayer::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CExportRelocatableAsmForRmtPlayer, CDialog)
     //{{AFX_MSG_MAP(CExportRelocatableAsmForRmtPlayer)
     ON_BN_CLICKED(IDC_CHK_RELOCATE_TRACKS, OnChangeCheckbox)
@@ -475,6 +472,7 @@ BEGIN_MESSAGE_MAP(CExportRelocatableAsmForRmtPlayer, CDialog)
     ON_CBN_SELCHANGE(IDC_COMBO_ASM_FORMAT, OnCbnSelchange)
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 /////////////////////////////////////////////////////////////////////////////
 // CExportRelocatableAsmForRmtPlayer message handlers
@@ -483,7 +481,7 @@ BOOL CExportRelocatableAsmForRmtPlayer::OnInitDialog()
 {
     CDialog::OnInitDialog();
 
-    m_InitPhase = 1;			// Tell the DDX handler to ignore all changes until everything is setup
+    m_InitPhase = 1; // Tell the DDX handler to ignore all changes until everything is setup
 
     // Transfer the starting values to the MFC controls
     CString str;
@@ -527,7 +525,7 @@ BOOL CExportRelocatableAsmForRmtPlayer::OnInitDialog()
 
     ChangeParams();
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -560,8 +558,8 @@ void CExportRelocatableAsmForRmtPlayer::ChangeParams()
     // With or without SFX and unused tracks
     m_sfxSupport = m_ctrlWithSfx.GetCheck();
     int len = m_sfxSupport
-        ? (m_exportDescWithSFX->firstByteAfterModule - m_exportDescWithSFX->targetAddrOfModule)
-        : (m_exportDescStripped->firstByteAfterModule - m_exportDescStripped->targetAddrOfModule);
+                  ? (m_exportDescWithSFX->firstByteAfterModule - m_exportDescWithSFX->targetAddrOfModule)
+                  : (m_exportDescStripped->firstByteAfterModule - m_exportDescStripped->targetAddrOfModule);
     s.Format("Length $%04X (%u bytes)", len, len);
     m_c_info.SetWindowText(s);
 
@@ -579,14 +577,14 @@ void CExportRelocatableAsmForRmtPlayer::ChangeParams()
         s,
         m_sfxSupport ? m_exportDescWithSFX : m_exportDescStripped,
         "",
-        m_wantRelocatableTracks ? m_strAsmTracksLabel : (CString)"",
-        m_wantRelocatableSongLines ? m_strAsmSongLinesLabel : (CString)"",
-        m_wantRelocatableInstruments ? m_strAsmInstrumentsLabel : (CString)"",
+        m_wantRelocatableTracks ? m_strAsmTracksLabel : (CString) "",
+        m_wantRelocatableSongLines ? m_strAsmSongLinesLabel : (CString) "",
+        m_wantRelocatableInstruments ? m_strAsmInstrumentsLabel : (CString) "",
         m_assemblerFormat,
         m_sfxSupport,
         false,
         false,
-        true		// Just give me the size info
+        true // Just give me the size info
     );
     m_c_rmtfeat.SetWindowText(s);
 }
@@ -605,5 +603,3 @@ void CExportRelocatableAsmForRmtPlayer::OnCbnSelchange()
 {
     ChangeParams();
 }
-
-

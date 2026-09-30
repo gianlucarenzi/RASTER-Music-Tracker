@@ -36,14 +36,17 @@ void CSAPFileExportDialog::DoDataExchange(CDataExchange* pDX)
 }
 
 
+// clang-format off
 BEGIN_MESSAGE_MAP(CSAPFileExportDialog, CDialog)
     //{{AFX_MSG_MAP(CSAPFileExportDialog)
         // NOTE: the ClassWizard will add message map macros here
     //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+// clang-format on
 
 
-bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
+bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile)
+{
     CSAPFileExportDialog dlg;
     sapFile.Init(song);
 
@@ -54,8 +57,7 @@ bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
     song.GetSubsongParts(dlg.m_subsongs);
 
     dlg.m_title.Format("Export as SAP File of Type '%s'", sapFile.GetType());
-    if (dlg.DoModal() != IDOK)
-    {
+    if (dlg.DoModal() != IDOK) {
         return false;
     }
 
@@ -64,32 +66,31 @@ bool CSAPFileExportDialog::Show(const CSong& song, CSAPFile& sapFile) {
     sapFile.SetDate(dlg.m_date);
 
     // Parses the "Subsongs" line
-    CString str = dlg.m_subsongs + " ";	// Add space after the last character for parsing
+    CString str = dlg.m_subsongs + " "; // Add space after the last character for parsing
     str.MakeUpper();
     int subsongs = 0;
     byte subpos[CSAPFile::MAXSUBSONGS]{};
-    subpos[0] = 0;					// Start at songline 0 by default
+    subpos[0] = 0; // Start at songline 0 by default
     byte n = 0, isn = 0;
 
-    for (int i = 0; i < str.GetLength(); i++)
-    {
+    for (int i = 0; i < str.GetLength(); i++) {
         char a = str.GetAt(i);
-        if (a >= '0' && a <= '9') { n = (n << 4) + (a - '0'); isn = 1; }
-        else
-            if (a >= 'A' && a <= 'F') { n = (n << 4) + (a - 'A' + 10); isn = 1; }
-            else
-            {
-                if (isn)
-                {
-                    subpos[subsongs] = n;
-                    subsongs++;
-                    if (subsongs >= CSAPFile::MAXSUBSONGS)
-                    {
-                        break;
-                    }
-                    isn = 0;
+        if (a >= '0' && a <= '9') {
+            n = (n << 4) + (a - '0');
+            isn = 1;
+        } else if (a >= 'A' && a <= 'F') {
+            n = (n << 4) + (a - 'A' + 10);
+            isn = 1;
+        } else {
+            if (isn) {
+                subpos[subsongs] = n;
+                subsongs++;
+                if (subsongs >= CSAPFile::MAXSUBSONGS) {
+                    break;
                 }
+                isn = 0;
             }
+        }
     }
     sapFile.SetSongs(subsongs);
     return true;

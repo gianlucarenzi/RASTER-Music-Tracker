@@ -24,7 +24,8 @@
 // TODO: Find a better place and name
 CString g_rmtmsxtext;
 
-void CXEXFile::InitFromSong(const CSong& song) {
+void CXEXFile::InitFromSong(const CSong& song)
+{
     memcpy(this->songname, song.GetName(), SONG_NAME_MAX_LEN);
     this->songname[SONG_NAME_MAX_LEN] = 0;
     this->currentTime = CTime::GetCurrentTime(); // Use song time
@@ -33,18 +34,18 @@ void CXEXFile::InitFromSong(const CSong& song) {
     this->instrspeed = song.GetInstrumentSpeed();
 }
 
-CSongExporter::CSongExporter() {
-
+CSongExporter::CSongExporter()
+{
 }
 
 void CSongExporter::StrToAtariVideo(char* txt, int count)
 {
     char a;
-    for (int i = 0; i < count; i++)
-    {
+    for (int i = 0; i < count; i++) {
         a = txt[i] & 0x7f;
-        if (a < 32) { a = 0; }
-        else {
+        if (a < 32) {
+            a = 0;
+        } else {
             if (a < 96) { a -= 32; }
         }
         txt[i] = a;
@@ -64,12 +65,10 @@ int CSongExporter::BruteforceOptimalLZSS(unsigned char* src, int srclen, unsigne
     {
         DisableEventSection section;
 
-        for (int i = 0; i < SAPR_OPTIMISATIONS_COUNT; i++)
-        {
+        for (int i = 0; i < SAPR_OPTIMISATIONS_COUNT; i++) {
             int bruteforced = lzssData.LZSS_SAP(src, srclen, dst, i);
 
-            if (bruteforced < bestScore)
-            {
+            if (bruteforced < bestScore) {
                 bestScore = bruteforced;
                 optimal = i;
             }
@@ -108,34 +107,32 @@ bool CSongExporter::ExportLZSS(CSongExport& songExport, std::ofstream& ou)
     // This is a hacked up method that was added only out of necessity for a project making use of song sections separately
     // I refuse to touch RMT2LZSS ever again
     CString fn = songExport.GetFilePath();
-    fn = fn.Left(fn.GetLength() - 5);	// In order to keep the filename without the extention 
+    fn = fn.Left(fn.GetLength() - 5); // In order to keep the filename without the extention
 
     // Full tune playback up to its loop point
     int full = lzssData.LZSS_SAP(pokeyStream.GetConstStreamBuffer(), pokeyStream.GetFirstCountPoint() * frameSize, compressedData);
-    if (full > 16)
-    {
+    if (full > 16) {
         //ou.open(fn + "_FULL.lzss", ios::binary);	// Create a new file for the Full section
-        ou.write((char*)compressedData, full);	// Write the buffer contents to the export file
+        ou.write((char*)compressedData, full); // Write the buffer contents to the export file
     }
-    ou.close();	// Close the file, if successful, it should not be empty 
+    ou.close(); // Close the file, if successful, it should not be empty
 
     // Intro section playback, up to the start of the detected loop point
     int intro = lzssData.LZSS_SAP(pokeyStream.GetConstStreamBuffer(), pokeyStream.GetThirdCountPoint() * frameSize, compressedData);
     if (intro > 16) // TODO: Why 16?
     {
-        ou.open(fn + "_INTRO.lzss", std::ios::binary);	// Create a new file for the Intro section
-        ou.write((char*)compressedData, intro);		// Write the buffer contents to the export file
+        ou.open(fn + "_INTRO.lzss", std::ios::binary); // Create a new file for the Intro section
+        ou.write((char*)compressedData, intro);        // Write the buffer contents to the export file
     }
-    ou.close();	// Close the file, if successful, it should not be empty 
+    ou.close(); // Close the file, if successful, it should not be empty
 
     // Looped section playback, this part is virtually seamless to itself
     int loop = lzssData.LZSS_SAP(pokeyStream.GetConstStreamBuffer() + (pokeyStream.GetFirstCountPoint() * frameSize), pokeyStream.GetSecondCountPoint() * frameSize, compressedData);
-    if (loop > 16)
-    {
-        ou.open(fn + "_LOOP.lzss", std::ios::binary);	// Create a new file for the Loop section
-        ou.write((char*)compressedData, loop);		// Write the buffer contents to the export file
+    if (loop > 16) {
+        ou.open(fn + "_LOOP.lzss", std::ios::binary); // Create a new file for the Loop section
+        ou.write((char*)compressedData, loop);        // Write the buffer contents to the export file
     }
-    ou.close();	// Close the file, if successful, it should not be empty 
+    ou.close(); // Close the file, if successful, it should not be empty
 
     ClearStatusBar();
 
@@ -164,24 +161,22 @@ bool CSongExporter::ExportCompactLZSS(CSongExport& songExport, std::ofstream& ou
 
     // TODO: add a Dialog box for proper standalone LZSS exports
     CString fn = songExport.GetFilePath();
-    fn = fn.Left(fn.GetLength() - 5);	// In order to keep the filename without the extention 
+    fn = fn.Left(fn.GetLength() - 5); // In order to keep the filename without the extention
     ou.close();
 
-    // For all songlines to index, process with comparisons and find duplicates 
-    while (indexToSongline < songlineCount)
-    {
+    // For all songlines to index, process with comparisons and find duplicates
+    while (indexToSongline < songlineCount) {
         int bytesCount = pokeyStream.GetFramesPerSongline(indexToSongline) * frameSize;
 
         int index1 = pokeyStream.GetOffsetPerSongline(indexToSongline);
         const unsigned char* buff1 = pokeyStream.GetConstStreamBuffer() + (index1 * frameSize);
 
-        // If there is no index already, assume the Index1 to be the first occurence 
+        // If there is no index already, assume the Index1 to be the first occurence
         if (listOfMatches[indexToSongline] == -1)
             listOfMatches[indexToSongline] = index1;
 
         // Compare all indexes available and overwrite matching songline streams with index1's offset
-        for (int i = 0; i < songlineCount; i++)
-        {
+        for (int i = 0; i < songlineCount; i++) {
             // If the bytes count between 2 songlines isn't matching, don't even bother trying
             if (bytesCount != pokeyStream.GetFramesPerSongline(i) * frameSize)
                 continue;
@@ -200,18 +195,15 @@ bool CSongExporter::ExportCompactLZSS(CSongExport& songExport, std::ofstream& ou
     indexToSongline = 0;
 
     // From here, data blocs based on the Songline index and offset will be written to file
-    // This should strip away every duplicated chunks, but save just enough data for reconstructing everything 
-    while (indexToSongline < songlineCount)
-    {
+    // This should strip away every duplicated chunks, but save just enough data for reconstructing everything
+    while (indexToSongline < songlineCount) {
         // Get the current index to Songline offset from the current position
         int index = listOfMatches[indexToSongline];
 
         // Find if this offset was already processed from a previous Songline
-        for (int i = 0; i < songlineCount; i++)
-        {
+        for (int i = 0; i < songlineCount; i++) {
             // As soon as a match is found, increment the counter for how many times the index was referenced
-            if (index == listOfMatches[i] && indexToSongline > i)
-            {
+            if (index == listOfMatches[i] && indexToSongline > i) {
                 // I don't know anymore, at this point...
             }
         }
@@ -223,10 +215,10 @@ bool CSongExporter::ExportCompactLZSS(CSongExport& songExport, std::ofstream& ou
     // Create a new file for logging everything related to the procedure
     ou.open(fn + ".txt", std::ios::binary);
     ou << "This is a test that displays all duplicated SAP-R bytes from m_StreamBuffer." << std::endl;
-    ou << "Each ones of the Buffer Chunks are indexed into memory using Songlines.\n" << std::endl;
+    ou << "Each ones of the Buffer Chunks are indexed into memory using Songlines.\n"
+       << std::endl;
 
-    for (int i = 0; i < songlineCount; i++)
-    {
+    for (int i = 0; i < songlineCount; i++) {
         ou << "Index: " << PADHEX(2, i);
         ou << ",\t Offset (real): " << PADHEX(4, pokeyStream.GetOffsetPerSongline(i));
         ou << ",\t Offset (dupe): " << PADHEX(4, listOfMatches[i]);
@@ -244,7 +236,6 @@ bool CSongExporter::ExportCompactLZSS(CSongExport& songExport, std::ofstream& ou
 
 bool CSongExporter::ExportSAP_R(CSongExport& songExport, std::ofstream& ou)
 {
-
     CSAPFile sapFile;
     sapFile.SetType("R");
     if (!CSAPFileExportDialog::Show(songExport.GetSong(), sapFile)) {
@@ -279,14 +270,14 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, std::ofstream& ou)
     // Create the export metadata for songname, Atari text, parameters, etc
     CXEXFile xexFile;
 
-    if (!ShowXEXExportDialog(songExport.GetSong(), xexFile))
-    {
+    if (!ShowXEXExportDialog(songExport.GetSong(), xexFile)) {
         return false;
     }
     return ExportXEX_LZSS(songExport, xexFile, ou);
 }
 
-bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, std::ofstream& ou) {
+bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, std::ofstream& ou)
+{
     CString s, t;
 
     int subsongs = songExport.GetSong().GetSubsongParts(t);
@@ -294,19 +285,18 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
 
     int subtune[256]{};
 
-    int lzss_chunk = 0;	// Subtune size will be added to be used as the offset to the next one
-    int lzss_total = 0;	// Final offset for LZSS bytes to export
+    int lzss_chunk = 0; // Subtune size will be added to be used as the offset to the next one
+    int lzss_total = 0; // Final offset for LZSS bytes to export
     int framescount = 0;
 
     const int frameSize = CLZSSFile::GetFrameSize(songExport.GetSong());
     int section = VUPlayer::SECTION;
     int sequence = VUPlayer::SEQUENCE;
 
-    byte mem[RAM_SIZE]{};					// Default RAM size for most 800xl/xe machines
+    byte mem[RAM_SIZE]{}; // Default RAM size for most 800xl/xe machines
 
     // GetSubsongParts returns a CString, so the values must be converted back to int first, FIXME
-    for (int i = 0; i < subsongs; i++)
-    {
+    for (int i = 0; i < subsongs; i++) {
         char c[3]{ t[i * 3], t[i * 3 + 1], '\0' };
         subtune[i] = strtoul(c, NULL, 16);
     }
@@ -330,8 +320,7 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
     byte* buff2 = new byte[LZSS_BUFFER_SIZE]{};
     byte* buff3 = new byte[LZSS_BUFFER_SIZE]{};
 
-    while (count < subsongs)
-    {
+    while (count < subsongs) {
         // a LZSS export will typically make use of intro and loop only, unless specified otherwise
         int intro = 0, loop = 0;
 
@@ -341,15 +330,13 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
 
         //SetStatusBarText("Compressing data ...");
 
-        // There is an Intro section 
-        if (pokeyStream.GetThirdCountPoint())
-        {
+        // There is an Intro section
+        if (pokeyStream.GetThirdCountPoint()) {
             intro = BruteforceOptimalLZSS(pokeyStream.GetStreamBuffer(), pokeyStream.GetThirdCountPoint() * frameSize, buff2);
         }
 
         // There is a Loop section
-        if (pokeyStream.GetFirstCountPoint())
-        {
+        if (pokeyStream.GetFirstCountPoint()) {
             loop = BruteforceOptimalLZSS(pokeyStream.GetStreamBuffer() + (pokeyStream.GetFirstCountPoint() * frameSize), pokeyStream.GetSecondCountPoint() * frameSize, buff3);
         }
 
@@ -360,22 +347,21 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
         pokeyStream.FinishedRecording();
 
         // Some additional variables that will be used below
-        int targetAddrOfModule = VUPlayer::SONGDATA + lzss_chunk;	// All the LZSS data will be written starting from this address
+        int targetAddrOfModule = VUPlayer::SONGDATA + lzss_chunk; // All the LZSS data will be written starting from this address
         int lzss_startAddress = targetAddrOfModule + intro;
-        int lzss_endAddress = lzss_startAddress + loop;				// this sets the address that defines where the data stream has reached its end
+        int lzss_endAddress = lzss_startAddress + loop; // this sets the address that defines where the data stream has reached its end
 
         SetStatusBarText("");
 
         // If the size is too big, abort the process and show an error message
-        if (lzss_endAddress > RAM_MAX_ADDRESS)
-        {
+        if (lzss_endAddress > RAM_MAX_ADDRESS) {
             CString message;
             message.Format("Error, LZSS data ($%04X - $%04X) is too big to fit in memory!\n\nHigh Instrument Speed and/or Stereo greatly inflate memory usage, even when data is compressed", lzss_startAddress, lzss_endAddress);
             SendErrorMessage("Buffer Overflow", message);
             return false;
         }
 
-        // Set the song section and timer index 
+        // Set the song section and timer index
         int index = VUPlayer::LZSS_POINTER + count * 4;
         int timerindex = VUPlayer::SOUNGTIMER + count * 4;
         int subtunetimetotal = 0xFFFFFF / pokeyStream.GetFirstCountPoint();
@@ -392,8 +378,7 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
         mem[timerindex + 3] = subtunelooppoint >> 16;
 
         // If there is an Intro section...
-        if (intro)
-        {
+        if (intro) {
             memcpy(mem + targetAddrOfModule, buff2, intro);
             lzss_chunk += intro;
             mem[section + 0] = targetAddrOfModule & 0xFF;
@@ -405,8 +390,7 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
         }
 
         // If there is a Loop section...
-        if (loop)
-        {
+        if (loop) {
             memcpy(mem + lzss_startAddress, buff3, loop);
             lzss_chunk += loop;
             mem[section + 0] = lzss_startAddress & 0xFF;
@@ -444,35 +428,35 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
     CSongExporter::StrToAtariVideo((char*)mem + LZSSP_LINE_0 + 0x0B, 28);
 
     // I know the binary I have is currently set to NTSC, so I'll just convert to PAL and keep this going for now...
-    if (!xexFile.isNTSC)
-    {
-        unsigned char regionbytes[] =
-        {
-            0xB9,(LZSSP_TABPPPAL - 1) & 0xff,(LZSSP_TABPPPAL - 1) >> 8,			// LDA tabppPAL-1,y
-            0x8D,LZSSP_ACPAPX2 & 0xFF,LZSSP_ACPAPX2 >> 8,						// STA acpapx2
-            0xE0,0x9B,															// CPX #$9B
-            0x30,0x05,															// BMI set_ntsc
-            0xB9,(LZSSP_TABPPPALFIX - 1) & 0xff,(LZSSP_TABPPPALFIX - 1) >> 8,	// LDA tabppPALfix-1,y
-            0xD0,0x03,															// BNE region_done
-            0xB9,(LZSSP_TABPPNTSCFIX - 1) & 0xFF,(LZSSP_TABPPNTSCFIX - 1) >> 8	// LDA tabppNTSCfix-1,y
+    if (!xexFile.isNTSC) {
+        // clang-format off
+        unsigned char regionbytes[] = {
+            0xB9,(LZSSP_TABPPPAL - 1) & 0xff,(LZSSP_TABPPPAL - 1) >> 8,         // LDA tabppPAL-1,y
+            0x8D,LZSSP_ACPAPX2 & 0xFF,LZSSP_ACPAPX2 >> 8,                       // STA acpapx2
+            0xE0,0x9B,                                                          // CPX #$9B
+            0x30,0x05,                                                          // BMI set_ntsc
+            0xB9,(LZSSP_TABPPPALFIX - 1) & 0xff,(LZSSP_TABPPPALFIX - 1) >> 8,   // LDA tabppPALfix-1,y
+            0xD0,0x03,                                                          // BNE region_done
+            0xB9,(LZSSP_TABPPNTSCFIX - 1) & 0xFF,(LZSSP_TABPPNTSCFIX - 1) >> 8  // LDA tabppNTSCfix-1,y
         };
+        // clang-format on
         memcpy(&mem[VUPlayer::REGION], regionbytes, sizeof(regionbytes));
     }
 
     // Additional patches from the Export Dialog...
-    mem[VUPlayer::SONG_SPEED] = xexFile.instrspeed;						// Song speed
-    mem[VUPlayer::RASTER_BAR] = xexFile.displayRasterbar ? 0x80 : 0x00;	// Display the rasterbar for CPU level
-    mem[VUPlayer::COLOR] = xexFile.rasterbarColor;						    // Rasterbar colur 
-    mem[VUPlayer::STEREO_FLAG] = xexFile.isStereo ? 0xFF : 0x00;			// Is the song stereo?
-    mem[VUPlayer::SONGTOTAL] = subsongs;									// Total number of subtunes
-    if (!xexFile.autoRegion) {												// Automatically adjust speed between regions?
-        for (int i = 0; i < 4; i++) mem[VUPlayer::REGION + 6 + i] = 0xEA;	// set the 4 bytes to NOPs to disable it
+    mem[VUPlayer::SONG_SPEED] = xexFile.instrspeed;                       // Song speed
+    mem[VUPlayer::RASTER_BAR] = xexFile.displayRasterbar ? 0x80 : 0x00;   // Display the rasterbar for CPU level
+    mem[VUPlayer::COLOR] = xexFile.rasterbarColor;                        // Rasterbar colur
+    mem[VUPlayer::STEREO_FLAG] = xexFile.isStereo ? 0xFF : 0x00;          // Is the song stereo?
+    mem[VUPlayer::SONGTOTAL] = subsongs;                                  // Total number of subtunes
+    if (!xexFile.autoRegion) {                                            // Automatically adjust speed between regions?
+        for (int i = 0; i < 4; i++) mem[VUPlayer::REGION + 6 + i] = 0xEA; // set the 4 bytes to NOPs to disable it
     }
 
     // Reconstruct the export binary for the LZSS Driver, VUPlayer, and all the included data
     CAtariIO::SaveBinaryBlock(ou, mem, LZSSP_PLAYLZ16BEGIN, LZSSP_SONGINDEX, 1);
 
-    // Set the run address to VUPlayer 
+    // Set the run address to VUPlayer
     mem[0x2e0] = LZSSP_VUPLAYER & 0xff;
     mem[0x2e1] = LZSSP_VUPLAYER >> 8;
     CAtariIO::SaveBinaryBlock(ou, mem, 0x2e0, 0x2e1, 0);
@@ -486,7 +470,6 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
 // The XEX dialog process was split to a different function for clarity, same will be done for SAP later...
 bool CSongExporter::ShowXEXExportDialog(const CSong& song, CXEXFile& xexFile)
 {
-
     xexFile.InitFromSong(song);
 
     CString EOL = "\r\n";
@@ -497,12 +480,9 @@ bool CSongExporter::ShowXEXExportDialog(const CSong& song, CXEXFile& xexFile)
     str = xexFile.songname;
     // TODO Move this to InitFromSong!
 
-    if (g_rmtmsxtext != "")
-    {
-        dlg.m_txt = g_rmtmsxtext;	// same from last time, making repeated exports faster
-    }
-    else
-    {
+    if (g_rmtmsxtext != "") {
+        dlg.m_txt = g_rmtmsxtext; // same from last time, making repeated exports faster
+    } else {
         // 5 lines of text
         dlg.m_txt = str + EOL;
         if (xexFile.isStereo) { dlg.m_txt += "STEREO"; }
@@ -515,24 +495,23 @@ bool CSongExporter::ShowXEXExportDialog(const CSong& song, CXEXFile& xexFile)
     str.Format("Playback speed will be adjusted to %s Hz on both PAL and NTSC systems.", (xexFile.isNTSC ? "60" : "50"));
     dlg.m_speedinfo = str;
 
-    if (dlg.DoModal() != IDOK)
-    {
+    if (dlg.DoModal() != IDOK) {
         return false;
     }
 
     g_rmtmsxtext = dlg.m_txt;
-    g_rmtmsxtext.Replace("\x0d\x0d", "\x0d");	//13, 13 => 13
+    g_rmtmsxtext.Replace("\x0d\x0d", "\x0d"); //13, 13 => 13
 
     // This block of code will handle all the user input text that will be inserted in the binary during the export process
     memset(xexFile.atariText, ' ', CXEXFile::ATARI_TEXT_SIZE);
     int p = 0, q = 0;
     char a;
-    for (int i = 0; i < dlg.m_txt.GetLength(); i++)
-    {
+    for (int i = 0; i < dlg.m_txt.GetLength(); i++) {
         a = dlg.m_txt.GetAt(i);
-        if (a == '\n') { p += 40; q = 0; }
-        else
-        {
+        if (a == '\n') {
+            p += 40;
+            q = 0;
+        } else {
             xexFile.atariText[p + q] = a;
             q++;
         }

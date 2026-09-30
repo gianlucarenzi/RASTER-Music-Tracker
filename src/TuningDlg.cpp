@@ -20,7 +20,6 @@ extern CTuning g_Tuning;
 TuningDlg::TuningDlg(CWnd* pParent /*=nullptr*/)
     : CDialog(IDD_TUNING, pParent)
 {
-
     m_tuningSettings = {};
     m_tuningRatios = {};
 }
@@ -29,7 +28,7 @@ void TuningDlg::DoDataExchange(CDataExchange* pDX)
 {
     CDialog::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_BASETUNING, m_tuningSettings.basetuning);
-    DDV_MinMaxDouble(pDX, m_tuningSettings.basetuning, 6.875, 7040);	//should be more than enough...
+    DDV_MinMaxDouble(pDX, m_tuningSettings.basetuning, 6.875, 7040); //should be more than enough...
     DDX_CBIndex(pDX, IDC_BASENOTE, m_tuningSettings.basenote);
     DDX_CBIndex(pDX, IDC_TEMPERAMENT, m_tuningSettings.temperament);
     // numerator values
@@ -62,11 +61,13 @@ void TuningDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Text(pDX, IDC_OCTAVE_R, m_tuningRatios.OCTAVE.denominator);
 }
 
+// clang-format off
 BEGIN_MESSAGE_MAP(TuningDlg, CDialog)
     ON_BN_CLICKED(IDTESTNOW, OnClickedIdtestnow)
     ON_BN_CLICKED(IDRESET, OnClickedIdreset)
     ON_BN_CLICKED(IDCANCEL, OnBnClickedCancel)
 END_MESSAGE_MAP()
+// clang-format on
 
 // TuningDlg message handlers
 BOOL TuningDlg::OnInitDialog()
@@ -77,7 +78,7 @@ BOOL TuningDlg::OnInitDialog()
     m_tuningSettingsBackup = g_tuning;
     m_tuningRatiosBackup = g_tuningRatios;
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return TRUE; // return TRUE unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -90,7 +91,6 @@ void TuningDlg::OnOK()
 
 void TuningDlg::OnClickedIdtestnow()
 {
-
     // Get current screen values.
     TuningDlg::UpdateData();
 

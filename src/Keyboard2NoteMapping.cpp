@@ -7,9 +7,9 @@
 
 extern KeyboardLayout g_keyboard_layout;
 
-//QWERTY keys layout 
-const unsigned char keynotes_QWERTY[256] =
-{
+//QWERTY keys layout
+// clang-format off
+const unsigned char keynotes_QWERTY[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -28,9 +28,8 @@ const unsigned char keynotes_QWERTY[256] =
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF
 };
 
-//AZERTY keys layout 
-const unsigned char keynotes_AZERTY[256] =
-{
+//AZERTY keys layout
+const unsigned char keynotes_AZERTY[256] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -50,8 +49,7 @@ const unsigned char keynotes_AZERTY[256] =
 };
 
 /*
-const char keynotes[256] =
-{
+const char keynotes[256] = {
     //0
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -87,8 +85,7 @@ const char keynotes[256] =
 };
 */
 
-const char keynumbs[256] =
-{
+const char keynumbs[256] = {
     //0
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -111,8 +108,7 @@ const char keynumbs[256] =
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
 
-const char keynumblock09[256] =
-{
+const char keynumblock09[256] = {
     //0
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -134,17 +130,16 @@ const char keynumblock09[256] =
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
+// clang-format on
 
-char NoteKey(int vk) {
-    if (g_keyboard_layout == KeyboardLayout::QWERTY)
-    {
+char NoteKey(int vk)
+{
+    if (g_keyboard_layout == KeyboardLayout::QWERTY) {
         return keynotes_QWERTY[vk];
-    }
-    else if (g_keyboard_layout == KeyboardLayout::AZERTY)
-    {
+    } else if (g_keyboard_layout == KeyboardLayout::AZERTY) {
         return keynotes_AZERTY[vk];
-    }
-    else return -1;
+    } else
+        return -1;
 };
 
 char NumbKey(int vk) { return keynumbs[vk]; };

@@ -6,10 +6,10 @@
 
 extern AssemblerFormat g_AsmFormat;
 
-extern WORD g_rmtstripped_adr_module;	//address for export RMT stripped file
-extern BOOL g_rmtstripped_sfx;			//sfx offshoot RMT stripped file
-extern BOOL g_rmtstripped_gvf;			//gvs GlobalVolumeFade for feat
-extern BOOL g_rmtstripped_nos;			//nos NoStartingSongline for feat
+extern WORD g_rmtstripped_adr_module; //address for export RMT stripped file
+extern BOOL g_rmtstripped_sfx;        //sfx offshoot RMT stripped file
+extern BOOL g_rmtstripped_gvf;        //gvs GlobalVolumeFade for feat
+extern BOOL g_rmtstripped_nos;        //nos NoStartingSongline for feat
 
 
 /// <summary>
@@ -23,16 +23,16 @@ bool CSong::ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescripti
 {
     TExportDescription exportTempDescription;
     memset(&exportTempDescription, 0, sizeof(TExportDescription));
-    exportTempDescription.targetAddrOfModule = 0x4000;		// Standard RMT modules are set to start @ $4000
+    exportTempDescription.targetAddrOfModule = 0x4000; // Standard RMT modules are set to start @ $4000
 
     // Create a variant for SFX (ie. including unused instruments and tracks)
     exportTempDescription.firstByteAfterModule = song.MakeModule(exportTempDescription.mem, exportTempDescription.targetAddrOfModule, SongIOType::RMT, exportTempDescription.instrumentSavedFlags, exportTempDescription.trackSavedFlags);
-    if (exportTempDescription.firstByteAfterModule < 0) return false;	// if the module could not be created
+    if (exportTempDescription.firstByteAfterModule < 0) return false; // if the module could not be created
 
     // Show the dialog to control the stripped output parameters
     CExportStrippedRMTDialog dlg;
     // Common data
-    dlg.m_exportAddr = g_rmtstripped_adr_module;	//global, so that it remains the same on repeated export
+    dlg.m_exportAddr = g_rmtstripped_adr_module; //global, so that it remains the same on repeated export
     dlg.m_globalVolumeFade = g_rmtstripped_gvf;
     dlg.m_noStartingSongLine = g_rmtstripped_nos;
     dlg.m_song = &song;
@@ -63,8 +63,8 @@ bool CSong::ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescripti
     // Now we can regenerate the RMT module with the selected configuration
     // - known start address
     // - know if we want to strip out unused instruments and tracks => RMTSTRIPPED : RMT
-    memset(&exportTempDescription, 0, sizeof(TExportDescription));			// Clear it all again
-    exportTempDescription.targetAddrOfModule = g_rmtstripped_adr_module;	// Standard RMT modules are set to start @ $4000
+    memset(&exportTempDescription, 0, sizeof(TExportDescription));       // Clear it all again
+    exportTempDescription.targetAddrOfModule = g_rmtstripped_adr_module; // Standard RMT modules are set to start @ $4000
 
     exportTempDescription.firstByteAfterModule =
         song.MakeModule(
@@ -72,15 +72,13 @@ bool CSong::ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescripti
             exportTempDescription.targetAddrOfModule,
             g_rmtstripped_sfx ? SongIOType::RMTSTRIPPED : SongIOType::RMT,
             exportTempDescription.instrumentSavedFlags,
-            exportTempDescription.trackSavedFlags
-        );
-    if (exportTempDescription.firstByteAfterModule < 0)
-    {
-        return false;	// if the module could not be created
+            exportTempDescription.trackSavedFlags);
+    if (exportTempDescription.firstByteAfterModule < 0) {
+        return false; // if the module could not be created
     }
 
     // And save the RMT module block (the end address is inclusive)
     CAtariIO::SaveBinaryBlock(ou, exportTempDescription.mem, exportTempDescription.targetAddrOfModule, exportTempDescription.firstByteAfterModule - 1, TRUE);
 
-    return true;		// Indicate that data was saved
+    return true; // Indicate that data was saved
 }
