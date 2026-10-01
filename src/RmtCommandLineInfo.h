@@ -22,15 +22,9 @@ public:
     bool IsScriptFileSpecified() const;
     CString GetScriptFilePath() const;
 
-    bool IsTestFileSpecified() const;
-    CString GetTestFilePath() const;
-
 private:
     bool m_scriptFileSpecified;
     CString m_scriptFilePath;
-
-    bool m_testFileSpecified;
-    CString m_testFilePath;
 
     static CString GetSwitchName(const CString& switchString);
     static CString GetSwitchValue(const CString& switchString);

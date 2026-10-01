@@ -59,15 +59,15 @@ struct TExportDescription {
 
 
 enum class SongIOType : int {
-    NONE = 0,          // None.
-    RMT = 1,           // For load and save, TODO: Make this RMT_V1
-    RMW = 2,           // For load and save. TODO: How to represent V2 later?
-    RMTSTRIPPED = 3,   // Only for export, but resul can also be imported again as RMT
-    SAP = 4,           // Only for export, TODO Enable import
-    XEX = 5,           // Only for export, TODO: Not used anymore? Old RMT 1.28 XEX export is disabled?
-    TXT = 6,           // TODO: For import and export?
-    ASM = 7,           // Only for export
-    RMF = 8,           // TODO: What is this?
+    NONE = 0,        // None.
+    RMT = 1,         // For load and save, TODO: Make this RMT_V1
+    RMW = 2,         // For load and save. TODO: How to represent V2 later?
+    RMTSTRIPPED = 3, // Only for export, but resul can also be imported again as RMT
+    SAP = 4,         // Only for export, TODO Enable import
+    XEX = 5,         // Only for export, TODO: Not used anymore? Old RMT 1.28 XEX export is disabled?
+    TXT = 6,         // TODO: For import and export?
+    ASM = 7,         // Only for export
+    // RMF = 8,        // Obsolete: the "RMF" format Raster started and never completed
     ASM_RMTPLAYER = 9, // Only for export
 
     SAPR = 10,     // Only for export

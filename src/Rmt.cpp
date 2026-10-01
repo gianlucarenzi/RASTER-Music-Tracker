@@ -9,14 +9,13 @@
 #include "RmtDoc.h"
 #include "RmtView.h"
 #include "Song.h"
-#include "SongExporterTest.h"
+#include "ScriptRunner.h"
 #include "AboutDialog.h"
 #include "GuiHelpers.h" // For SendErrorMessage
 #include "RmtCommandLineInfo.h"
 #include "Global.h"
 #include "Shell.h"
 
-#include "RmtTest.h"
 
 
 // Activate MFC memory leak detection.
@@ -134,11 +133,21 @@ BOOL CRmtApp::InitInstance()
     CRmtCommandLineInfo cmdInfo;
     ParseCommandLine(cmdInfo);
 
-
-    if (cmdInfo.IsTestFileSpecified()) {
-        CRmtTest test;
-        test.RunFor(*this, cmdInfo.GetTestFilePath());
-        return FALSE;
+    // A script run keeps the window hidden - the session needs the window, not its pixels - unless
+    // RMT_SCRIPT_SHOW_WINDOW is set, which shows what the script does. MFC shows the frame itself while
+    // processing the shell command (CFrameWnd::ActivateFrame with m_nCmdShow), so the decision is made here,
+    // before that, as m_nCmdShow.
+    bool showWindow = !cmdInfo.IsScriptFileSpecified();
+    if (!showWindow) {
+        char* show = nullptr;
+        size_t showLength = 0;
+        if (_dupenv_s(&show, &showLength, "RMT_SCRIPT_SHOW_WINDOW") == 0 && show != nullptr) {
+            showWindow = *show != 0 && *show != '0';
+            free(show);
+        }
+    }
+    if (!showWindow) {
+        m_nCmdShow = SW_HIDE;
     }
 
     // Dispatch the standard commands specified on the command line.
@@ -150,8 +159,12 @@ BOOL CRmtApp::InitInstance()
     // The one and only window has been initialized, so show and update it.
     auto mainFrame = (CMainFrame*)GetMainWnd();
     g_statusBar = &mainFrame->m_wndStatusBar;
-    m_pMainWnd->ShowWindow(SW_SHOW);
-    m_pMainWnd->UpdateWindow();
+    if (showWindow) {
+        m_pMainWnd->ShowWindow(SW_SHOW);
+        m_pMainWnd->UpdateWindow();
+    } else {
+        m_pMainWnd->ShowWindow(SW_HIDE);
+    }
 
     // Initialize the random number based on the current time.
     srand((unsigned int)time(NULL));
@@ -164,18 +177,30 @@ BOOL CRmtApp::InitInstance()
             break;
     }
 
-    // Dispatch additional automatic commands specified on the command line.
+    // /SCRIPT:<file>: run the script (doc/rmt_scripting.md) and exit with its code. Messages go to the console the
+    // program was started from, or to <file>.log.
     if (cmdInfo.IsScriptFileSpecified()) {
-        CFile scriptFile;
-        if (!scriptFile.Open(cmdInfo.GetScriptFilePath(), CFile::modeRead)) {
-            SendErrorMessage("Invalid Command Line Parameter", "The script file \"" + scriptFile.GetFilePath() + "\" specified via the command line switch /SCRIPT cannot be opened for reading.");
-            return FALSE;
+        AttachScriptConsole(cmdInfo.GetScriptFilePath());
+        CScriptRunner runner(g_Song);
+        char* outputOverride = nullptr;
+        size_t outputOverrideLength = 0;
+        if (_dupenv_s(&outputOverride, &outputOverrideLength, "RMT_SCRIPT_OUTPUT") == 0 && outputOverride != nullptr) {
+            if (*outputOverride) {
+                runner.SetOutputFolder(std::filesystem::path(outputOverride)); // runs one script into several folders
+            }
+            free(outputOverride);
         }
-        CSongExporterTest::Test(g_Song);
-        return FALSE;
+        m_scriptExitCode = runner.RunFile(cmdInfo.GetScriptFilePath());
+        return FALSE; // MFC's normal shutdown; ExitInstance() returns the script's code
     }
 
     return TRUE;
+}
+
+int CRmtApp::ExitInstance()
+{
+    int result = CWinApp::ExitInstance();
+    return m_scriptExitCode >= 0 ? m_scriptExitCode : result; // a script run's exit code (InitInstance() == FALSE would otherwise always exit with 0)
 }
 
 CString CRmtApp::GetVersionAndBuild() const

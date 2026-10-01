@@ -35,11 +35,14 @@ public:
     //{{AFX_VIRTUAL(CRmtApp)
 public:
     virtual BOOL InitInstance();
+    virtual int ExitInstance();
     //}}AFX_VIRTUAL
 
     CString GetVersionAndBuild() const;
     void OpenOnlineHelp() const;
     void OpenUrl(const char* url) const;
+
+    int m_scriptExitCode = -1; // the exit code of a /SCRIPT run, else -1
 
 
     // Implementation

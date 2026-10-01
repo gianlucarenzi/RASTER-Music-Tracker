@@ -56,6 +56,9 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   (they go on to the part being edited). Ctrl+S asks
   whether to overwrite also from the menu and the toolbar now (the option "Prompt a save dialog each time CTRL+S is
   pressed" was only honoured by the key handler, which the menu shortcut bypassed).
+- Removed the parts of the "RMF" file format that Raster started but never completed (MakeRMFModule, InstrToAtaRMF,
+  TrackToAtaRMF), as in 1.35. The MFC build (Windows) runs scripts too: `Rmt.exe /SCRIPT:<file>` (the former /TEST switch
+  and the hard-coded developer routine behind /SCRIPT are gone).
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes
