@@ -70,6 +70,12 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   speed 4, lasted 486 s instead of 121.6 s. Songs at instrument speed 1 are unchanged. The same defect is in the Windows
   program. Found by rendering the SAP-R stream through ASAP's POKEY and comparing it with the WAV
   (scripts/check-wav.py is part of scripts/test-scripting.sh).
+- SAP type B and XEX exports of stereo songs work (the stereo flag, the second POKEY and the 18-byte frames) as long as the compressed
+  data fits the memory of the LZSS player ($2040-$BFFF, 49,088 bytes); checked with ASAP on the first songlines of the stereo
+  reference song (the L and R channels match ASAP's own RMT player at 0.86, crossed 0.72). The whole reference song needs 69,782
+  bytes - 121 s of eight channels at instrument speed 4 - and is refused with a message that names both sizes; the
+  register dump itself is 437 KB, so only a longer-range storage than the 64 KB of the Atari (or the RMT player itself in the
+  SAP, which this program does not export) could hold it.
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

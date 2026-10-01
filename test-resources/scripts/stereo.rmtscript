@@ -12,12 +12,20 @@ export stripped-rmt s1.rmt
 export asm s1.asm
 export sapr s1.sapr date="01/01/2026"
 export lzss s1.lzss
-# no sap/xex: this song's compressed stream does not fit the LZSS player's
-# memory ("LZSS data is too big to fit in memory" - both programs refuse it)
+# no sap/xex: this song's compressed stream (69,782 bytes) does not fit the memory of the LZSS player (49,088 bytes):
+# "LZSS data is too big to fit in memory", see stereo-too-big.rmtscript
 export rmtplayer-asm s1_player.asm
 export wav s1.wav
 
 export stripped-rmt s2.rmt address=$4800 sfx=yes
 export asm s2.asm type=song prefix=ST
 export rmtplayer-asm s2_player.asm relocate=tracks asmformat=atasm
+
+# the first songlines of the song (a stereo song at instrument speed 4 that fits): the SAP type B and the XEX
+open "../songs/StereoShort.rmt"
+export sap short.sap
+export sap short2.sap subsongs="00 02"
+export xex short.xex text="STEREO\nSHORT"
+export wav short.wav
+export sapr short.sapr
 echo stereo done

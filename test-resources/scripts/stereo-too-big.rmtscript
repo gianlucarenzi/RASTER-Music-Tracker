@@ -1,0 +1,7 @@
+# The stereo reference song does not fit the LZSS player's memory as a SAP type B: the export is refused with a message
+# (exit code 1), no file is left. scripts/test-scripting.sh expects exactly that.
+set output out/stereo-too-big
+set overwrite yes
+open "../songs/Stereo.rmt"
+export sap too-big.sap
+echo never reached

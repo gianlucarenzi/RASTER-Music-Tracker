@@ -430,7 +430,11 @@ bool CSongExporter::BuildLzssSubtunes(CSongExport& songExport, const int* subtun
         // If the size is too big, abort the process and show an error message
         if (lzss_endAddress > RAM_MAX_ADDRESS) {
             CString message;
-            message.Format("Error, LZSS data ($%04X - $%04X) is too big to fit in memory!\n\nHigh Instrument Speed and/or Stereo greatly inflate memory usage, even when data is compressed", lzss_startAddress, lzss_endAddress);
+            message.Format("Error, LZSS data ($%04X - $%04X) is too big to fit in memory!\n\n"
+                           "The compressed data of the song takes %d bytes, the Atari has room for %d bytes ($%04X - $%04X).\n"
+                           "High Instrument Speed and/or Stereo greatly inflate memory usage, even when data is compressed.\n"
+                           "A shorter song, a lower instrument speed or fewer subsongs in one file make it fit.",
+                           lzss_startAddress, lzss_endAddress, lzss_endAddress - VUPlayer::SONGDATA, RAM_MAX_ADDRESS + 1 - VUPlayer::SONGDATA, VUPlayer::SONGDATA, RAM_MAX_ADDRESS);
             SendErrorMessage("Buffer Overflow", message);
             return false;
         }
