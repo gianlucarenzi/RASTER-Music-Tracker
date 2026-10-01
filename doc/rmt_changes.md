@@ -59,6 +59,10 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
 - Removed the parts of the "RMF" file format that Raster started but never completed (MakeRMFModule, InstrToAtaRMF,
   TrackToAtaRMF), as in 1.35. The MFC build (Windows) runs scripts too: `Rmt.exe /SCRIPT:<file>` (the former /TEST switch
   and the hard-coded developer routine behind /SCRIPT are gone).
+- Fixed: in stereo, the left POKEY got the AUDCTL of the right one and the right POKEY an AUDCTL that depended on the
+  memory beside the channel flags (CXPokey::CopyAtariMemoryToPokey wrote register 8 twice and read the flag of a
+  ninth channel). Each POKEY now gets its own AUDCTL ($D208 and $D218 into registers 8 and $18). Songs whose two
+  POKEYs use different AUDCTL bits sound as the Atari plays them; the others are unchanged.
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

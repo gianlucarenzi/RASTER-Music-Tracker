@@ -356,23 +356,22 @@ void CXPokey::RenderSoundV2(int instrspeed, BYTE* buffer, int& length)
 /// </summary>
 void CXPokey::CopyAtariMemoryToPokey()
 {
-    // Write bytes 0-7. Write 0x00 if the channel is inactive.
-    for (int i = 0; i <= 8; i++) //
-    {
+    // Write bytes 0-7 of the POKEY (and of the second one at +16 in stereo). Write 0x00 if the channel is inactive.
+    for (int i = 0; i < 8; i++) {
         const auto channel = i / 2;
-        auto on = CChannelControl::IsChannelOn(i / 2);
+        auto on = CChannelControl::IsChannelOn(channel);
         auto b = on ? g_AtariTrackerDriver->GetAtari()->GetByteAt(0xd200 + i) : 0x00; // TODO: Have GetPOKEYRegister()
         m_pokey.PutByte(i, b);
         if (stereo) {
-            auto on = CChannelControl::IsChannelOn(channel + 4);
-            b = on ? g_AtariTrackerDriver->GetAtari()->GetByteAt(0xd210 + i) : 0x00;
-            m_pokey.PutByte(i + 16, (i & 0x01) && !GetChannelOnOff(i / 2 + 4) ? 0 : b);
+            auto rightOn = CChannelControl::IsChannelOn(channel + 4);
+            b = rightOn ? g_AtariTrackerDriver->GetAtari()->GetByteAt(0xd210 + i) : 0x00;
+            m_pokey.PutByte(i + 16, b);
         }
     }
 
-    // AUDCTL
+    // AUDCTL, of each POKEY
     m_pokey.PutByte(0x08, g_AtariTrackerDriver->GetAtari()->GetByteAt(0xd208));
     if (stereo) {
-        m_pokey.PutByte(0x08, g_AtariTrackerDriver->GetAtari()->GetByteAt(0xd218));
+        m_pokey.PutByte(0x18, g_AtariTrackerDriver->GetAtari()->GetByteAt(0xd218));
     }
 }
