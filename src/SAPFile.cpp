@@ -21,6 +21,7 @@ void CSAPFile::Clear()
     m_type = "";
     m_init = 0;
     m_player = 0;
+    m_subsongPositions.clear();
 }
 
 
@@ -125,19 +126,28 @@ void CSAPFile::SetPlayerAddress(MemoryAddress player)
 }
 
 
-int CSAPFile::ParseSubsongs(const CString& subsongs)
+int CSAPFile::ParseSubsongs(const CString& subsongs, std::vector<int>* positions)
 {
     CString str = subsongs + " "; // Add space after the last character for parsing
     str.MakeUpper();
     int count = 0;
     byte isn = 0;
+    int n = 0;
+    if (positions != nullptr) {
+        positions->clear();
+    }
 
     for (int i = 0; i < str.GetLength(); i++) {
         char a = str.GetAt(i);
         if ((a >= '0' && a <= '9') || (a >= 'A' && a <= 'F')) {
+            n = ((n << 4) + (a <= '9' ? a - '0' : a - 'A' + 10)) & 0xFF;
             isn = 1;
         } else {
             if (isn) {
+                if (positions != nullptr) {
+                    positions->push_back(n);
+                }
+                n = 0;
                 count++;
                 if (count >= MAXSUBSONGS) {
                     break;
@@ -147,6 +157,16 @@ int CSAPFile::ParseSubsongs(const CString& subsongs)
         }
     }
     return count;
+}
+
+const std::vector<int>& CSAPFile::GetSubsongPositions() const
+{
+    return m_subsongPositions;
+}
+
+void CSAPFile::SetSubsongPositions(const std::vector<int>& positions)
+{
+    m_subsongPositions = positions;
 }
 
 void CSAPFile::Init(const CSong& song)

@@ -95,7 +95,7 @@ when it is missing.
 | `asm` | `.asm` | `type` = `tracks` or `song` (tracks, or the whole song by song columns), `notes` = `index` or `freq`, `durations` = `notes`, `note-duration` or `duration-note`, `prefix` (the label prefix, empty = no labels; default `MUSIC`) |
 | `sapr` | `.sapr` | `author`, `name`, `date` (default: the song's name, the song's author, today), `subsongs` (default: the subsongs found in the song) |
 | `lzss` | `.lzss` | none. Writes the full tune and, when they are longer than 16 bytes, the `_INTRO.lzss` and `_LOOP.lzss` siblings. |
-| `sap` | `.sap` | as `sapr` (a SAP of type B with the LZSS player) |
+| `sap` | `.sap` | as `sapr` (a SAP of type B with the LZSS player of VU-Player V2; each songline listed in `subsongs` starts a subsong, `subsongs="00 10"` makes two) |
 | `xex` | `.xex` | `text` (the screen text, up to 5 lines of 40 characters, `\n` between lines; default: the song's name, date and author lines the dialog proposes), `rasterbar` (yes/no), `shuffle` (yes/no), `region-auto` (yes/no), `color` (the rasterbar color, 0-255) |
 | `rmtplayer-asm` | `.asm` | `startlabel` (default `RMT_SONG_DATA`), `relocate` (a comma list of `instruments`, `tracks`, `songlines`, or `none`), `instruments-label`, `tracks-label`, `songlines-label`, `asmformat`, `sfx`, `gvf`, `nos` |
 | `wav` | `.wav` | none (16-bit, 44.1 kHz, 2 channels, the song once up to its loop point) |

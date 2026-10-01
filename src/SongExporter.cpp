@@ -286,17 +286,8 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
     CString s, t;
 
     int subsongs = songExport.GetSong().GetSubsongParts(t);
-    int count = 0;
 
     int subtune[256]{};
-
-    int lzss_chunk = 0; // Subtune size will be added to be used as the offset to the next one
-    int lzss_total = 0; // Final offset for LZSS bytes to export
-    int framescount = 0;
-
-    const int frameSize = CLZSSFile::GetFrameSize(songExport.GetSong());
-    int section = VUPlayer::SECTION;
-    int sequence = VUPlayer::SEQUENCE;
 
     byte mem[RAM_SIZE]{}; // Default RAM size for most 800xl/xe machines
 
@@ -319,12 +310,90 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
     }
 
 
+    int lzss_total = 0;
+    int framescount = 0;
+    if (!BuildLzssSubtunes(songExport, subtune, subsongs, mem, lzss_total, framescount)) {
+        return false;
+    }
+
+    // Write the Atari Video text to memory, for 5 lines of 40 characters
+    memcpy(&mem[LZSSP_LINE_1], xexFile.atariText, CXEXFile::ATARI_TEXT_SIZE);
+
+    // Write the total framescount on the top line, next to the Region and VBI speed, for 28 characters
+    memset(&mem[LZSSP_LINE_0 + 0x0B], 32, 28);
+    char framesdisplay[28] = { 0 };
+    sprintf(framesdisplay, "(%i frames total)", framescount);
+    for (int i = 0; i < 28; i++) mem[LZSSP_LINE_0 + 0x0B + i] = framesdisplay[i];
+    CSongExporter::StrToAtariVideo((char*)mem + LZSSP_LINE_0 + 0x0B, 28);
+
+    // I know the binary I have is currently set to NTSC, so I'll just convert to PAL and keep this going for now...
+    if (!xexFile.isNTSC) {
+        // clang-format off
+        unsigned char regionbytes[] = {
+            0xB9,(LZSSP_TABPPPAL - 1) & 0xff,(LZSSP_TABPPPAL - 1) >> 8,         // LDA tabppPAL-1,y
+            0x8D,LZSSP_ACPAPX2 & 0xFF,LZSSP_ACPAPX2 >> 8,                       // STA acpapx2
+            0xE0,0x9B,                                                          // CPX #$9B
+            0x30,0x05,                                                          // BMI set_ntsc
+            0xB9,(LZSSP_TABPPPALFIX - 1) & 0xff,(LZSSP_TABPPPALFIX - 1) >> 8,   // LDA tabppPALfix-1,y
+            0xD0,0x03,                                                          // BNE region_done
+            0xB9,(LZSSP_TABPPNTSCFIX - 1) & 0xFF,(LZSSP_TABPPNTSCFIX - 1) >> 8  // LDA tabppNTSCfix-1,y
+        };
+        // clang-format on
+        memcpy(&mem[VUPlayer::REGION], regionbytes, sizeof(regionbytes));
+    }
+
+    // Additional patches from the Export Dialog...
+    mem[VUPlayer::SONG_SPEED] = xexFile.instrspeed;                       // Song speed
+    mem[VUPlayer::RASTER_BAR] = xexFile.displayRasterbar ? 0x80 : 0x00;   // Display the rasterbar for CPU level
+    mem[VUPlayer::COLOR] = xexFile.rasterbarColor;                        // Rasterbar colur
+    mem[VUPlayer::STEREO_FLAG] = xexFile.isStereo ? 0xFF : 0x00;          // Is the song stereo?
+    mem[VUPlayer::SONGTOTAL] = subsongs;                                  // Total number of subtunes
+    if (!xexFile.autoRegion) {                                            // Automatically adjust speed between regions?
+        for (int i = 0; i < 4; i++) mem[VUPlayer::REGION + 6 + i] = 0xEA; // set the 4 bytes to NOPs to disable it
+    }
+
+    // Reconstruct the export binary for the LZSS Driver, VUPlayer, and all the included data
+    CAtariIO::SaveBinaryBlock(ou, mem, LZSSP_PLAYLZ16BEGIN, LZSSP_SONGINDEX, 1);
+
+    // Set the run address to VUPlayer
+    mem[0x2e0] = LZSSP_VUPLAYER & 0xff;
+    mem[0x2e1] = LZSSP_VUPLAYER >> 8;
+    CAtariIO::SaveBinaryBlock(ou, mem, 0x2e0, 0x2e1, 0);
+
+    // Overwrite the LZSS data region with both the pointers for subtunes index, and the actual LZSS streams until the end of file
+    CAtariIO::SaveBinaryBlock(ou, mem, VUPlayer::LZSS_POINTER, lzss_total, 0);
+
+    return true;
+}
+
+/// <summary>
+/// Dumps, compresses and lays out the subtunes the way VU-Player V2 reads them: per subtune an entry in the song
+/// index (the address of its section list and of its sequence list), the timers, and the intro and loop LZSS streams
+/// from VUPlayer::SONGDATA on. Shared by the XEX and the SAP type B exports.
+/// </summary>
+/// <param name="subtune">The songline each subtune starts from</param>
+/// <param name="mem">The Atari memory with the VU-Player loaded</param>
+/// <param name="lzss_total">The first address after the last stream</param>
+/// <param name="framescount">The frames of all subtunes up to their loop points</param>
+bool CSongExporter::BuildLzssSubtunes(CSongExport& songExport, const int* subtune, int subsongs, byte* mem, int& lzss_total, int& framescount)
+{
+    int lzss_chunk = 0; // Subtune size will be added to be used as the offset to the next one
+    lzss_total = 0;     // Final offset for LZSS bytes to export
+    framescount = 0;
+
+    const int frameSize = CLZSSFile::GetFrameSize(songExport.GetSong());
+    int section = VUPlayer::SECTION;
+    int sequence = VUPlayer::SEQUENCE;
+
     // LZSS buffers for each ones of the tune parts being reconstructed.
     // Because the buffers are large, they are allocated on hte heap instead of the stack.
     const size_t LZSS_BUFFER_SIZE = 0xFFFFF;
-    byte* buff2 = new byte[LZSS_BUFFER_SIZE]{};
-    byte* buff3 = new byte[LZSS_BUFFER_SIZE]{};
+    std::vector<byte> buff2Storage(LZSS_BUFFER_SIZE);
+    std::vector<byte> buff3Storage(LZSS_BUFFER_SIZE);
+    byte* buff2 = buff2Storage.data();
+    byte* buff3 = buff3Storage.data();
 
+    int count = 0;
     while (count < subsongs) {
         // a LZSS export will typically make use of intro and loop only, unless specified otherwise
         int intro = 0, loop = 0;
@@ -417,57 +486,6 @@ bool CSongExporter::ExportXEX_LZSS(CSongExport& songExport, CXEXFile xexFile, st
         lzss_total = lzss_endAddress;
         count++;
     }
-
-    // Delete buffers on heap
-    delete buff2;
-    delete buff3;
-
-    // Write the Atari Video text to memory, for 5 lines of 40 characters
-    memcpy(&mem[LZSSP_LINE_1], xexFile.atariText, CXEXFile::ATARI_TEXT_SIZE);
-
-    // Write the total framescount on the top line, next to the Region and VBI speed, for 28 characters
-    memset(&mem[LZSSP_LINE_0 + 0x0B], 32, 28);
-    char framesdisplay[28] = { 0 };
-    sprintf(framesdisplay, "(%i frames total)", framescount);
-    for (int i = 0; i < 28; i++) mem[LZSSP_LINE_0 + 0x0B + i] = framesdisplay[i];
-    CSongExporter::StrToAtariVideo((char*)mem + LZSSP_LINE_0 + 0x0B, 28);
-
-    // I know the binary I have is currently set to NTSC, so I'll just convert to PAL and keep this going for now...
-    if (!xexFile.isNTSC) {
-        // clang-format off
-        unsigned char regionbytes[] = {
-            0xB9,(LZSSP_TABPPPAL - 1) & 0xff,(LZSSP_TABPPPAL - 1) >> 8,         // LDA tabppPAL-1,y
-            0x8D,LZSSP_ACPAPX2 & 0xFF,LZSSP_ACPAPX2 >> 8,                       // STA acpapx2
-            0xE0,0x9B,                                                          // CPX #$9B
-            0x30,0x05,                                                          // BMI set_ntsc
-            0xB9,(LZSSP_TABPPPALFIX - 1) & 0xff,(LZSSP_TABPPPALFIX - 1) >> 8,   // LDA tabppPALfix-1,y
-            0xD0,0x03,                                                          // BNE region_done
-            0xB9,(LZSSP_TABPPNTSCFIX - 1) & 0xFF,(LZSSP_TABPPNTSCFIX - 1) >> 8  // LDA tabppNTSCfix-1,y
-        };
-        // clang-format on
-        memcpy(&mem[VUPlayer::REGION], regionbytes, sizeof(regionbytes));
-    }
-
-    // Additional patches from the Export Dialog...
-    mem[VUPlayer::SONG_SPEED] = xexFile.instrspeed;                       // Song speed
-    mem[VUPlayer::RASTER_BAR] = xexFile.displayRasterbar ? 0x80 : 0x00;   // Display the rasterbar for CPU level
-    mem[VUPlayer::COLOR] = xexFile.rasterbarColor;                        // Rasterbar colur
-    mem[VUPlayer::STEREO_FLAG] = xexFile.isStereo ? 0xFF : 0x00;          // Is the song stereo?
-    mem[VUPlayer::SONGTOTAL] = subsongs;                                  // Total number of subtunes
-    if (!xexFile.autoRegion) {                                            // Automatically adjust speed between regions?
-        for (int i = 0; i < 4; i++) mem[VUPlayer::REGION + 6 + i] = 0xEA; // set the 4 bytes to NOPs to disable it
-    }
-
-    // Reconstruct the export binary for the LZSS Driver, VUPlayer, and all the included data
-    CAtariIO::SaveBinaryBlock(ou, mem, LZSSP_PLAYLZ16BEGIN, LZSSP_SONGINDEX, 1);
-
-    // Set the run address to VUPlayer
-    mem[0x2e0] = LZSSP_VUPLAYER & 0xff;
-    mem[0x2e1] = LZSSP_VUPLAYER >> 8;
-    CAtariIO::SaveBinaryBlock(ou, mem, 0x2e0, 0x2e1, 0);
-
-    // Overwrite the LZSS data region with both the pointers for subtunes index, and the actual LZSS streams until the end of file
-    CAtariIO::SaveBinaryBlock(ou, mem, VUPlayer::LZSS_POINTER, lzss_total, 0);
 
     return true;
 }

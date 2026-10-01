@@ -36,6 +36,15 @@ check delta delta.rmt delta.txt delta.rmw d1.rmt d1.asm d1.sapr d1.lzss d1.sap d
 check midi midi.rmt midi.txt midi.rmw
 check dump actions.md notekeys.md
 
+# the SAP type B files: the blocks must hold the player (an earlier export left the driver out)
+if command -v python3 >/dev/null; then
+    for f in d1.sap d2.sap; do
+        scripts/check-sap.py "$WORK/delta-a/$f" 1 || fail=1
+    done
+else
+    echo "skip SAP structure check: no python3"
+fi
+
 # the failure paths: a syntax error is exit code 2, a failing command 1
 printf 'open "unterminated\n' >"$WORK/syntax.rmtscript"
 "$RMT" "/SCRIPT:$WORK/syntax.rmtscript" >/dev/null 2>&1; code=$?

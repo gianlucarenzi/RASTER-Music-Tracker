@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Song.h"
+
+#include <vector>
 #include "Memory.h"
 
 class CSAPFile {
@@ -42,7 +44,11 @@ public:
 
     void Init(const CSong& song);
     // The number of subsongs in a "Subsongs" line of hex songline numbers separated by blanks
-    static int ParseSubsongs(const CString& subsongs);
+    // (the songlines themselves go to positions, when given)
+    static int ParseSubsongs(const CString& subsongs, std::vector<int>* positions = nullptr);
+    // The songline each subsong starts from, for the type B export (empty: the song from its start)
+    const std::vector<int>& GetSubsongPositions() const;
+    void SetSubsongPositions(const std::vector<int>& positions);
     void Normalize();
     void Export(std::ofstream& ou); // Not const, because it calls Normalize
 
@@ -60,6 +66,7 @@ private:
     CString m_type;
     MemoryAddress m_init;
     MemoryAddress m_player;
+    std::vector<int> m_subsongPositions;
 
     static void Normalize(CString& string);
     static CString FormatMemoryAddress(MemoryAddress address);

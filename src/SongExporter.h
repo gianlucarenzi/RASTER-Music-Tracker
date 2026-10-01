@@ -27,6 +27,9 @@ class CSongExporter {
 public:
     CSongExporter();
 
+    // The subtunes laid out for VU-Player V2 (XEX and SAP type B exports), see the .cpp
+    static bool BuildLzssSubtunes(CSongExport& songExport, const int* subtune, int subsongs, byte* mem, int& lzss_total, int& framescount);
+
     /// <summary>
     /// Generate a SAP-R data stream and compress it with LZSS
     /// </summary>

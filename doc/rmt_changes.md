@@ -36,6 +36,12 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   landscape page, as the Windows program prints its view (QPrinter, Qt PrintSupport); Properties (Alt+Enter) shows
   the file, format, name, channels, video standard, speeds, maximal track length, the instruments and tracks used
   and the size of the RMT module. (RMT_QT_PRINT_PDF=<file> prints into a PDF file without dialogs, for tests.)
+- Fixed: the SAP type B export (File > Export As > SAP) could not be played by any player. It saved the memory
+  blocks of the first VU-Player ($1900-$27FF), but VU-Player V2 lives at $0C1B-$1F3F, so INIT jumped into empty
+  memory ("INIT routine didn't return" in ASAP), and its song index had eight bytes written to one address.
+  It now lays the subtunes out as the XEX export does (CSongExporter::BuildLzssSubtunes), saves the player and the
+  index and streams, and a "Subsongs" line such as "00 10" makes one subsong per songline (it was only counted).
+  Checked with ASAP: 30 s and more of the song, two subsongs differ, the sound follows ASAP's own RMT player.
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

@@ -27,5 +27,6 @@ public:
 
     static constexpr MemoryAddress SOUNGTIMER = LZSSP_SONGTIMERCOUNT;
 
-    static void PatchMemoryForSAP_B(byte* memory, const CSong& song, byte* buf2, byte* buf3, int intro, int loop, int targetAddrOfModule, int lzss_offset, int lzss_loop);
+    // The patches that turn the VU-Player into a SAP type B player (INIT, PLAYER, endless loop)
+    static void PatchMemoryForSAP_B(byte* memory, const CSong& song, int subsongs);
 };
