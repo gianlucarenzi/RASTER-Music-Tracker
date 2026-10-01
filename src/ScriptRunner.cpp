@@ -246,18 +246,6 @@ void RequireNoOptions(const TScriptCommand& c)
     }
 }
 
-// For the duration of an export: the song timer thread is stopped (the exporters drive the tracker driver and the
-// POKEY themselves, and the timer rendering through the same POKEY in between would disturb them) and re-armed at
-// the end, as CSong::TimerRoutine() re-arms itself every tick.
-class CExportTimer {
-public:
-    explicit CExportTimer(CSong& song) : m_song(song) { m_song.StopTimer(); }
-    ~CExportTimer() { m_song.ChangeTimer(m_song.IsNTSC() ? 17 : 20); }
-
-private:
-    CSong& m_song;
-};
-
 } // namespace
 
 void RedirectScriptOutputToFile(const CString& logPath)
@@ -524,7 +512,7 @@ void CScriptRunner::Export(const TScriptCommand& command)
         file += format->extension;
     }
     CheckOverwrite(command, file);
-    CExportTimer section(m_song); // no timer thread while the exporters drive the tracker driver and the POKEY
+    CExportSection section(m_song); // no timer thread while the exporters drive the tracker driver and the POKEY
 
     // CSong::FileExportAs() without its dialogs
     m_song.Stop();

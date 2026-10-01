@@ -40,8 +40,6 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
 
     // Wait in a tight loop pumping messages until the playback stops
     {
-        DisableEventSection section;
-
         // The SAP-R dumper is running during that time...
         DWORD lastStatusTick = GetTickCount();
         while (m_play != PLAY_STOP) {

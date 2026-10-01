@@ -2,6 +2,7 @@
 #include "General.h"
 
 #include "GuiHelpers.h"
+#include "Song.h"
 #include "ScriptMessages.h"
 
 #include "Global.h"
@@ -58,37 +59,32 @@ void SendErrorMessage(const char* title, const char* message)
 }
 
 
-int DisableEventSection::eventsDisabledCounter = 0;
-HCURSOR DisableEventSection::oldCursor = NULL;
+int CExportSection::s_depth = 0;
+HCURSOR CExportSection::s_oldCursor = NULL;
 
-DisableEventSection::DisableEventSection()
+CExportSection::CExportSection(CSong& song)
+    : m_song(song)
 {
-    DisableEvents();
-}
-
-DisableEventSection::~DisableEventSection()
-{
-    EnableEvents();
-}
-
-void DisableEventSection::DisableEvents()
-{
-    if (eventsDisabledCounter == 0) {
-        oldCursor = SetCursor(LoadCursor(0, IDC_WAIT));
+    if (s_depth == 0) {
+        s_oldCursor = SetCursor(LoadCursor(0, IDC_WAIT));
         EnableWindow(g_hwnd, FALSE);
+        m_song.StopTimer();
     }
-    eventsDisabledCounter++;
+    s_depth++;
 }
 
-void DisableEventSection::EnableEvents()
+CExportSection::~CExportSection()
 {
-    if (eventsDisabledCounter == 0) {
-        ThrowRuntimeException("Field eventsDisabledCounter is already 0.");
+    if (s_depth == 0) {
+        ThrowRuntimeException("CExportSection: not inside an export.");
     }
-    eventsDisabledCounter--;
-    if (eventsDisabledCounter == 0) {
-        SetCursor(oldCursor);
+    s_depth--;
+    if (s_depth == 0) {
+        m_song.ChangeTimer(m_song.IsNTSC() ? 17 : 20);
+        SetStatusBarText("");
         EnableWindow(g_hwnd, TRUE);
+        SetCursor(s_oldCursor);
+        RefreshScreen();
     }
 }
 

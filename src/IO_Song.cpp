@@ -2,6 +2,7 @@
 
 #include "Song.h"
 #include "Memory.h"
+#include "GuiHelpers.h"
 
 #include "filenewdlg.h"
 
@@ -1175,6 +1176,8 @@ bool CSong::TestBeforeFileSave()
 /// <returns>0 if the export failed, 1 if the export is ok</returns>
 bool CSong::ExportV2(CSong& song, std::ofstream& ou, SongIOType iotype, LPCTSTR filename)
 {
+    CExportSection section(song); // no input, no timer thread, no redraws until the export is done
+
     // Init the export data container
     TExportDescription exportDesc{};
     exportDesc.targetAddrOfModule = 0x4000; // Standard RMT modules are set to start @ $4000
