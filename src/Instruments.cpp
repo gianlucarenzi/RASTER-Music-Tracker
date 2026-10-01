@@ -61,7 +61,7 @@ const Tshenv shenv[ENVROWS] = {
 /// </summary>
 CInstruments::CInstruments()
 {
-    m_instr = new TInstrument[INSTRSNUM];
+    m_instr = new TInstrument[INSTRSNUM](); // value-initialised: zeroed until ClearInstrument()/InitInstruments()
 }
 
 /// <summary>

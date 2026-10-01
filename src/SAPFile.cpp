@@ -185,7 +185,7 @@ void CSAPFile::Export(std::ofstream& ou)
     }
 
     if (m_defsong > 0) {
-        ou << "DEFSONG " << m_songs << EOL;
+        ou << "DEFSONG " << m_defsong << EOL;
     }
 
     if (m_stereo) {

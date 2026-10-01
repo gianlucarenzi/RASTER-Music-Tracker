@@ -345,7 +345,7 @@ void CSong::MidiEvent(DWORD dwParam)
                         //volume = 0 => noteOff => delete note and write only volume 0
                         if (g_Midi.m_LastNoteOnChannel[atc] == note) //is it really the last one pressed?
                         {
-                            if (m_play && m_followplay && (m_speed < (m_speed / 2))) {
+                            if (m_play && m_followplay && (m_speeda < (m_speed / 2))) {
                                 m_quantization_note = -2;
                             } else if (TrackSetNoteActualInstrVol(-1) && TrackSetVol(0))
                                 goto NextLine_midi_test;
@@ -563,7 +563,7 @@ void CSong::MidiEvent(DWORD dwParam)
                     //volume = 0 => noteOff => delete note and write only volume 0
                     if (g_Midi.m_LastNoteOnChannel[chn] == note) //is it really the last one pressed?
                     {
-                        if (m_play && m_followplay && (m_speed < (m_speed / 2))) {
+                        if (m_play && m_followplay && (m_speeda < (m_speed / 2))) {
                             m_quantization_note = -2;
                         } else if (TrackSetNoteActualInstrVol(-1) && TrackSetVol(0))
                             goto NextLine_midi;

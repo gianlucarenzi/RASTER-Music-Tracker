@@ -4,7 +4,7 @@
 
 #include "SongTypes.h"
 #include "TrackTypes.h"
-#include "Tracks.h"
+#include "TracksTypes.h"
 
 #include "Notes.h"
 
@@ -97,7 +97,7 @@ public:
 
 private:
     int m_maxTrackLength;
-    TTrack* m_track;
+    TTrack* m_track = nullptr;
 };
 
 extern CTracks g_Tracks;

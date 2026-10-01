@@ -838,7 +838,7 @@ bool CSong::SaveRMW(std::ofstream& ou)
     int p = RMWMAINPARAMSCOUNT;     // Number of stored parameters
     ou.write((char*)&p, sizeof(p)); // Write the number of main parameters
     for (int i = 0; i < p; i++)
-        ou.write((char*)mainparams[i], sizeof(mainparams[0]));
+        ou.write((char*)mainparams[i], sizeof(int));
 
     // Write a complete song and songgo
     ou.write((char*)m_song, sizeof(m_song));
@@ -869,7 +869,7 @@ bool CSong::LoadRMW(std::ifstream& in)
     int p = 0;
     in.read((char*)&p, sizeof(p)); //read the number of main parameters
     for (int i = 0; i < p; i++)
-        in.read((char*)mainparams[i], sizeof(mainparams[0]));
+        in.read((char*)mainparams[i], sizeof(int));
 
     // Read the complete song and songgo
     in.read((char*)m_song, sizeof(m_song));
