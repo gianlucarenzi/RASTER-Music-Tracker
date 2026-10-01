@@ -15,6 +15,9 @@
 #include "Global.h"
 
 #include <QFileInfo>
+#include <QGuiApplication>
+#include <QInputMethod>
+#include <QLocale>
 #include <QSettings>
 
 #include <filesystem>
@@ -81,4 +84,22 @@ bool RmtSaveConfigText(const char* fileName, const std::string& text)
 CString RmtConfigTextLocation(const char* fileName)
 {
     return CString((Settings().fileName() + " [" + Group(fileName) + "]").toLocal8Bit().constData());
+}
+
+// The layout RMT starts with when nothing is saved yet: the language of the
+// keyboard (Qt's input method), German QWERTZ, French AZERTY, else QWERTY.
+KeyboardLayout RmtDefaultKeyboardLayout()
+{
+    QLocale locale = QLocale::system();
+    if (QGuiApplication::inputMethod()) {
+        locale = QGuiApplication::inputMethod()->locale();
+    }
+    switch (locale.language()) {
+    case QLocale::German:
+        return KeyboardLayout::QWERTZ;
+    case QLocale::French:
+        return KeyboardLayout::AZERTY;
+    default:
+        return KeyboardLayout::QWERTY;
+    }
 }

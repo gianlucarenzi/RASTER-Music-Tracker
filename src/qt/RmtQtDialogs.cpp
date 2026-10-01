@@ -50,6 +50,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
+#include <algorithm>
 #include <array>
 #include <functional>
 
@@ -852,8 +853,11 @@ static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
     auto* keyboard = new QGroupBox("Keyboard");
     auto* keyboardLayout = new QVBoxLayout(keyboard);
     auto* layoutCombo = new QComboBox;
-    layoutCombo->addItems({ "QWERTY Layout", "AZERTY Layout", "QWERTZ Layout" }); // index = KeyboardLayout
-    layoutCombo->setCurrentIndex((int)dlg->m_keyboard_layout);
+    // Shown QWERTY, QWERTZ, AZERTY; the item data is the KeyboardLayout number kept in rmt.ini
+    layoutCombo->addItem("QWERTY Layout", (int)KeyboardLayout::QWERTY);
+    layoutCombo->addItem("QWERTZ Layout", (int)KeyboardLayout::QWERTZ);
+    layoutCombo->addItem("AZERTY Layout", (int)KeyboardLayout::AZERTY);
+    layoutCombo->setCurrentIndex(std::max(0, layoutCombo->findData((int)dlg->m_keyboard_layout)));
     auto* layoutRow = new QHBoxLayout;
     layoutRow->addWidget(new QLabel("Keyboard layout:"));
     layoutRow->addWidget(layoutCombo, 1);
@@ -915,7 +919,7 @@ static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
     dlg->m_doSmoothScrolling = smooth->isChecked();
     dlg->m_viewDebugDisplay = debug->isChecked();
     dlg->m_trackerDriverVersion = (TrackerDriverVersion)driver->currentIndex();
-    dlg->m_keyboard_layout = (KeyboardLayout)layoutCombo->currentIndex();
+    dlg->m_keyboard_layout = (KeyboardLayout)layoutCombo->currentData().toInt();
     dlg->m_keyboard_updowncontinue = upDown->isChecked();
     dlg->m_keyboard_rememberoctavesandvolumes = remember->isChecked();
     dlg->m_keyboard_escresetatarisound = escReset->isChecked();

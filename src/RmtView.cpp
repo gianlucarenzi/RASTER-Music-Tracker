@@ -690,6 +690,26 @@ void CRmtView::WriteRMTConfig()
         MessageBox("Could not create: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nThe RMT configuration won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
 }
 
+// The keyboard layout of a first start (no rmt.ini): the keyboard language of
+// the system - German QWERTZ, French AZERTY, else QWERTY. The Qt frontend asks
+// Qt's input method (qt/RmtQtSettings.cpp); the MFC build the thread's input locale.
+#ifdef RMT_QT_GUI
+KeyboardLayout RmtDefaultKeyboardLayout(); // qt/RmtQtSettings.cpp
+#endif
+static KeyboardLayout DefaultKeyboardLayout()
+{
+#ifdef RMT_QT_GUI
+    return RmtDefaultKeyboardLayout();
+#elif defined(RMT_HAS_MFC) && defined(_WIN32)
+    WORD language = PRIMARYLANGID(LOWORD((DWORD_PTR)GetKeyboardLayout(0)));
+    if (language == LANG_GERMAN) return KeyboardLayout::QWERTZ;
+    if (language == LANG_FRENCH) return KeyboardLayout::AZERTY;
+    return KeyboardLayout::QWERTY;
+#else
+    return KeyboardLayout::QWERTY;
+#endif
+}
+
 void CRmtView::ResetRMTConfig()
 {
     g_scaling_percentage = 100;        // RMT interface scaling (in percentage)
@@ -721,7 +741,7 @@ void CRmtView::ResetRMTConfig()
     g_defaultTracksPath = "";        // Default path for tracks
 
     // TODO: Why is the default here different from Global.cpp
-    g_keyboard_layout = KeyboardLayout::QWERTY; // Keyboard layout used by RMT. eg: QWERTY, AZERTY, etc
+    g_keyboard_layout = DefaultKeyboardLayout(); // Keyboard layout used by RMT: the system's keyboard language on a first start
     g_keyboard_updowncontinue = 1;              // Scroll to the next/previous Songline when the Pattern limits are crossed
     g_keyboard_RememberOctavesAndVolumes = 1;   // Remember the last octave and volume values used with an Instrument
     g_keyboard_escresetatarisound = 1;          // Reset the RMT Atari routines if the ESC key is pressed
