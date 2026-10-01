@@ -224,16 +224,24 @@ MIDI input through the ALSA "Midi Through" port (client 14, module
 file into it (notes on channel 16 are recorded in edit mode, `aconnect -l`
 shows the `RMT` client connected to 14:0).
 
-`RMT_QT_MENU_TEST=1` (use with `RMT_QT_GRAB=1` and `QT_QPA_PLATFORM=offscreen`)
-triggers all 81 leaf menu actions programmatically and exits 0 if every action
-has a registered handler, 1 otherwise:
+`RMT_QT_MENU_TEST=1` (use with `RMT_QT_GRAB=1`, a long enough `RMT_QT_GRAB_MS`, which
+ends the run, and `QT_QPA_PLATFORM=offscreen`) triggers all leaf menu actions
+programmatically and exits 0 if every action has a registered handler, 1 otherwise:
 
 ```bash
-QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_MENU_TEST=1 \
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_GRAB_MS=20000 RMT_QT_MENU_TEST=1 \
     ./build-qt/out/rmt
-# RMT_QT_MENU_TEST: triggered 81 menu actions
+# RMT_QT_MENU_TEST: triggered 162 menu actions
 # RMT_QT_MENU_TEST: PASS
 ```
+
+The menu and the keys are defined in `src/Rmt.rc` only (`IDR_MAINFRAME MENU` and
+`IDR_MAINFRAME ACCELERATORS`): CMake turns them into tables at configure time
+(`cmake/GenerateRcTables.cmake`) and the frontend builds its menu bar and its
+shortcuts from them. Scripts: `rmt /SCRIPT:<file>` ([doc/rmt_scripting.md](doc/rmt_scripting.md)),
+checked by `scripts/test-scripting.sh`, like the menu test on every push by the
+workflow `.github/workflows/test.yml`. `scripts/make-docs.sh` regenerates the command
+table, the note keys and the HTML manual (`doc/rmt_en.md`) from the program.
 
 Checked this way with gemx.rmt: after F5 the time counter shows 5.50 s at
 5.5 s, the sound correlates 0.985 (chroma) and 0.989 (loudness, 10 ms steps)
