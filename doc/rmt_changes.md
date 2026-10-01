@@ -27,6 +27,11 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   (ExportAsAsmApply, ExportAsRelocatableAsmForRmtPlayerApply,
   ExportAsStrippedRMTApply, CSAPFile::ParseSubsongs, CSongExporter::DefaultXexText/SetXexText),
   the message boxes of a script go to the console (ScriptMessages.cpp).
+- The Windows standard keys of RMT 1.36: New is Ctrl+N (was Ctrl+W), Open is Ctrl+O (was Ctrl+L, the item
+  is "Open..." now), Save As is Ctrl+Shift+S, Help is F1. The three song functions that used Ctrl+N/O/P
+  moved: "Insert new empty unused track" to Ctrl+T, "Insert copy or clone of song lines" to Ctrl+K, "Insert
+  new line with unused empty tracks" to Ctrl+J. The editing parts are F2 (Tracks), F3 (Instruments),
+  F4 (Song) and Shift+F4 (Info), as in 1.36; F1 was Tracks, F2 Instruments, F3 Info.
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

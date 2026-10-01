@@ -278,12 +278,12 @@ public:
 
         // ---- File ----
         QMenu* mFile = bar->addMenu("&File");
-        addItemTagged(mFile, "Ne&w", ID_FILE_NEW, "Ctrl+W");
-        addItemTagged(mFile, "&Load...", ID_FILE_OPEN, "Ctrl+L");
+        addItemTagged(mFile, "&New", ID_FILE_NEW, "Ctrl+N");
+        addItemTagged(mFile, "&Open...", ID_FILE_OPEN, "Ctrl+O");
         addItemTagged(mFile, "&Reload", ID_FILE_RELOAD, "Ctrl+R");
         mFile->addSeparator();
         addItemTagged(mFile, "&Save", ID_FILE_SAVE, "Ctrl+S");
-        addItemTagged(mFile, "Save &As...", ID_FILE_SAVE_AS);
+        addItemTagged(mFile, "Save &As...", ID_FILE_SAVE_AS, "Ctrl+Shift+S");
         mFile->addSeparator();
         addItemTagged(mFile, "&Import...", ID_FILE_IMPORT);
         addItemTagged(mFile, "&Export As...", ID_FILE_EXPORT_AS);
@@ -378,9 +378,9 @@ public:
         mSong->addSeparator();
         addItemTagged(mSong, "Delete c&urrent line", ID_SONG_DELETEACTUALLINE, "Ctrl+U");
         addItemTagged(mSong, "&Insert new empty line", ID_SONG_INSERTNEWEMPTYLINE, "Ctrl+I");
-        addItemTagged(mSong, "Insert new line with unused empty tracks", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS, "Ctrl+P");
-        addItemTagged(mSong, "Insert c&opy or clone of song line(s)...", ID_SONG_INSERTCOPYORCLONEOFSONGLINES, "Ctrl+O");
-        addItemTagged(mSong, "Insert &new empty unused track to current song position", ID_SONG_PUTNEWEMPTYUNUSEDTRACK, "Ctrl+N");
+        addItemTagged(mSong, "Insert new line with unused empty tracks", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS, "Ctrl+J");
+        addItemTagged(mSong, "Insert c&opy or clone of song line(s)...", ID_SONG_INSERTCOPYORCLONEOFSONGLINES, "Ctrl+K");
+        addItemTagged(mSong, "Insert &new empty unused track to current song position", ID_SONG_PUTNEWEMPTYUNUSEDTRACK, "Ctrl+T");
         addItemTagged(mSong, "Make a track &duplicate to current song position", ID_SONG_MAKETRACKSDUPLICATE, "Ctrl+D");
         mSong->addSeparator();
         addItemTagged(mSong, "Switch song between 4 or 8 channels...", ID_SONG_SONGSWITCH4_8);
@@ -454,7 +454,7 @@ public:
 
         // ---- Help ----
         QMenu* mHelp = bar->addMenu("&Help");
-        addItemTagged(mHelp, "&Help Topics", ID_HELP_HELP_TOPICS);
+        addItemTagged(mHelp, "&Help Topics", ID_HELP_HELP_TOPICS, "F1");
         addItemTagged(mHelp, "&Online Help", ID_HELP_ONLINE_HELP, "Shift+F1");
         addItemTagged(mHelp, "&About RASTER Music Tracker", ID_HELP_ABOUT_APP);
 

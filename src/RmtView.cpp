@@ -1648,32 +1648,30 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             goto AllModesDefaultKey;
             break;
 
-        case VK_F1:
-            if (g_shiftkey) {
-                g_app.OpenOnlineHelp();
-                return;
-            }
+        case VK_F1:                                    // the standard keys: F1 Help, Shift+F1 Online Help (the editing parts are F2-F4, as in RMT 1.36)
+            if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
+            g_app.OpenOnlineHelp();
+            return;
+
+        case VK_F2:
             if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
             g_Undo.Separator();
             OnEmTracks();
             break;
 
-        case VK_F2:
+        case VK_F3:
             if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
             g_Undo.Separator();
             OnEmInstruments();
             break;
 
-        case VK_F3:
+        case VK_F4:                                    // Shift+F4 moves to the info area
             if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
             g_Undo.Separator();
-            OnEmInfo();
-            break;
-
-        case VK_F4:
-            if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
-            g_Undo.Separator();
-            OnEmSong();
+            if (g_shiftkey)
+                OnEmInfo();
+            else
+                OnEmSong();
             break;
 
         case VK_F5:
@@ -1777,18 +1775,18 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                 goto AllModesDefaultKey;
             break;
 
-        case 76:                             //VK_L
-            if (g_controlkey && !g_shiftkey) //CTRL+L, or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
+        case 79:                             //VK_O
+            if (g_controlkey && !g_shiftkey) //CTRL+O (the standard key for Open), or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
             {
-                SetStatusBarText("Load...");
+                SetStatusBarText("Open...");
                 OnFileOpen();
                 ClearStatusBar();
             } else
                 goto AllModesDefaultKey;
             break;
 
-        case 87:                             //VK_W
-            if (g_controlkey && !g_shiftkey) //CTRL+W, or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
+        case 78:                             //VK_N
+            if (g_controlkey && !g_shiftkey) //CTRL+N (the standard key for New), or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
             {
                 //g_Song.Stop();
                 int r = MessageBox("Would you like to create a new song?", "Create new song", MB_YESNOCANCEL | MB_ICONQUESTION);
@@ -1798,7 +1796,10 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             break;
 
         case 83:                             //VK_S
-            if (g_controlkey && !g_shiftkey) //CTRL+S, or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
+            if (g_controlkey && g_shiftkey)  //CTRL+SHIFT+S: Save As
+            {
+                OnFileSaveAs();
+            } else if (g_controlkey) //CTRL+S, or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
             {
                 //g_Song.Stop();
                 SetStatusBarText("Save...");

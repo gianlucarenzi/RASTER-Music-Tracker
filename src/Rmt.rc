@@ -1145,12 +1145,12 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "Ne&w\tCtrl+W",                ID_FILE_NEW
-        MENUITEM "&Load...\tCtrl+L",            ID_FILE_OPEN
+        MENUITEM "&New\tCtrl+N",                 ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM "&Reload\tCtrl+R",             ID_FILE_RELOAD
         MENUITEM SEPARATOR
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save &As...\tCtrl+Shift+S",       ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
         MENUITEM "&Import...",                  ID_FILE_IMPORT
         MENUITEM "&Export As...",               ID_FILE_EXPORT_AS
@@ -1249,9 +1249,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Delete c&urrent line\tCtrl+U", ID_SONG_DELETEACTUALLINE
         MENUITEM "&Insert new empty line\tCtrl+I", ID_SONG_INSERTNEWEMPTYLINE
-        MENUITEM "Insert new line with unused empty tracks\tCtrl+P", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS
-        MENUITEM "Insert c&opy or clone of song line(s)...\tCtrl+O", ID_SONG_INSERTCOPYORCLONEOFSONGLINES
-        MENUITEM "Insert &new empty unused track to current song position\tCtrl+N", ID_SONG_PUTNEWEMPTYUNUSEDTRACK
+        MENUITEM "Insert new line with unused empty tracks\tCtrl+J", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS
+        MENUITEM "Insert c&opy or clone of song line(s)...\tCtrl+K", ID_SONG_INSERTCOPYORCLONEOFSONGLINES
+        MENUITEM "Insert &new empty unused track to current song position\tCtrl+T", ID_SONG_PUTNEWEMPTYUNUSEDTRACK
         MENUITEM "Make a track &duplicate to current song position\tCtrl+D", ID_SONG_MAKETRACKSDUPLICATE
         MENUITEM SEPARATOR
         MENUITEM "Switch song between 4 or 8 channels...", ID_SONG_SONGSWITCH4_8
@@ -1377,7 +1377,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Help Topics",                ID_HELP_HELP_TOPICS
+        MENUITEM "&Help Topics\tF1",             ID_HELP_HELP_TOPICS
         MENUITEM "&Online Help\tShift+F1",      ID_HELP_ONLINE_HELP
         MENUITEM "&About RASTER Music Tracker", ID_HELP_ABOUT_APP
     END

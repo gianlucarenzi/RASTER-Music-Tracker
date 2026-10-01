@@ -2474,9 +2474,9 @@ BOOL CSong::TrackKey(int vk, int shift, int control)
     //
 #define VKX_SONGINSERTLINE          73 //VK_I
 #define VKX_SONGDELETELINE          85 //VK_U
-#define VKX_SONGDUPLICATELINE       79 //VK_O
-#define VKX_SONGPREPARELINE         80 //VK_P
-#define VKX_SONGPUTNEWTRACK         78 //VK_N
+#define VKX_SONGDUPLICATELINE       75 //VK_K (was Ctrl+O: the standard key of Open)
+#define VKX_SONGPREPARELINE         74 //VK_J (was Ctrl+P: the standard key of Print)
+#define VKX_SONGPUTNEWTRACK         84 //VK_T (was Ctrl+N: the standard key of New)
 #define VKX_SONGMAKETRACKSDUPLICATE 68 //VK_D
 
     int note, i, j;
@@ -2856,7 +2856,7 @@ TrackKeyOk:
             if (control && !shift) SongTrackGoOnOff(); //control+G => goto on/off line in the song
             break;
 
-        case VKX_SONGPUTNEWTRACK: //VK_N
+        case VKX_SONGPUTNEWTRACK: //VK_T
             BLOCKDESELECT;
             if (control && !shift)
                 SongPutnewemptyunusedtrack();
@@ -3206,17 +3206,17 @@ BOOL CSong::SongKey(int vk, int shift, int control)
             SongInsertLine(m_songactiveline);
             break;
 
-        case VKX_SONGDUPLICATELINE: //Control+VK_O
+        case VKX_SONGDUPLICATELINE: //Control+VK_K
             if (control)
                 SongInsertCopyOrCloneOfSongLines(m_songactiveline);
             break;
 
-        case VKX_SONGPREPARELINE: //Control+VK_P
+        case VKX_SONGPREPARELINE: //Control+VK_J
             if (control)
                 SongPrepareNewLine(m_songactiveline);
             break;
 
-        case VKX_SONGPUTNEWTRACK: //Control+VK_N
+        case VKX_SONGPUTNEWTRACK: //Control+VK_T
             if (control)
                 SongPutnewemptyunusedtrack();
             break;
