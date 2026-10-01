@@ -286,6 +286,7 @@
 #define ID_BLOCK_PLAY                   32820
 #define ID_BLOCK_INSTRALL               32821
 #define ID_BLOCK_BACKUP                 32822
+#define ID_FILE_PROPERTIES                                                         33100
 #define ID_CHAN1                        32823
 #define ID_CHAN2                        32824
 #define ID_CHAN3                        32825

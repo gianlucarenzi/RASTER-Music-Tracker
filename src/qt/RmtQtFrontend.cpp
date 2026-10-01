@@ -32,6 +32,10 @@
 #include <QPainter>
 #include <QStatusBar>
 #include <QToolBar>
+#include <QPageSetupDialog>
+#include <QPrintDialog>
+#include <QPrintPreviewDialog>
+#include <QPrinter>
 #include <QTimer>
 #include <QUrl>
 #include <QWheelEvent>
@@ -206,9 +210,67 @@ public:
             painter.drawImage(QRect(0, 0, m_view.m_width, m_view.m_height), image, QRect(0, 0, g_width, g_height));
     }
 
+    // File / Print, Print Preview, Print Setup: the tracker screen (the bitmap the window shows) on a page, as the
+    // MFC view prints its OnDraw(). The page is landscape and the picture fills it keeping its proportions.
+    std::unique_ptr<QPrinter> m_printer;
+
+    QPrinter& Printer()
+    {
+        if (!m_printer) {
+            m_printer = std::make_unique<QPrinter>(QPrinter::HighResolution);
+            m_printer->setPageOrientation(QPageLayout::Landscape);
+        }
+        return *m_printer;
+    }
+
+    void PaintPage(QPrinter* printer)
+    {
+        const CBitmap& bmp = m_view.m_mem_bitmap;
+        if (!bmp.Bits()) return;
+        QImage image((const uchar*)bmp.Bits(), bmp.Width(), bmp.Height(), bmp.Width() * 4, QImage::Format_RGB32);
+        image = image.copy(0, 0, std::min(g_width, bmp.Width()), std::min(g_height, bmp.Height())); // the part in use
+        QPainter painter(printer);
+        QRect page = painter.viewport();
+        QSize size = image.size();
+        size.scale(page.size(), Qt::KeepAspectRatio);
+        painter.setViewport(page.x(), page.y(), size.width(), size.height());
+        painter.setWindow(image.rect());
+        painter.drawImage(0, 0, image);
+    }
+
+    void FilePrint(UINT id)
+    {
+        // test runs (RMT_QT_GRAB: no modal dialogs): RMT_QT_PRINT_PDF=<file> prints into that file, else nothing
+        const QByteArray pdf = qgetenv("RMT_QT_PRINT_PDF");
+        if (!pdf.isEmpty()) {
+            QPrinter printer(QPrinter::HighResolution);
+            printer.setPageOrientation(QPageLayout::Landscape);
+            printer.setOutputFormat(QPrinter::PdfFormat);
+            printer.setOutputFileName(QString::fromLocal8Bit(pdf));
+            PaintPage(&printer);
+            return;
+        }
+        if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) return;
+        if (id == ID_FILE_PRINT_SETUP) {
+            QPageSetupDialog dialog(&Printer(), m_win);
+            dialog.exec();
+        } else if (id == ID_FILE_PRINT_PREVIEW) {
+            QPrintPreviewDialog dialog(&Printer(), m_win);
+            QObject::connect(&dialog, &QPrintPreviewDialog::paintRequested, m_win, [this](QPrinter* printer) { PaintPage(printer); });
+            dialog.exec();
+        } else {
+            QPrintDialog dialog(&Printer(), m_win);
+            if (dialog.exec() == QDialog::Accepted) PaintPage(&Printer());
+        }
+    }
+
     // WM_COMMAND: the view, then the frame (as the MFC command routing)
     void Dispatch(UINT id)
     {
+        if (id == ID_FILE_PRINT || id == ID_FILE_PRINT_PREVIEW || id == ID_FILE_PRINT_SETUP) { // (the view maps them to MFC's printing)
+            FilePrint(id);
+            return;
+        }
         if (m_view.OnPokeyCommand(id) || m_view.OnCmdMsg(id) || m_frame.OnCmdMsg(id)) return;
         switch (id) {
             case ID_APP_ABOUT:
@@ -287,6 +349,13 @@ public:
         mFile->addSeparator();
         addItemTagged(mFile, "&Import...", ID_FILE_IMPORT);
         addItemTagged(mFile, "&Export As...", ID_FILE_EXPORT_AS);
+        mFile->addSeparator();
+        addItemTagged(mFile, "&Print...", ID_FILE_PRINT, "Ctrl+P");
+        addItemTagged(mFile, "Print Pre&view", ID_FILE_PRINT_PREVIEW);
+        addItemTagged(mFile, "Prin&t Setup...", ID_FILE_PRINT_SETUP);
+        mFile->addSeparator();
+        // Alt+Enter (the Enter of the numeric keypad is another key to Qt)
+        addItemTagged(mFile, "Propert&ies", ID_FILE_PROPERTIES, "Alt+Return")->setShortcuts({ QKeySequence("Alt+Return"), QKeySequence("Alt+Enter") });
         mFile->addSeparator();
         addItemTagged(mFile, "E&xit", ID_FILE_EXIT, "Alt+F4");
 
@@ -494,6 +563,7 @@ public:
                 item.path = path;
                 item.label = act->text().toStdString();
                 item.key = act->shortcut().toString(QKeySequence::PortableText).toStdString();
+                if (size_t enter = item.key.find("Return"); enter != std::string::npos) item.key.replace(enter, 6, "Enter"); // as the other programs name it
                 menuItems.push_back(item);
             }
         };

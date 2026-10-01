@@ -185,6 +185,7 @@ protected:
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
     afx_msg void OnRButtonDblClk(UINT nFlags, CPoint point);
+    afx_msg void OnFileProperties();
     afx_msg void OnViewPokeyregs();
     afx_msg void OnUpdateViewPokeyregs(CCmdUI* pCmdUI);
     afx_msg void OnMidionoff();

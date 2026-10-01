@@ -32,6 +32,10 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   moved: "Insert new empty unused track" to Ctrl+T, "Insert copy or clone of song lines" to Ctrl+K, "Insert
   new line with unused empty tracks" to Ctrl+J. The editing parts are F2 (Tracks), F3 (Instruments),
   F4 (Song) and Shift+F4 (Info), as in 1.36; F1 was Tracks, F2 Instruments, F3 Info.
+- File menu of the Qt frontend: Print... (Ctrl+P), Print Preview and Print Setup... print the tracker screen on a
+  landscape page, as the Windows program prints its view (QPrinter, Qt PrintSupport); Properties (Alt+Enter) shows
+  the file, format, name, channels, video standard, speeds, maximal track length, the instruments and tracks used
+  and the size of the RMT module. (RMT_QT_PRINT_PDF=<file> prints into a PDF file without dialogs, for tests.)
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

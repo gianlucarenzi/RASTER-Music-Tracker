@@ -144,6 +144,7 @@ BEGIN_MESSAGE_MAP(CRmtView, CView)
     ON_WM_RBUTTONUP()
     ON_WM_LBUTTONDBLCLK()
     ON_WM_RBUTTONDBLCLK()
+    ON_COMMAND(ID_FILE_PROPERTIES, OnFileProperties)
     ON_COMMAND(ID_VIEW_POKEYREGS, OnViewPokeyregs)
     ON_UPDATE_COMMAND_UI(ID_VIEW_POKEYREGS, OnUpdateViewPokeyregs)
     ON_COMMAND(ID_MIDIONOFF, OnMidionoff)
@@ -1540,6 +1541,10 @@ BOOL CRmtView::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 
 void CRmtView::OnSysChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
+    if (nChar == VK_RETURN) { // Alt+Enter: File / Properties
+        OnFileProperties();
+        return;
+    }
     CView::OnSysChar(nChar, nRepCnt, nFlags);
 }
 
@@ -1774,6 +1779,16 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             } else
                 goto AllModesDefaultKey;
             break;
+
+#ifdef RMT_HAS_MFC
+        case 80:                             //VK_P
+            if (g_controlkey && !g_shiftkey) //CTRL+P, the standard key for Print (the Qt frontend has it as a shortcut of the menu item)
+            {
+                PostMessage(WM_COMMAND, ID_FILE_PRINT, 0);
+            } else
+                goto AllModesDefaultKey;
+            break;
+#endif
 
         case 79:                             //VK_O
             if (g_controlkey && !g_shiftkey) //CTRL+O (the standard key for Open), or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
@@ -2431,6 +2446,45 @@ BOOL CRmtView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* p
     return CView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 #endif
+
+// File / Properties (Alt+Enter): the facts of the song and of its module
+void CRmtView::OnFileProperties()
+{
+    CString filename = g_Song.GetFilename();
+    const char* format = "none";
+    switch (g_Song.GetIOType()) {
+        case SongIOType::RMT: format = "RMT module"; break;
+        case SongIOType::TXT: format = "TXT"; break;
+        case SongIOType::RMW: format = "RMW"; break;
+        default: break;
+    }
+    TInfo info;
+    g_Song.GetSongInfoPars(&info);
+
+    // The size of the module as an RMT file would hold it: the used instruments and tracks
+    TExportDescription module{};
+    module.targetAddrOfModule = 0x4000;
+    int end = g_Song.MakeModule(module.mem, module.targetAddrOfModule, SongIOType::RMT, module.instrumentSavedFlags, module.trackSavedFlags);
+    int instruments = 0, tracks = 0;
+    for (int i = 0; i < INSTRSNUM; i++) instruments += module.instrumentSavedFlags[i] ? 1 : 0;
+    for (int i = 0; i < TRACKSNUM; i++) tracks += module.trackSavedFlags[i] ? 1 : 0;
+
+    CString song;
+    song.Format("%.*s", (int)SONG_NAME_MAX_LEN, info.songname);
+    song.TrimRight();
+    CString text;
+    text.Format("File: %s\nFormat: %s\n\nSong name: %s\nChannels: %d (%s)\nVideo standard: %s\nMusic speed: %d\nInstrument speed: %d\nMaximal length of tracks: %d\n\nInstruments used: %d\nTracks used: %d",
+                filename.IsEmpty() ? "(not saved yet)" : (LPCTSTR)filename, format,
+                (LPCTSTR)song, g_Song.GetTracks(), g_Song.IsStereo() ? "stereo" : "mono",
+                g_Song.IsNTSC() ? "NTSC, 60 Hz" : "PAL, 50 Hz", info.mainspeed, info.instrspeed,
+                g_Tracks.GetMaxTrackLength(), instruments, tracks);
+    if (end >= 0) {
+        CString size;
+        size.Format("\nRMT module size: %d bytes ($%04X-$%04X)", end - module.targetAddrOfModule, module.targetAddrOfModule, end - 1);
+        text += size;
+    }
+    MessageBox(text, "Song properties", MB_ICONINFORMATION);
+}
 
 void CRmtView::OnViewPokeyregs()
 {
