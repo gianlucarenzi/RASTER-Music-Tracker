@@ -15,9 +15,10 @@ rmt_embed_resources(${RMT_EMBEDDED_RESOURCES}
 )
 
 # The prompts of Rmt.rc's string tables, for the script command "dump actions"
-include(${PROJECT_SOURCE_DIR}/cmake/GeneratePrompts.cmake)
-set(RMT_PROMPTS ${CMAKE_CURRENT_BINARY_DIR}/RmtPrompts.cpp)
-rmt_generate_prompts(${RMT_PROMPTS} ${CMAKE_CURRENT_SOURCE_DIR}/Rmt.rc ${CMAKE_CURRENT_SOURCE_DIR}/resource.h)
+include(${PROJECT_SOURCE_DIR}/cmake/GenerateRcTables.cmake)
+set(RMT_PROMPTS ${CMAKE_CURRENT_BINARY_DIR}/RmtPrompts.cpp ${CMAKE_CURRENT_BINARY_DIR}/RmtMenuTables.cpp)
+rmt_generate_prompts(${CMAKE_CURRENT_BINARY_DIR}/RmtPrompts.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Rmt.rc ${CMAKE_CURRENT_SOURCE_DIR}/resource.h)
+rmt_generate_menus(${CMAKE_CURRENT_BINARY_DIR}/RmtMenuTables.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Rmt.rc)
 
 # Check if MFC is available (MSVC only; the Qt frontend never uses it)
 if(MSVC AND NOT RMT_USE_QT)
@@ -116,6 +117,7 @@ else()
         emu/PokeySound.cpp
         ASMFileBuilder.cpp
         ASMFile.cpp
+        Accelerators.cpp
         ActionTable.cpp
         ASMFileExporter.cpp
         AssemblerTypes.cpp

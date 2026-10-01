@@ -33,6 +33,7 @@ struct TRow {
     std::string toolBars; // "Main, Block"
     std::string tip;
     std::string status;
+    std::string key; // a key without a menu item or a button
 };
 
 } // namespace
@@ -57,7 +58,7 @@ std::string ActionPlainText(const std::string& menuText)
     return result;
 }
 
-std::string BuildActionTable(const std::vector<TActionMenuItem>& menuItems, const std::vector<TActionToolButton>& buttons, int& errorCount)
+std::string BuildActionTable(const std::vector<TActionMenuItem>& menuItems, const std::vector<TActionToolButton>& buttons, const std::vector<TActionKey>& keys, int& errorCount)
 {
     errorCount = 0;
     std::vector<TRow> rows;
@@ -87,15 +88,35 @@ std::string BuildActionTable(const std::vector<TActionMenuItem>& menuItems, cons
         row.status = button.status;
     }
 
+    for (const TActionKey& key : keys) {
+        TRow& row = rowFor(key.id);
+        row.key = key.key;
+    }
+
     std::string result = "| Access Path | Entry | Accelerator Key | Action |\n|---|---|---|---|\n";
     for (const TRow& row : rows) {
         const TActionMenuItem* item = row.menuItem;
 
         // The key: the item's real shortcut; a label that displays another key is an error - the label lies.
         // A label's key without a shortcut is a hint the program handles itself (the tracker's own keys).
-        std::string realKey = item != nullptr ? item->key : std::string();
+        std::string realKey = item != nullptr ? item->key : row.key;
         std::string shownKey = item != nullptr ? AcceleratorHint(item->label) : std::string();
         std::string entry = item != nullptr ? ActionPlainText(item->label) : row.tip;
+        if (entry.empty()) {
+            if (const char* prompt = RmtFindPrompt(row.id)) { // the tooltip part: "status text\ntooltip"
+                std::string text = prompt;
+                size_t newline = text.find('\n');
+                entry = newline != std::string::npos ? text.substr(newline + 1) : text;
+            }
+        }
+        // A button or key without a menu item: the tooltip "Label (Key)" is its label and the key it shows
+        if (item == nullptr && entry.size() > 3 && entry.back() == ')') {
+            size_t open = entry.rfind(" (");
+            if (open != std::string::npos && open > 0) {
+                shownKey = entry.substr(open + 2, entry.size() - open - 3);
+                entry.resize(open);
+            }
+        }
         std::string key = realKey.empty() ? shownKey : realKey;
         std::string keyCell = key.empty() ? std::string() : "`" + key + "`";
         if (!realKey.empty() && !shownKey.empty() && realKey != shownKey) {

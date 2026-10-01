@@ -12,6 +12,8 @@
 #include "RmtQtFrontend.h"
 #include "ScriptMessages.h"
 #include "ActionTable.h"
+#include "PokeyController.h"
+#include "RmtMenus.h"
 #include "RmtQtKeys.h"
 #include "RmtQtDialogs.h"
 
@@ -132,6 +134,39 @@ public:
 // RmtQtBridge - IRmtHost for the MFC code, owner of the MFC objects
 // ---------------------------------------------------------------------------
 
+// An accelerator of Rmt.rc as a Qt key sequence; empty for the keys the view handles itself (the numeric keypad's)
+static Qt::KeyboardModifiers AcceleratorModifiers(const TRmtAccelerator& a)
+{
+    Qt::KeyboardModifiers modifiers;
+    if (a.modifiers & RMT_ACC_CONTROL) modifiers |= Qt::ControlModifier;
+    if (a.modifiers & RMT_ACC_SHIFT) modifiers |= Qt::ShiftModifier;
+    if (a.modifiers & RMT_ACC_ALT) modifiers |= Qt::AltModifier;
+    return modifiers;
+}
+
+static QKeySequence AcceleratorToQt(const TRmtAccelerator& a)
+{
+    int key = 0;
+    if (a.vk >= 'A' && a.vk <= 'Z') {
+        key = Qt::Key_A + (int)(a.vk - 'A');
+    } else if (a.vk >= '0' && a.vk <= '9') {
+        key = Qt::Key_0 + (int)(a.vk - '0');
+    } else if (a.vk >= VK_F1 && a.vk <= VK_F12) {
+        key = Qt::Key_F1 + (int)(a.vk - VK_F1);
+    } else {
+        switch (a.vk) {
+            case VK_ESCAPE: key = Qt::Key_Escape; break;
+            case VK_SPACE: key = Qt::Key_Space; break;
+            case VK_RETURN: key = Qt::Key_Return; break;
+            case VK_TAB: key = Qt::Key_Tab; break;
+            case VK_DELETE: key = Qt::Key_Delete; break;
+            case VK_INSERT: key = Qt::Key_Insert; break;
+            default: return QKeySequence(); // VK_ADD, VK_SUBTRACT, ...: the numeric keypad is OnKeyDown's
+        }
+    }
+    return QKeySequence(key | int(AcceleratorModifiers(a)));
+}
+
 class RmtQtBridge : public IRmtHost {
 public:
     RmtQtBridge(RmtMainWindow* win) : m_win(win) {}
@@ -148,6 +183,7 @@ public:
     std::set<unsigned> m_keysDown;
     // All (id → action) pairs registered in the menu bar, for update-UI polling
     std::vector<std::pair<UINT, QAction*>> m_menuActions;
+    std::vector<std::pair<UINT, QAction*>> m_keyActions; // the keys of Rmt.rc that have no menu item
     bool m_started = false;
     // The toolbars of CMainFrame::OnCreate() (m_wndToolBar, m_ToolBarBlock)
     QToolBar* m_mainToolBar = nullptr;
@@ -282,6 +318,8 @@ public:
             case ID_APP_EXIT:
                 m_win->close();
                 break;
+            case ID_TOOLS_OPEN_ASAP_FILE: // no function yet: the item is grey
+                break;
             case ID_HELP_ONLINE_HELP:
             case ID_HELP_HELP_TOPICS:
                 g_app.OpenOnlineHelp();
@@ -296,34 +334,6 @@ public:
     // on aboutToShow so enabled/checked states are kept in sync.
     void BuildMenuBar(QMenuBar* bar)
     {
-        // Helper: add a single command item to a menu
-        auto addItem = [&](QMenu* menu, const char* text, UINT id,
-                           const char* shortcut = nullptr) -> QAction* {
-            QAction* act = menu->addAction(text);
-            act->setShortcutContext(Qt::ApplicationShortcut);
-            if (shortcut) act->setShortcut(QKeySequence(shortcut));
-            QObject::connect(act, &QAction::triggered, [this, id] { Dispatch(id); });
-            m_menuActions.emplace_back(id, act);
-            return act;
-        };
-
-        // Store the ID in action data so aboutToShow can find it.
-        // Used for ON_UPDATE_COMMAND_UI (enable/checked state refresh).
-        auto addItemTagged = [&](QMenu* menu, const char* text, UINT id,
-                                 const char* shortcut = nullptr) -> QAction* {
-            QAction* act = addItem(menu, text, id, shortcut);
-            act->setData(id);
-            return act;
-        };
-
-        // Toggle item: checkable at construction so SetCheck() in aboutToShow
-        // does not emit QAction::changed (which would repaint the open menu).
-        auto addToggle = [&](QMenu* menu, const char* text, UINT id) -> QAction* {
-            QAction* act = addItemTagged(menu, text, id);
-            act->setCheckable(true);
-            return act;
-        };
-
         // Connect ON_UPDATE_COMMAND_UI for a menu's *direct* children only.
         // Each submenu is responsible for its own items via its own aboutToShow.
         auto connectUpdate = [&](QMenu* menu) {
@@ -338,194 +348,85 @@ public:
             });
         };
 
-        // ---- File ----
-        QMenu* mFile = bar->addMenu("&File");
-        addItemTagged(mFile, "&New", ID_FILE_NEW, "Ctrl+N");
-        addItemTagged(mFile, "&Open...", ID_FILE_OPEN, "Ctrl+O");
-        addItemTagged(mFile, "&Reload", ID_FILE_RELOAD, "Ctrl+R");
-        mFile->addSeparator();
-        addItemTagged(mFile, "&Save", ID_FILE_SAVE, "Ctrl+S");
-        addItemTagged(mFile, "Save &As...", ID_FILE_SAVE_AS, "Ctrl+Shift+S");
-        mFile->addSeparator();
-        addItemTagged(mFile, "&Import...", ID_FILE_IMPORT);
-        addItemTagged(mFile, "&Export As...", ID_FILE_EXPORT_AS);
-        mFile->addSeparator();
-        addItemTagged(mFile, "&Print...", ID_FILE_PRINT, "Ctrl+P");
-        addItemTagged(mFile, "Print Pre&view", ID_FILE_PRINT_PREVIEW);
-        addItemTagged(mFile, "Prin&t Setup...", ID_FILE_PRINT_SETUP);
-        mFile->addSeparator();
-        // Alt+Enter (the Enter of the numeric keypad is another key to Qt)
-        addItemTagged(mFile, "Propert&ies", ID_FILE_PROPERTIES, "Alt+Return")->setShortcuts({ QKeySequence("Alt+Return"), QKeySequence("Alt+Enter") });
-        mFile->addSeparator();
-        addItemTagged(mFile, "E&xit", ID_FILE_EXIT, "Alt+F4");
-
-        // ---- Edit ----
-        QMenu* mEdit = bar->addMenu("&Edit");
-        addItemTagged(mEdit, "&Undo", ID_UNDO_UNDO, "Ctrl+Z");
-        addItemTagged(mEdit, "&Redo", ID_UNDO_REDO, "Ctrl+Y");
-        mEdit->addSeparator();
-        addItemTagged(mEdit, "&Clear Undo && Redo history", ID_UNDO_CLEARUNDOREDO);
-
-        // ---- Track ----
-        QMenu* mTrack = bar->addMenu("&Track");
-        addItemTagged(mTrack, "&Copy", ID_TRACK_COPY);
-        addItemTagged(mTrack, "&Paste", ID_TRACK_PASTE);
-        addItemTagged(mTrack, "Cu&t", ID_TRACK_CUT);
-        addItemTagged(mTrack, "&Delete", ID_TRACK_DELETE);
-        mTrack->addSeparator();
-        addItemTagged(mTrack, "&Info about current track...", ID_TRACK_INFOABOUTUSINGOFACTUALTRACK);
-        addItemTagged(mTrack, "Search and &build wise loop", ID_TRACK_SEARCHANDBUILDLOOP);
-        addItemTagged(mTrack, "E&xpand loop", ID_TRACK_EXPANDLOOP);
-        mTrack->addSeparator();
-        addItemTagged(mTrack, "Search and rebuild wise loops in all tracks...", ID_SONG_SEARCHANDBUILDLOOPSINALLTRACKS);
-        addItemTagged(mTrack, "Expand loops in all tracks", ID_SONG_EXPANDLOOPSINALLTRACKS);
-        addItemTagged(mTrack, "Renumber all tracks...", ID_TRACK_RENUMBERALLTRACKS);
-        mTrack->addSeparator();
-        addItemTagged(mTrack, "&Load track from file...", ID_TRACK_LOAD);
-        addItemTagged(mTrack, "&Save track as...", ID_TRACK_SAVE);
-        mTrack->addSeparator();
-        addItemTagged(mTrack, "Clear all duplicated tracks, adjust song...", ID_TRACK_CLEARALLDUPLICATEDTRACKS);
-        addItemTagged(mTrack, "Clear all tracks unused in song...", ID_TRACK_CLEARALLTRACKSUNUSEDINSONG);
-        addItemTagged(mTrack, "All tracks cleanup...", ID_TRACK_ALLTRACKSCLEANUP);
-
-        // ---- Block ----
-        QMenu* mBlock = bar->addMenu("&Block");
-        addItemTagged(mBlock, "Restore from &backup", ID_BLOCK_BACKUP, "Ctrl+B");
-        mBlock->addSeparator();
-        addItemTagged(mBlock, "&Copy", ID_BLOCK_COPY, "Ctrl+C");
-        addItemTagged(mBlock, "&Paste", ID_BLOCK_PASTE, "Ctrl+V");
-        {
-            QMenu* sub = mBlock->addMenu("Paste sp&ecial");
-            addItemTagged(sub, "&Merge with current content", ID_BLOCK_PASTESPECIAL_MERGEWITHCURRENTCONTENT, "Ctrl+M");
-            addItemTagged(sub, "&Volume values only", ID_BLOCK_PASTESPECIAL_VOLUMEVALUESONLY);
-            addItemTagged(sub, "&Speed values only", ID_BLOCK_PASTESPECIAL_SPEEDVALUESONLY);
-        }
-        addItemTagged(mBlock, "Cu&t", ID_BLOCK_CUT, "Ctrl+X");
-        addItemTagged(mBlock, "&Delete", ID_BLOCK_DELETE, "Del");
-        addItemTagged(mBlock, "Exchange block and Clipboard", ID_BLOCK_EXCHANGE, "Ctrl+E");
-        mBlock->addSeparator();
-        addItemTagged(mBlock, "E&ffects/tools...", ID_BLOCK_EFFECT, "Ctrl+F");
-        mBlock->addSeparator();
-        addItemTagged(mBlock, "Select &all", ID_BLOCK_SELECTALL, "Ctrl+A");
-
-        // ---- Instrument ----
-        QMenu* mInstr = bar->addMenu("&Instrument");
-        addItemTagged(mInstr, "&Copy", ID_INSTR_COPY);
-        addItemTagged(mInstr, "&Paste", ID_INSTR_PASTE);
-        {
-            QMenu* sub = mInstr->addMenu("Paste sp&ecial");
-            addItemTagged(sub, "&Volume envelopes only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELRENVELOPESONLY);
-            addItemTagged(sub, "&Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_ENVELOPEPARAMETERSONLY);
-            addItemTagged(sub, "Volume envelopes and Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_VOLUMEENVANDENVELOPEPARSONLY);
-            addItemTagged(sub, "&Insert Volume envelopes and Envelope parameters to cursor position", ID_INSTRUMENT_PASTESPECIAL_INSERTVOLUMEENVSANDENVELOPEPARSTOCURSORPOSITION);
-            sub->addSeparator();
-            addItemTagged(sub, "Volume &L envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELENVELOPEONLY);
-            addItemTagged(sub, "Volume &R envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMERENVELOPEONLY);
-            addItemTagged(sub, "Volume R to L envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMERTOLENVELOPEONLY);
-            addItemTagged(sub, "Volume L to R envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELTORENVELOPEONLY);
-            sub->addSeparator();
-            addItemTagged(sub, "&Table only", ID_INSTRUMENT_PASTESPECIAL_TABLEONLY);
-        }
-        addItemTagged(mInstr, "Cu&t", ID_INSTR_CUT);
-        addItemTagged(mInstr, "&Delete", ID_INSTR_DELETE);
-        mInstr->addSeparator();
-        addItemTagged(mInstr, "&Info about current instrument...", ID_INSTRUMENT_INFO);
-        addItemTagged(mInstr, "Change all the instrument occurences...", ID_INSTRUMENT_CHANGE);
-        addItemTagged(mInstr, "Renumber all instruments...", ID_INSTRUMENT_RENUMBERALLINSTRUMENTS);
-        mInstr->addSeparator();
-        addItemTagged(mInstr, "&Load instrument from file...", ID_INSTR_LOAD);
-        addItemTagged(mInstr, "&Save instrument as...", ID_INSTR_SAVE);
-        mInstr->addSeparator();
-        addItemTagged(mInstr, "Clear all unused instruments...", ID_INSTRUMENT_CLEARALLUNUSEDINSTRUMENTS);
-        addItemTagged(mInstr, "All instruments cleanup...", ID_INSTR_ALLINSTRUMENTSCLEANUP);
-
-        // ---- Song ----
-        QMenu* mSong = bar->addMenu("&Song");
-        addItemTagged(mSong, "&Copy line", ID_SONG_COPYLINE);
-        addItemTagged(mSong, "&Paste line", ID_SONG_PASTELINE);
-        addItemTagged(mSong, "Cl&ear line", ID_SONG_CLEARLINE);
-        mSong->addSeparator();
-        addItemTagged(mSong, "Delete c&urrent line", ID_SONG_DELETEACTUALLINE, "Ctrl+U");
-        addItemTagged(mSong, "&Insert new empty line", ID_SONG_INSERTNEWEMPTYLINE, "Ctrl+I");
-        addItemTagged(mSong, "Insert new line with unused empty tracks", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS, "Ctrl+J");
-        addItemTagged(mSong, "Insert c&opy or clone of song line(s)...", ID_SONG_INSERTCOPYORCLONEOFSONGLINES, "Ctrl+K");
-        addItemTagged(mSong, "Insert &new empty unused track to current song position", ID_SONG_PUTNEWEMPTYUNUSEDTRACK, "Ctrl+T");
-        addItemTagged(mSong, "Make a track &duplicate to current song position", ID_SONG_MAKETRACKSDUPLICATE, "Ctrl+D");
-        mSong->addSeparator();
-        addItemTagged(mSong, "Switch song between 4 or 8 channels...", ID_SONG_SONGSWITCH4_8);
-        addItemTagged(mSong, "Song columns' order change/copy/clear...", ID_SONG_TRACKSORDERCHANGE);
-        addItemTagged(mSong, "Change maximal length of tracks...", ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS);
-        mSong->addSeparator();
-        addItemTagged(mSong, "All size optimizations...", ID_SONG_SIZEOPTIMIZATION);
-
-        // ---- Pokey ---- (the explorer items are enabled in the Pokey Explorer mode only;
-        // the keys are handled by the view, so no accelerator is attached to the actions)
-        QMenu* mPokey = bar->addMenu("Poke&y");
-        struct PokeyItem {
-            const char* text;
-            UINT id;
+        // The menu bar of Rmt.rc (g_rmtMenu, generated at configure time): popups, items and separators by level.
+        // The keys are the accelerator table of Rmt.rc (g_rmtAccelerators); an item the table does not know takes
+        // the key of its label as the shortcut when Qt knows it as a key sequence, else the label shows the key
+        // the program handles itself (the Pokey Explorer's, the keys of OnKeyDown). The shortcuts belong to the
+        // window, so that the dialogs on top of it keep their own keys.
+        static const std::set<UINT> keysOfTheView = { ID_PLAYSTOP, ID_PROVEMODE, ID_SONG_INCREASE_PATTERN_STEP_SIZE, ID_SONG_DECREASE_PATTERN_STEP_SIZE };
+        static const std::set<UINT> toggles = {
+            ID_VIEW_TOOLBAR, ID_VIEW_BLOCKTOOLBAR, ID_VIEW_STATUS_BAR, ID_VIEW_PLAYTIMECOUNTER, ID_VIEW_VOLUMEANALYZER,
+            ID_VIEW_POKEYREGS, ID_VIEW_INSTRUMENTACTIVEHELP, ID_PROVEMODE, ID_PLAYFOLLOW,
+            ID_CHANNELS_CHANNEL1, ID_CHANNELS_CHANNEL2, ID_CHANNELS_CHANNEL3, ID_CHANNELS_CHANNEL4,
+            ID_CHANNELS_CHANNEL5, ID_CHANNELS_CHANNEL6, ID_CHANNELS_CHANNEL7, ID_CHANNELS_CHANNEL8
         };
-        auto addPokeyChannel = [&](const char* channel, const char* audf, const char* audc, const PokeyItem(&f)[4], const PokeyItem(&c)[4]) {
-            QMenu* mChannel = mPokey->addMenu(channel);
-            QMenu* mAudf = mChannel->addMenu(audf);
-            for (const auto& item : f) addItemTagged(mAudf, item.text, item.id);
-            QMenu* mAudc = mChannel->addMenu(audc);
-            for (const auto& item : c) addItemTagged(mAudc, item.text, item.id);
+        auto shortcutOf = [&](UINT id, const std::string& hint) -> QList<QKeySequence> {
+            if (keysOfTheView.count(id) || CPokeyController::IsCommand(id)) return {};
+            for (const TRmtAccelerator* a = g_rmtAccelerators; a->id; a++) {
+                if (a->id != id) continue;
+                QList<QKeySequence> sequences;
+                if (QKeySequence sequence = AcceleratorToQt(*a); !sequence.isEmpty()) sequences << sequence;
+                if (a->vk == VK_RETURN) { // Alt+Enter: the Enter of the numeric keypad is another key to Qt
+                    sequences << QKeySequence(int(Qt::Key_Enter) | int(AcceleratorModifiers(*a)));
+                }
+                return sequences;
+            }
+            if (hint.empty()) return {};
+            QKeySequence sequence(QString::fromLatin1(hint.c_str()), QKeySequence::PortableText);
+            if (sequence.count() != 1 || sequence[0] == 0 || sequence[0] == Qt::Key_unknown) return {};
+            return { sequence };
         };
-        addPokeyChannel("Channel &1", "AUD&F0", "AUD&C0",
-                        { { "&Increase By 0x01\t1", ID_POKEY_AUDF0_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+1", ID_POKEY_AUDF0_INCREASE_BY_10 }, { "&Decrease By 0x01\tQ", ID_POKEY_AUDF0_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+Q", ID_POKEY_AUDF0_DECREASE_BY_10 } },
-                        { { "&Increase By 0x01\t2", ID_POKEY_AUDC0_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+2", ID_POKEY_AUDC0_INCREASE_BY_10 }, { "&Decrease By 0x01\tW", ID_POKEY_AUDC0_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+W", ID_POKEY_AUDC0_DECREASE_BY_10 } });
-        addPokeyChannel("Channel &2", "AUD&F1", "AUD&C1",
-                        { { "&Increase By 0x01\t3", ID_POKEY_AUDF1_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+3", ID_POKEY_AUDF1_INCREASE_BY_10 }, { "&Decrease By 0x01\tE", ID_POKEY_AUDF1_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+E", ID_POKEY_AUDF1_DECREASE_BY_10 } },
-                        { { "&Increase By 0x01\t4", ID_POKEY_AUDC1_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+4", ID_POKEY_AUDC1_INCREASE_BY_10 }, { "&Decrease By 0x01\tR", ID_POKEY_AUDC1_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+R", ID_POKEY_AUDC1_DECREASE_BY_10 } });
-        addPokeyChannel("Channel &3", "AUD&F2", "AUD&C2",
-                        { { "&Increase By 0x01\t5", ID_POKEY_AUDF2_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+5", ID_POKEY_AUDF2_INCREASE_BY_10 }, { "&Decrease By 0x01\tT", ID_POKEY_AUDF2_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+T", ID_POKEY_AUDF2_DECREASE_BY_10 } },
-                        { { "&Increase By 0x01\t6", ID_POKEY_AUDC2_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+6", ID_POKEY_AUDC2_INCREASE_BY_10 }, { "&Decrease By 0x01\tY", ID_POKEY_AUDC2_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+Y", ID_POKEY_AUDC2_DECREASE_BY_10 } });
-        addPokeyChannel("Channel &4", "AUD&F3", "AUD&C3",
-                        { { "&Increase By 0x01\t7", ID_POKEY_AUDF3_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+7", ID_POKEY_AUDF3_INCREASE_BY_10 }, { "&Decrease By 0x01\tU", ID_POKEY_AUDF3_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+U", ID_POKEY_AUDF3_DECREASE_BY_10 } },
-                        { { "&Increase By 0x01\t8", ID_POKEY_AUDC3_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+8", ID_POKEY_AUDC3_INCREASE_BY_10 }, { "&Decrease By 0x01\tI", ID_POKEY_AUDC3_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+I", ID_POKEY_AUDC3_DECREASE_BY_10 } });
-        QMenu* mAudctl = mPokey->addMenu("AUDCTL");
-        addItemTagged(mAudctl, "Bit &0 - Change Main Base Clock From 64 KHz To 15 KHz\tC", ID_POKEY_AUDCTL_BIT0);
-        addItemTagged(mAudctl, "Bit &1 - High Pass Filter Into Channel 2, Clocked By Channel 4\tG", ID_POKEY_AUDCTL_BIT1);
-        addItemTagged(mAudctl, "Bit &2 - High Pass Filter Into Channel 1, Clocked By Channel 3\tF", ID_POKEY_AUDCTL_BIT2);
-        addItemTagged(mAudctl, "Bit &3 - Join Channels 3 and 4 (16-bit Frequency)\tK", ID_POKEY_AUDCTL_BIT3);
-        addItemTagged(mAudctl, "Bit &4 - Join Channels 1 and 2 (16-Bit Frequency)\tJ", ID_POKEY_AUDCTL_BIT4);
-        addItemTagged(mAudctl, "Bit &5 - Clock Channel 3 With 1.79 MHz\tD", ID_POKEY_AUDCTL_BIT5);
-        addItemTagged(mAudctl, "Bit &6 - Clock channel 1 with 1.79 MHz\tA", ID_POKEY_AUDCTL_BIT6);
-        addItemTagged(mAudctl, "Bit &7 - Change The 17-Bit Poly To 9-Bit Poly (Only For Distortion 0 and 8)\tP", ID_POKEY_AUDCTL_BIT7);
-        QMenu* mSkctl = mPokey->addMenu("SKCTL");
-        addItemTagged(mSkctl, "&Two Tone Mode\tM", ID_POKEY_SKCTL_TWO_TONE_MODE);
-        QMenu* mDebugChannel = mPokey->addMenu("Debug &Channel");
-        addItemTagged(mDebugChannel, "Next Channel\tEnter", ID_POKEY_NEXTCHANNEL);
-        addItemTagged(mDebugChannel, "Previous Channel\tBackspace", ID_POKEY_PREVIOUSCHANNEL);
-        QMenu* mDivisor = mPokey->addMenu("&Divisor");
-        addItemTagged(mDivisor, "Increase By 0.1\t+", ID_POKEY_DIVISOR_INCREASE_BY_01);
-        addItemTagged(mDivisor, "Increase By 1.0\tShift++", ID_POKEY_DIVISOR_INCREASE_BY_1);
-        addItemTagged(mDivisor, "Decrease By 0.1\t-", ID_POKEY_DIVISOR_DECREASE_BY_01);
-        addItemTagged(mDivisor, "Decrease By 1.0\tShift+-", ID_POKEY_DIVISOR_DECREASE_BY_1);
+        std::vector<QMenu*> menus; // menus[n]: where the entries of level n + 1 go
+        for (const TRmtMenuEntry* e = g_rmtMenu; e->kind != RmtMenuKind::End; e++) {
+            if (e->kind == RmtMenuKind::Popup) {
+                QMenu* menu = e->level == 0 ? bar->addMenu(QString::fromLatin1(e->text)) : menus[e->level - 1]->addMenu(QString::fromLatin1(e->text));
+                menus.resize(e->level);
+                menus.push_back(menu);
+                continue;
+            }
+            QMenu* menu = menus[e->level - 1];
+            if (e->kind == RmtMenuKind::Separator) {
+                menu->addSeparator();
+                continue;
+            }
+            std::string text = e->text;
+            std::string hint;
+            if (size_t tab = text.find('\t'); tab != std::string::npos) {
+                hint = text.substr(tab + 1);
+                text.resize(tab);
+            }
+            QAction* act = menu->addAction(QString::fromLatin1(text.c_str()));
+            act->setShortcutContext(Qt::WindowShortcut);
+            QList<QKeySequence> shortcuts = shortcutOf(e->id, hint);
+            if (!shortcuts.isEmpty()) {
+                act->setShortcuts(shortcuts);
+            } else if (!hint.empty()) {
+                act->setText(QString::fromLatin1((text + "\t" + hint).c_str())); // shown in the shortcut column
+            }
+            UINT id = e->id;
+            QObject::connect(act, &QAction::triggered, [this, id] { Dispatch(id); });
+            m_menuActions.emplace_back(id, act);
+            act->setData(id);
+            // Toggle item: checkable at construction so SetCheck() in aboutToShow does not emit QAction::changed
+            // (which would repaint the open menu)
+            if (toggles.count(id)) act->setCheckable(true);
+        }
 
-        // ---- View ---- (toggle items are checkable at construction)
-        QMenu* mView = bar->addMenu("&View");
-        addItemTagged(mView, "&Configuration...", ID_VIEW_CONFIGURATION);
-        mView->addSeparator();
-        addItemTagged(mView, "&Tuning...", ID_VIEW_TUNING);
-        mView->addSeparator();
-        addToggle(mView, "Main &toolbar", ID_VIEW_TOOLBAR);
-        addToggle(mView, "&Block toolbar", ID_VIEW_BLOCKTOOLBAR);
-        mView->addSeparator();
-        addToggle(mView, "&Status Bar", ID_VIEW_STATUS_BAR);
-        mView->addSeparator();
-        addToggle(mView, "&Play time counter", ID_VIEW_PLAYTIMECOUNTER);
-        addToggle(mView, "&Volume analyzer", ID_VIEW_VOLUMEANALYZER);
-        addToggle(mView, "Pokey chip &registers", ID_VIEW_POKEYREGS);
-        mView->addSeparator();
-        addToggle(mView, "&Instrument active help", ID_VIEW_INSTRUMENTACTIVEHELP);
-
-        // ---- Help ----
-        QMenu* mHelp = bar->addMenu("&Help");
-        addItemTagged(mHelp, "&Help Topics", ID_HELP_HELP_TOPICS, "F1");
-        addItemTagged(mHelp, "&Online Help", ID_HELP_ONLINE_HELP, "Shift+F1");
-        addItemTagged(mHelp, "&About RASTER Music Tracker", ID_HELP_ABOUT_APP);
+        // The keys of the table that have no menu item (Ctrl+F12, Shift+F6): actions of the window without a menu
+        for (const TRmtAccelerator* a = g_rmtAccelerators; a->id; a++) {
+            bool inMenu = false;
+            for (const auto& entry : m_menuActions) inMenu |= entry.first == a->id;
+            if (inMenu || keysOfTheView.count(a->id)) continue;
+            QKeySequence sequence = AcceleratorToQt(*a);
+            if (sequence.isEmpty()) continue;
+            QAction* act = new QAction(m_win);
+            act->setShortcut(sequence);
+            act->setShortcutContext(Qt::WindowShortcut);
+            UINT id = a->id;
+            QObject::connect(act, &QAction::triggered, [this, id] { Dispatch(id); });
+            m_win->addAction(act);
+            m_keyActions.emplace_back(id, act);
+        }
 
         // Wire up ON_UPDATE_COMMAND_UI: each menu updates only its own direct
         // children (submenus update their own items via their own aboutToShow).
@@ -585,7 +486,14 @@ public:
             button.status = t.action->statusTip().toStdString();
             buttons.push_back(button);
         }
-        return BuildActionTable(menuItems, buttons, errorCount);
+        std::vector<TActionKey> keys;
+        for (const auto& entry : m_keyActions) {
+            TActionKey key;
+            key.id = entry.first;
+            key.key = entry.second->shortcut().toString(QKeySequence::PortableText).toStdString();
+            keys.push_back(key);
+        }
+        return BuildActionTable(menuItems, buttons, keys, errorCount);
     }
 
     // The toolbars of the .rc (IDR_MAINFRAME, IDR_TOOLBARBLOCK): 16x15 images
@@ -961,6 +869,14 @@ public:
         return result;
     }
 };
+
+// CRmtApp::OpenUrl() (Rmt.cpp is MFC only); the test runs (RMT_QT_GRAB) open no browser
+void CRmtApp::OpenUrl(const char* url)
+{
+    if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {
+        QDesktopServices::openUrl(QUrl(QString::fromUtf8(url)));
+    }
+}
 
 // CRmtApp::OpenOnlineHelp() (Rmt.cpp is MFC only)
 void CRmtApp::OpenOnlineHelp()

@@ -29,6 +29,8 @@
 #include "Undo.h"
 #include "Song.h"
 #include "PokeyController.h"
+#include "ScriptRunner.h"
+#include "Shell.h"
 #include "Tuning.h"
 #ifdef RMT_HAS_MFC
 #include "Rmt.h" // outside MFC, CRmtApp/g_app come from MfcTypes.h
@@ -145,6 +147,37 @@ BEGIN_MESSAGE_MAP(CRmtView, CView)
     ON_WM_LBUTTONDBLCLK()
     ON_WM_RBUTTONDBLCLK()
     ON_COMMAND(ID_FILE_PROPERTIES, OnFileProperties)
+    ON_COMMAND(ID_CHANNELS_CHANNEL1, OnChannelsChannel1)
+    ON_COMMAND(ID_CHANNELS_CHANNEL2, OnChannelsChannel2)
+    ON_COMMAND(ID_CHANNELS_CHANNEL3, OnChannelsChannel3)
+    ON_COMMAND(ID_CHANNELS_CHANNEL4, OnChannelsChannel4)
+    ON_COMMAND(ID_CHANNELS_CHANNEL5, OnChannelsChannel5)
+    ON_COMMAND(ID_CHANNELS_CHANNEL6, OnChannelsChannel6)
+    ON_COMMAND(ID_CHANNELS_CHANNEL7, OnChannelsChannel7)
+    ON_COMMAND(ID_CHANNELS_CHANNEL8, OnChannelsChannel8)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL1, OnUpdateChannelsChannel1)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL2, OnUpdateChannelsChannel2)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL3, OnUpdateChannelsChannel3)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL4, OnUpdateChannelsChannel4)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL5, OnUpdateChannelsChannel5)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL6, OnUpdateChannelsChannel6)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL7, OnUpdateChannelsChannel7)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_CHANNEL8, OnUpdateChannelsChannel8)
+    ON_COMMAND(ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_ON_OFF, OnChannelsToggleActiveChannelOnOff)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_ON_OFF, OnUpdateChannelsActiveChannel)
+    ON_COMMAND(ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_SOLO, OnChannelsToggleActiveChannelSolo)
+    ON_UPDATE_COMMAND_UI(ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_SOLO, OnUpdateChannelsActiveChannel)
+    ON_COMMAND(ID_CHANNELS_TOGGLE_ALL_CHANNELS_ON_OFF, OnChannelsToggleAllChannelsOnOff)
+    ON_COMMAND(ID_EDIT_ACTIVATE_POKEY_EXPLORER_MODE, OnEditActivatePokeyExplorerMode)
+    ON_UPDATE_COMMAND_UI(ID_EDIT_ACTIVATE_POKEY_EXPLORER_MODE, OnUpdateEditActivatePokeyExplorerMode)
+    ON_COMMAND(ID_SONG_SET_BOOKMARK, OnSongSetBookmark)
+    ON_COMMAND(ID_SONG_CLEAR_BOOKMARK, OnSongClearBookmark)
+    ON_COMMAND(ID_SONG_INCREASE_PATTERN_STEP_SIZE, OnSongIncreasePatternStepSize)
+    ON_COMMAND(ID_SONG_DECREASE_PATTERN_STEP_SIZE, OnSongDecreasePatternStepSize)
+    ON_COMMAND(ID_SONG_TOGGLE_NTSC, OnSongToggleNtsc)
+    ON_COMMAND(ID_TOOLS_OPEN_ASMA, OnToolsOpenAsma)
+    ON_UPDATE_COMMAND_UI(ID_TOOLS_OPEN_ASAP_FILE, OnUpdateToolsOpenAsapFile)
+    ON_COMMAND(ID_TOOLS_RUN_SCRIPT, OnToolsRunScript)
     ON_COMMAND(ID_VIEW_POKEYREGS, OnViewPokeyregs)
     ON_UPDATE_COMMAND_UI(ID_VIEW_POKEYREGS, OnUpdateViewPokeyregs)
     ON_COMMAND(ID_MIDIONOFF, OnMidionoff)
@@ -1580,28 +1613,6 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
     if (g_view.debugDisplay) { g_lastKeyPressed = vk; } //debug key reading for setting up keyboard layouts withought having to guess which key is where
 
     switch (vk) {
-        case 0x5A:                           //Z
-            if (g_controlkey && !g_shiftkey) //or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
-            {
-                if (g_Song.Undo()) //CTRL+Z
-                {
-                    return;
-                }
-            }
-            goto AllModesDefaultKey;
-            break;
-
-        case 0x59:                           //Y
-            if (g_controlkey && !g_shiftkey) //or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
-            {
-                if (g_Song.Redo()) //CTRL+Y
-                {
-                    return;
-                }
-            }
-            goto AllModesDefaultKey;
-            break;
-
         case VK_SPACE: //SPACEBAR
             if (g_controlkey) {
                 g_Undo.Separator(); //CTRL+SPACEBAR
@@ -1627,20 +1638,14 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
         case VK_SUBTRACT:
             if (g_controlkey && !g_shiftkey) {
-                g_linesafter--;
-                if (g_linesafter < 0) { g_linesafter = 8; }
-                auto mf = ((CMainFrame*)AfxGetMainWnd());
-                if (mf) { mf->m_comboSkipLinesAfterNoteInsert.SetCurSel(g_linesafter); }
+                OnSongDecreasePatternStepSize();
             } else
                 goto AllModesDefaultKey;
             break;
 
         case VK_ADD:
             if (g_controlkey && !g_shiftkey) {
-                g_linesafter++;
-                if (g_linesafter > 8) { g_linesafter = 0; }
-                auto mf = ((CMainFrame*)AfxGetMainWnd());
-                if (mf) { mf->m_comboSkipLinesAfterNoteInsert.SetCurSel(g_linesafter); }
+                OnSongIncreasePatternStepSize();
             } else
                 goto AllModesDefaultKey;
             break;
@@ -1653,85 +1658,12 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             goto AllModesDefaultKey;
             break;
 
-        case VK_F1:                                    // the standard keys: F1 Help, Shift+F1 Online Help (the editing parts are F2-F4, as in RMT 1.36)
-            if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
-            g_app.OpenOnlineHelp();
-            return;
-
-        case VK_F2:
-            if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
-            g_Undo.Separator();
-            OnEmTracks();
-            break;
-
-        case VK_F3:
-            if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
-            g_Undo.Separator();
-            OnEmInstruments();
-            break;
-
-        case VK_F4:                                    // Shift+F4 moves to the info area
-            if (g_controlkey) goto AllModesDefaultKey; //would conflict with transposition hotkeys otherwise
-            g_Undo.Separator();
-            if (g_shiftkey)
-                OnEmInfo();
-            else
-                OnEmSong();
-            break;
-
-        case VK_F5:
-            if (g_controlkey && g_shiftkey) {
-                g_prove = EditMode::POKEY_EXPLORER_MODE; //POKEY EXPLORER MODE -- KEYBOARD INPUT AND FORMULAE DISPLAY
-                break;
-            }
-            g_Song.Play(PLAY_SONG, g_Song.GetFollowPlayMode()); //play song from start
-            break;
-
-        case VK_F6:
-            if (g_shiftkey)
-                g_Song.Play(PLAY_BLOCK, g_Song.GetFollowPlayMode()); //play block and follow
-            else
-                g_Song.Play(PLAY_TRACK, g_Song.GetFollowPlayMode()); //play pattern and follow
-            break;
-
-        case VK_F7:
-            if (g_Song.IsBookmark() && g_shiftkey)
-                g_Song.Play(PLAY_BOOKMARK, g_Song.GetFollowPlayMode()); //play song from bookmark
-            else
-                g_Song.Play(PLAY_FROM, g_Song.GetFollowPlayMode()); //play song from current position
-            break;
-
-        case VK_F8:
-            if (g_controlkey)
-                g_Song.ClearBookmark(); //clear bookmark
-            else
-                g_Song.SetBookmark(); //set song bookmark
-            break;
-
-        case VK_F9:
-            if (!g_controlkey && g_shiftkey) {
-                SetChannelOnOff(-1, -1); //switch all channels on or off
-            } else if (g_controlkey) {
-                int ch = g_Song.GetActiveColumn(); //solo current channel
-                SetChannelSolo(ch);
-            } else {
-                int ch = g_Song.GetActiveColumn(); //mute current channel
-                SetChannelOnOff(ch, -1);
-            }
-            break;
-
-            //F10 can't be used for some reason... it seems to be binded to native Windows functions and so it would take priority instead of any shortcut I would like to use for it.
+            // Not here (they are accelerators of Rmt.rc, commands of the menus): Ctrl+Z/Y, F1-F9, F12 and Ctrl+F12,
+            // Ctrl+1-8, Ctrl+N/O/P/R/S and Ctrl+Shift+S. Esc, Ctrl+Space and Ctrl+Num + / - stay here: they go on to the part being edited.
 
         case VK_F11:
             g_Undo.Separator(); //respect volume
             g_respectvolume = g_respectvolume ^ 1;
-            break;
-
-        case VK_F12:
-            if (g_controlkey) {
-                ToggleNTSC();
-            } else
-                OnPlayfollow(); //toggle follow position
             break;
 
         case VK_MEDIA_PLAY_PAUSE:
@@ -1763,91 +1695,6 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
         case VK_LMENU:
             g_altkey = 1;
             goto KeyDownNoUndoCheckPoint;
-            break;
-
-        case 49:                             //VK_1
-        case 50:                             //VK_2
-        case 51:                             //VK_3
-        case 52:                             //VK_4
-        case 53:                             //VK_5
-        case 54:                             //VK_6
-        case 55:                             //VK_7
-        case 56:                             //VK_8
-            if (g_controlkey && !g_shiftkey) //CONTROL + 1-8
-            {
-                SetChannelOnOff(vk - 49, -1); //inverts channel status 1-8 (=> on / off)
-            } else
-                goto AllModesDefaultKey;
-            break;
-
-#ifdef RMT_HAS_MFC
-        case 80:                             //VK_P
-            if (g_controlkey && !g_shiftkey) //CTRL+P, the standard key for Print (the Qt frontend has it as a shortcut of the menu item)
-            {
-                PostMessage(WM_COMMAND, ID_FILE_PRINT, 0);
-            } else
-                goto AllModesDefaultKey;
-            break;
-#endif
-
-        case 79:                             //VK_O
-            if (g_controlkey && !g_shiftkey) //CTRL+O (the standard key for Open), or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
-            {
-                SetStatusBarText("Open...");
-                OnFileOpen();
-                ClearStatusBar();
-            } else
-                goto AllModesDefaultKey;
-            break;
-
-        case 78:                             //VK_N
-            if (g_controlkey && !g_shiftkey) //CTRL+N (the standard key for New), or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
-            {
-                //g_Song.Stop();
-                int r = MessageBox("Would you like to create a new song?", "Create new song", MB_YESNOCANCEL | MB_ICONQUESTION);
-                if (r == IDYES) g_Song.FileNew();
-            } else
-                goto AllModesDefaultKey;
-            break;
-
-        case 83:                             //VK_S
-            if (g_controlkey && g_shiftkey)  //CTRL+SHIFT+S: Save As
-            {
-                OnFileSaveAs();
-            } else if (g_controlkey) //CTRL+S, or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
-            {
-                //g_Song.Stop();
-                SetStatusBarText("Save...");
-                auto filename = g_Song.GetFilename();
-                if (g_keyboard_askwhencontrol_s && (!filename.IsEmpty() || g_Song.GetIOType() != SongIOType::NONE)) {
-                    //if a question is asked and if a file already exists
-                    //(=> there will be a "Save as ..." dialog)
-                    CString s;
-                    s.Format("Do you want to save song file '%s'?\nIs it okay to overwrite?", filename);
-                    int r = MessageBox(s, "Save song", MB_YESNOCANCEL | MB_ICONQUESTION);
-                    if (r == IDNO) {
-                        OnFileSaveAs();
-                        goto end_save_control_s;
-                    }
-                    if (r != IDYES) goto end_save_control_s;
-                }
-                Sleep(128);
-                OnFileSave();
-                Sleep(128);
-
-            end_save_control_s:
-                ClearStatusBar();
-            } else
-                goto AllModesDefaultKey;
-            break;
-
-        case 82:                             //VK_R
-            if (g_controlkey && !g_shiftkey) //CTRL+R, or do nothing when SHIFT is also held, this deliberately makes it less likely to happen by accident and conflict with every other commands
-            {
-                //g_Song.Stop();
-                g_Song.FileReload(); //turns out this function handles the rest already, so jump right to it instead
-            } else
-                goto AllModesDefaultKey;
             break;
 
         default:
@@ -1963,7 +1810,25 @@ void CRmtView::OnUpdateFileReload(CCmdUI* pCmdUI)
 
 void CRmtView::OnFileSave()
 {
+    //g_Song.Stop();
+    auto filename = g_Song.GetFilename();
+    if (g_keyboard_askwhencontrol_s && (!filename.IsEmpty() || g_Song.GetIOType() != SongIOType::NONE)) {
+        // If a question is asked and if a file already exists
+        // (=> there will be a "Save as ..." dialog)
+        CString s;
+        s.Format("Do you want to save song file '%s'?\nIs it okay to overwrite?", (LPCTSTR)filename);
+        int r = MessageBox(s, "Save song", MB_YESNOCANCEL | MB_ICONQUESTION);
+        if (r == IDNO) {
+            OnFileSaveAs();
+            return;
+        }
+        if (r != IDYES) {
+            return;
+        }
+    }
+    Sleep(128);
     g_Song.FileSave();
+    Sleep(128);
 }
 
 void CRmtView::OnFileSaveAs()
@@ -2330,6 +2195,132 @@ void CRmtView::OnUpdateEmSong(CCmdUI* pCmdUI)
 /// 1 = Mono jam
 /// 2 = Stereo jam
 /// </summary>
+// The Channels menu: the channels of the song on and off (the keys Ctrl+1-8 and F9)
+void CRmtView::OnChannelsChannel1() { SetChannelOnOff(0, -1); }
+void CRmtView::OnChannelsChannel2() { SetChannelOnOff(1, -1); }
+void CRmtView::OnChannelsChannel3() { SetChannelOnOff(2, -1); }
+void CRmtView::OnChannelsChannel4() { SetChannelOnOff(3, -1); }
+void CRmtView::OnChannelsChannel5() { SetChannelOnOff(4, -1); }
+void CRmtView::OnChannelsChannel6() { SetChannelOnOff(5, -1); }
+void CRmtView::OnChannelsChannel7() { SetChannelOnOff(6, -1); }
+void CRmtView::OnChannelsChannel8() { SetChannelOnOff(7, -1); }
+
+// A channel's item is checked while it plays; the channels 5-8 exist in the songs with 8 tracks
+static void UpdateChannelItem(CCmdUI* pCmdUI, int channel)
+{
+    pCmdUI->Enable(channel < g_Song.GetTracks());
+    pCmdUI->SetCheck(GetChannelOnOff(channel) ? 1 : 0);
+}
+void CRmtView::OnUpdateChannelsChannel1(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 0); }
+void CRmtView::OnUpdateChannelsChannel2(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 1); }
+void CRmtView::OnUpdateChannelsChannel3(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 2); }
+void CRmtView::OnUpdateChannelsChannel4(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 3); }
+void CRmtView::OnUpdateChannelsChannel5(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 4); }
+void CRmtView::OnUpdateChannelsChannel6(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 5); }
+void CRmtView::OnUpdateChannelsChannel7(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 6); }
+void CRmtView::OnUpdateChannelsChannel8(CCmdUI* pCmdUI) { UpdateChannelItem(pCmdUI, 7); }
+
+void CRmtView::OnChannelsToggleActiveChannelOnOff()
+{
+    SetChannelOnOff(g_Song.GetActiveColumn(), -1); // mute or unmute the channel of the cursor
+}
+
+void CRmtView::OnChannelsToggleActiveChannelSolo()
+{
+    SetChannelSolo(g_Song.GetActiveColumn()); // only the channel of the cursor
+}
+
+void CRmtView::OnChannelsToggleAllChannelsOnOff()
+{
+    SetChannelOnOff(-1, -1); // switch all channels on or off
+}
+
+void CRmtView::OnUpdateChannelsActiveChannel(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(g_Song.GetActiveColumn() >= 0);
+}
+
+// Edit / Activate Pokey Explorer Mode (Ctrl+Shift+F5)
+void CRmtView::OnEditActivatePokeyExplorerMode()
+{
+    g_prove = EditMode::POKEY_EXPLORER_MODE; //POKEY EXPLORER MODE -- KEYBOARD INPUT AND FORMULAE DISPLAY
+}
+
+void CRmtView::OnUpdateEditActivatePokeyExplorerMode(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(g_prove != EditMode::POKEY_EXPLORER_MODE);
+}
+
+void CRmtView::OnSongSetBookmark()
+{
+    g_Song.SetBookmark(); //set song bookmark
+}
+
+void CRmtView::OnSongClearBookmark()
+{
+    g_Song.ClearBookmark(); //clear bookmark
+}
+
+// The lines the cursor skips after a note is inserted: 0-8, wrapping
+void CRmtView::OnSongIncreasePatternStepSize()
+{
+    g_linesafter++;
+    if (g_linesafter > 8) { g_linesafter = 0; }
+    auto mf = ((CMainFrame*)AfxGetMainWnd());
+    if (mf) { mf->m_comboSkipLinesAfterNoteInsert.SetCurSel(g_linesafter); }
+}
+
+void CRmtView::OnSongDecreasePatternStepSize()
+{
+    g_linesafter--;
+    if (g_linesafter < 0) { g_linesafter = 8; }
+    auto mf = ((CMainFrame*)AfxGetMainWnd());
+    if (mf) { mf->m_comboSkipLinesAfterNoteInsert.SetCurSel(g_linesafter); }
+}
+
+void CRmtView::OnSongToggleNtsc()
+{
+    ToggleNTSC();
+}
+
+// Tools / Run Script...: a script (doc/rmt_scripting.md) on the current session - the message boxes stay boxes, the
+// output of the commands is shown once at the end
+void CRmtView::OnToolsRunScript()
+{
+    g_Song.Stop();
+    CFileDialog dlg(TRUE, "rmtscript", NULL, OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, "RMT script files (*.rmtscript;*.txt)|*.rmtscript;*.txt|All files (*.*)|*.*||");
+    dlg.m_ofn.lpstrTitle = "Run script file";
+    if (dlg.DoModal() != IDOK) {
+        return;
+    }
+    CString path = dlg.GetPathName();
+    CString name = dlg.GetFileName();
+    std::string output;
+    CScriptRunner runner(g_Song);
+    int code = runner.RunInteractive(path, output);
+    CString text;
+    if (code == CScriptRunner::EXIT_OK) {
+        text.Format("Script '%s' finished.\n\n%s", (LPCTSTR)name, output.c_str());
+        MessageBox(text, "Run Script", MB_ICONINFORMATION);
+    } else {
+        text.Format("Script '%s' failed (exit code %d).\n\n%s", (LPCTSTR)name, code, output.c_str());
+        MessageBox(text, "Run Script", MB_ICONERROR);
+    }
+    Invalidate();
+}
+
+// Tools / Open ASMA: the Atari SAP Music Archive in the browser
+void CRmtView::OnToolsOpenAsma()
+{
+    g_app.OpenUrl("https://asma.atari.org/");
+}
+
+// Tools / Open ASAP File has no function in this program yet: the item stays grey
+void CRmtView::OnUpdateToolsOpenAsapFile(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(FALSE);
+}
+
 void CRmtView::OnProvemode()
 {
     if (g_prove == EditMode::EDIT_MODE)

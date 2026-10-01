@@ -35,7 +35,7 @@ jobs:
       - name: Menu test of the frontend
         run: |
           cd build-qt/out
-          RMT_QT_GRAB=/tmp/rmt-menu.png RMT_QT_MENU_TEST=1 QT_QPA_PLATFORM=offscreen ./rmt 2>&1 | tee /tmp/menu-test.log
+          RMT_QT_GRAB=/tmp/rmt-menu.png RMT_QT_GRAB_MS=30000 RMT_QT_MENU_TEST=1 QT_QPA_PLATFORM=offscreen ./rmt 2>&1 | tee /tmp/menu-test.log
           grep -q "RMT_QT_MENU_TEST: PASS" /tmp/menu-test.log
 
       - name: Scripting tests

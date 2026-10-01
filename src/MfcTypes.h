@@ -1110,6 +1110,7 @@ struct OPENFILENAME_STUB {
 
 #define OFN_HIDEREADONLY    0x00000004L
 #define OFN_OVERWRITEPROMPT 0x00000002L
+#define OFN_FILEMUSTEXIST   0x00001000L
 
 class CFileDialog : public CDialog {
 public:
@@ -1259,6 +1260,7 @@ class CRmtApp {
 public:
     CString GetVersionAndBuild() const;
     void OpenOnlineHelp(); // frontend (opens the help URL)
+    void OpenUrl(const char* url); // frontend (opens a web page in the browser)
 };
 extern CRmtApp g_app;
 

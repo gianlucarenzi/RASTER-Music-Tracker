@@ -42,6 +42,19 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   It now lays the subtunes out as the XEX export does (CSongExporter::BuildLzssSubtunes), saves the player and the
   index and streams, and a "Subsongs" line such as "00 10" makes one subsong per songline (it was only counted).
   Checked with ASAP: 30 s and more of the song, two subsongs differ, the sound follows ASAP's own RMT player.
+- The menu of RMT 1.35/1.36: File, Edit, View, Play, Channels, Song, Instrument, Track, Block, Pokey, Tools and Help
+  (Reload is Reopen, the Export item has no dots, Edit Tracks/Instruments/Info/Song and Switch Edit Mode are in Edit,
+  Play has the play commands, Channels the channels 1-8 and mute, unmute and solo, Pokey has the registers view and the
+  explorer mode, Tools has Options, Tuning, Open ASMA, Open ASAP File (grey) and Run Script). The menu and the keys
+  are defined in src/Rmt.rc only: cmake/GenerateRcTables.cmake turns its IDR_MAINFRAME MENU and IDR_MAINFRAME
+  ACCELERATORS into tables (RmtMenus.h) from which the Qt frontend builds its menu bar and its shortcuts, so the .rc is
+  the one place to change a menu or a key. The shortcuts belong to the main window (the dialogs on top of it keep their own
+  keys). New commands: Channels 1-8 (Ctrl+1-8, checked while they play), Mute/Unmute Active Channel (F9), All Channels
+  (Shift+F9), Solo (Ctrl+F9), Set and Clear Bookmark (F8, Ctrl+F8), Toggle NTSC/PAL (Ctrl+F12), Activate Pokey
+  Explorer Mode (Ctrl+Shift+F5), Increase and Decrease Step Size (Ctrl+Num + / Ctrl+Num -), Open ASMA, Run Script.
+  Esc, Ctrl+Space and Ctrl+Num +/- stay keys of the editing code (they go on to the part being edited). Ctrl+S asks
+  whether to overwrite also from the menu and the toolbar now (the option "Prompt a save dialog each time CTRL+S is
+  pressed" was only honoured by the key handler, which the menu shortcut bypassed).
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

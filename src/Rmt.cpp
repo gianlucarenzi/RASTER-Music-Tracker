@@ -189,6 +189,11 @@ CString CRmtApp::GetVersionAndBuild() const
     return result;
 }
 
+void CRmtApp::OpenUrl(const char* url) const
+{
+    CShell::OpenFile(url);
+}
+
 void CRmtApp::OpenOnlineHelp() const
 {
     CShell::OpenFile("https://html-preview.github.io/?url=https://github.com/raster-atari-org/RASTER-Music-Tracker/blob/1.35/doc//rmt_en.html");

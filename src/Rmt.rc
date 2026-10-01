@@ -1145,112 +1145,86 @@ IDR_MAINFRAME MENU
 BEGIN
     POPUP "&File"
     BEGIN
-        MENUITEM "&New\tCtrl+N",                 ID_FILE_NEW
-        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
-        MENUITEM "&Reload\tCtrl+R",             ID_FILE_RELOAD
+        MENUITEM "Ne&w\tCtrl+N",                         ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",                     ID_FILE_OPEN
+        MENUITEM "&Reopen\tCtrl+R",                      ID_FILE_RELOAD
         MENUITEM SEPARATOR
-        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
-        MENUITEM "Save &As...\tCtrl+Shift+S",       ID_FILE_SAVE_AS
+        MENUITEM "&Save\tCtrl+S",                        ID_FILE_SAVE
+        MENUITEM "Save &As...\tCtrl+Shift+S",            ID_FILE_SAVE_AS
         MENUITEM SEPARATOR
-        MENUITEM "&Import...",                  ID_FILE_IMPORT
-        MENUITEM "&Export As...",               ID_FILE_EXPORT_AS
+        MENUITEM "&Import...",                           ID_FILE_IMPORT
+        MENUITEM "&Export",                              ID_FILE_EXPORT_AS
         MENUITEM SEPARATOR
-        MENUITEM "&Print...\tCtrl+P",             ID_FILE_PRINT
-        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
-        MENUITEM "Prin&t Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM "&Print...\tCtrl+P",                    ID_FILE_PRINT
+        MENUITEM "Print Pre&view",                       ID_FILE_PRINT_PREVIEW
+        MENUITEM "Prin&t Setup...",                      ID_FILE_PRINT_SETUP
         MENUITEM SEPARATOR
-        MENUITEM "Propert&ies\tAlt+Enter",       ID_FILE_PROPERTIES
+        MENUITEM "Properties\tAlt+Enter",                ID_FILE_PROPERTIES
         MENUITEM SEPARATOR
-        MENUITEM "E&xit\tAlt+F4",               ID_WANTEXIT
+        MENUITEM "E&xit\tAlt+F4",                        ID_FILE_EXIT
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "&Undo\tCtrl+Z",               ID_UNDO_UNDO
-        MENUITEM "&Redo\tCtrl+Y",               ID_UNDO_REDO
+        MENUITEM "&Undo\tCtrl+Z",                        ID_UNDO_UNDO
+        MENUITEM "&Redo\tCtrl+Y",                        ID_UNDO_REDO
         MENUITEM SEPARATOR
-        MENUITEM "&Clear Undo && Redo history", ID_UNDO_CLEARUNDOREDO
+        MENUITEM "&Clear Undo && Redo History",          ID_UNDO_CLEARUNDOREDO
+        MENUITEM SEPARATOR
+        MENUITEM "Edit Tracks\tF2",                      ID_EM_TRACKS
+        MENUITEM "Edit Instruments\tF3",                 ID_EM_INSTRUMENTS
+        MENUITEM "Edit Info\tShift+F4",                  ID_EM_INFO
+        MENUITEM "Edit Song\tF4",                        ID_EM_SONG
+        MENUITEM SEPARATOR
+        MENUITEM "Switch &Edit Mode\tCtrl+Space",        ID_PROVEMODE
     END
-    POPUP "&Track"
+    POPUP "&View"
     BEGIN
-        MENUITEM "&Copy",                       ID_TRACK_COPY
-        MENUITEM "&Paste",                      ID_TRACK_PASTE
-        MENUITEM "Cu&t",                        ID_TRACK_CUT
-        MENUITEM "&Delete",                     ID_TRACK_DELETE
+        MENUITEM "Main &Toolbar",                        ID_VIEW_TOOLBAR
+        MENUITEM "&Block Toolbar",                       ID_VIEW_BLOCKTOOLBAR
         MENUITEM SEPARATOR
-        MENUITEM "&Info about current track...", ID_TRACK_INFOABOUTUSINGOFACTUALTRACK
-        MENUITEM "Search and &build wise loop", ID_TRACK_SEARCHANDBUILDLOOP
-        MENUITEM "E&xpand loop",                ID_TRACK_EXPANDLOOP
+        MENUITEM "&Status Bar",                          ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "Search and rebuild wise loops in all tracks...", ID_SONG_SEARCHANDBUILDLOOPSINALLTRACKS
-        MENUITEM "Expand loops in all tracks",  ID_SONG_EXPANDLOOPSINALLTRACKS
-        MENUITEM "Renumber all tracks...",      ID_TRACK_RENUMBERALLTRACKS
+        MENUITEM "&Play Time Counter",                   ID_VIEW_PLAYTIMECOUNTER
+        MENUITEM "&Volume Analyzer",                     ID_VIEW_VOLUMEANALYZER
         MENUITEM SEPARATOR
-        MENUITEM "&Load track from file...",    ID_TRACK_LOAD
-        MENUITEM "&Save track as...",           ID_TRACK_SAVE
-        MENUITEM SEPARATOR
-        MENUITEM "Clear all duplicated tracks, adjust song...", ID_TRACK_CLEARALLDUPLICATEDTRACKS
-        MENUITEM "Clear all tracks unused in song...", ID_TRACK_CLEARALLTRACKSUNUSEDINSONG
-        MENUITEM "All tracks cleanup...",       ID_TRACK_ALLTRACKSCLEANUP
+        MENUITEM "&Instrument Active Help",              ID_VIEW_INSTRUMENTACTIVEHELP
     END
-    POPUP "&Block"
+    POPUP "&Play"
     BEGIN
-        MENUITEM "Restore from &backup\tCtrl+B", ID_BLOCK_BACKUP
-        MENUITEM SEPARATOR
-        MENUITEM "&Copy\tCtrl+C",               ID_BLOCK_COPY
-        MENUITEM "&Paste\tCtrl+V",              ID_BLOCK_PASTE
-        POPUP "Paste sp&ecial"
-        BEGIN
-            MENUITEM "&Merge with current content\tCtrl+M", ID_BLOCK_PASTESPECIAL_MERGEWITHCURRENTCONTENT
-            MENUITEM "&Volume values only",         ID_BLOCK_PASTESPECIAL_VOLUMEVALUESONLY
-            MENUITEM "&Speed values only",          ID_BLOCK_PASTESPECIAL_SPEEDVALUESONLY
-        END
-        MENUITEM "Cu&t\tCtrl+X",                ID_BLOCK_CUT
-        MENUITEM "&Delete\tDel",                ID_BLOCK_DELETE
-        MENUITEM "Exchange block and Clipboard\tCtrl+E", ID_BLOCK_EXCHANGE
-        MENUITEM SEPARATOR
-        MENUITEM "E&ffects/tools...\tCtrl+F",   ID_BLOCK_EFFECT
-        MENUITEM SEPARATOR
-        MENUITEM "Select &all\tCtrl+A",         ID_BLOCK_SELECTALL
+        MENUITEM "Play From &Bookmark\tShift+F7",        ID_PLAY0
+        MENUITEM "Play From &Start\tF5",                 ID_PLAY1
+        MENUITEM "&Play\tF7",                            ID_PLAY2
+        MENUITEM "Play And &Loop Song Line\tF6",         ID_PLAY3
+        MENUITEM "Sto&p\tEsc",                           ID_PLAYSTOP
+        MENUITEM "Toggle &Follow Mode\tF12",             ID_PLAYFOLLOW
     END
-    POPUP "&Instrument"
+    POPUP "&Channels"
     BEGIN
-        MENUITEM "&Copy",                       ID_INSTR_COPY
-        MENUITEM "&Paste",                      ID_INSTR_PASTE
-        POPUP "Paste sp&ecial"
-        BEGIN
-            MENUITEM "&Volume envelopes only",      ID_INSTRUMENT_PASTESPECIAL_VOLUMELRENVELOPESONLY
-            MENUITEM "&Envelope parameters only",   ID_INSTRUMENT_PASTESPECIAL_ENVELOPEPARAMETERSONLY
-            MENUITEM "Volume envelopes and Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_VOLUMEENVANDENVELOPEPARSONLY
-            MENUITEM "&Insert Volume envelopes and Envelope parameters to cursor position", ID_INSTRUMENT_PASTESPECIAL_INSERTVOLUMEENVSANDENVELOPEPARSTOCURSORPOSITION
-            MENUITEM SEPARATOR
-            MENUITEM "Volume &L envelope only",     ID_INSTRUMENT_PASTESPECIAL_VOLUMELENVELOPEONLY
-            MENUITEM "Volume &R envelope only",     ID_INSTRUMENT_PASTESPECIAL_VOLUMERENVELOPEONLY
-            MENUITEM "Volume R to L envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMERTOLENVELOPEONLY
-            MENUITEM "Volume L to R envelope only", ID_INSTRUMENT_PASTESPECIAL_VOLUMELTORENVELOPEONLY
-            MENUITEM SEPARATOR
-            MENUITEM "&Table only",                 ID_INSTRUMENT_PASTESPECIAL_TABLEONLY
-        END
-        MENUITEM "Cu&t",                        ID_INSTR_CUT
-        MENUITEM "&Delete",                     ID_INSTR_DELETE
+        MENUITEM "Channel &1\tCtrl+1",                   ID_CHANNELS_CHANNEL1
+        MENUITEM "Channel &2\tCtrl+2",                   ID_CHANNELS_CHANNEL2
+        MENUITEM "Channel &3\tCtrl+3",                   ID_CHANNELS_CHANNEL3
+        MENUITEM "Channel &4\tCtrl+4",                   ID_CHANNELS_CHANNEL4
         MENUITEM SEPARATOR
-        MENUITEM "&Info about current instrument...", ID_INSTRUMENT_INFO
-        MENUITEM "Change all the instrument occurences...", ID_INSTRUMENT_CHANGE
-        MENUITEM "Renumber all instruments...", ID_INSTRUMENT_RENUMBERALLINSTRUMENTS
+        MENUITEM "Channel &5\tCtrl+5",                   ID_CHANNELS_CHANNEL5
+        MENUITEM "Channel &6\tCtrl+6",                   ID_CHANNELS_CHANNEL6
+        MENUITEM "Channel &7\tCtrl+7",                   ID_CHANNELS_CHANNEL7
+        MENUITEM "Channel &8\tCtrl+8",                   ID_CHANNELS_CHANNEL8
         MENUITEM SEPARATOR
-        MENUITEM "&Load instrument from file...", ID_INSTR_LOAD
-        MENUITEM "&Save instrument as...",      ID_INSTR_SAVE
-        MENUITEM SEPARATOR
-        MENUITEM "Clear all unused instruments...", ID_INSTRUMENT_CLEARALLUNUSEDINSTRUMENTS
-        MENUITEM "All instruments cleanup...",  ID_INSTR_ALLINSTRUMENTSCLEANUP
+        MENUITEM "&Mute/Unmute Active Channel\tF9",      ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_ON_OFF
+        MENUITEM "Mute/Unmute &All Channels\tShift+F9",  ID_CHANNELS_TOGGLE_ALL_CHANNELS_ON_OFF
+        MENUITEM "&Solo Active Channel\tCtrl+F9",        ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_SOLO
     END
     POPUP "&Song"
     BEGIN
-        MENUITEM "&Copy line",                  ID_SONG_COPYLINE
-        MENUITEM "&Paste line",                 ID_SONG_PASTELINE
-        MENUITEM "Cl&ear line",                 ID_SONG_CLEARLINE
+        MENUITEM "&Copy Line",                           ID_SONG_COPYLINE
+        MENUITEM "&Paste Line",                          ID_SONG_PASTELINE
+        MENUITEM "Cl&ear Line",                          ID_SONG_CLEARLINE
         MENUITEM SEPARATOR
-        MENUITEM "Delete c&urrent line\tCtrl+U", ID_SONG_DELETEACTUALLINE
-        MENUITEM "&Insert new empty line\tCtrl+I", ID_SONG_INSERTNEWEMPTYLINE
+        MENUITEM "Set &Bookmark\tF8",                    ID_SONG_SET_BOOKMARK
+        MENUITEM "C&lear Bookmark\tCtrl+F8",             ID_SONG_CLEAR_BOOKMARK
+        MENUITEM SEPARATOR
+        MENUITEM "Delete c&urrent line\tCtrl+U",         ID_SONG_DELETEACTUALLINE
+        MENUITEM "&Insert new empty line\tCtrl+I",       ID_SONG_INSERTNEWEMPTYLINE
         MENUITEM "Insert new line with unused empty tracks\tCtrl+J", ID_SONG_INSERTNEWLINEWITHUNUSEDTRACKS
         MENUITEM "Insert c&opy or clone of song line(s)...\tCtrl+K", ID_SONG_INSERTCOPYORCLONEOFSONGLINES
         MENUITEM "Insert &new empty unused track to current song position\tCtrl+T", ID_SONG_PUTNEWEMPTYUNUSEDTRACK
@@ -1258,78 +1232,156 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Switch song between 4 or 8 channels...", ID_SONG_SONGSWITCH4_8
         MENUITEM "Song columns' order change/copy/clear...", ID_SONG_TRACKSORDERCHANGE
-        MENUITEM "Change maximal length of tracks...", ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS
+        MENUITEM "Change maximal length of tracks...",   ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS
         MENUITEM SEPARATOR
-        MENUITEM "All size optimizations...",   ID_SONG_SIZEOPTIMIZATION
+        MENUITEM "All size optimizations...",            ID_SONG_SIZEOPTIMIZATION
+    END
+    POPUP "&Instrument"
+    BEGIN
+        MENUITEM "&Copy",                                ID_INSTR_COPY
+        MENUITEM "&Paste",                               ID_INSTR_PASTE
+        POPUP "Paste sp&ecial"
+        BEGIN
+            MENUITEM "&Volume envelopes only",           ID_INSTRUMENT_PASTESPECIAL_VOLUMELRENVELOPESONLY
+            MENUITEM "&Envelope parameters only",        ID_INSTRUMENT_PASTESPECIAL_ENVELOPEPARAMETERSONLY
+            MENUITEM "Volume envelopes and Envelope parameters only", ID_INSTRUMENT_PASTESPECIAL_VOLUMEENVANDENVELOPEPARSONLY
+            MENUITEM "&Insert Volume envelopes and Envelope parameters to cursor position", ID_INSTRUMENT_PASTESPECIAL_INSERTVOLUMEENVSANDENVELOPEPARSTOCURSORPOSITION
+            MENUITEM SEPARATOR
+            MENUITEM "Volume &L envelope only",          ID_INSTRUMENT_PASTESPECIAL_VOLUMELENVELOPEONLY
+            MENUITEM "Volume &R envelope only",          ID_INSTRUMENT_PASTESPECIAL_VOLUMERENVELOPEONLY
+            MENUITEM "Volume R to L envelope only",      ID_INSTRUMENT_PASTESPECIAL_VOLUMERTOLENVELOPEONLY
+            MENUITEM "Volume L to R envelope only",      ID_INSTRUMENT_PASTESPECIAL_VOLUMELTORENVELOPEONLY
+            MENUITEM SEPARATOR
+            MENUITEM "&Table only",                      ID_INSTRUMENT_PASTESPECIAL_TABLEONLY
+        END
+        MENUITEM "Cu&t",                                 ID_INSTR_CUT
+        MENUITEM "&Delete",                              ID_INSTR_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Info about current instrument...",    ID_INSTRUMENT_INFO
+        MENUITEM "Change all the instrument occurences...", ID_INSTRUMENT_CHANGE
+        MENUITEM "Renumber all instruments...",          ID_INSTRUMENT_RENUMBERALLINSTRUMENTS
+        MENUITEM SEPARATOR
+        MENUITEM "&Load instrument from file...",        ID_INSTR_LOAD
+        MENUITEM "&Save instrument as...",               ID_INSTR_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "Clear all unused instruments...",      ID_INSTRUMENT_CLEARALLUNUSEDINSTRUMENTS
+        MENUITEM "All instruments cleanup...",           ID_INSTR_ALLINSTRUMENTSCLEANUP
+    END
+    POPUP "T&rack"
+    BEGIN
+        MENUITEM "&Copy",                                ID_TRACK_COPY
+        MENUITEM "&Paste",                               ID_TRACK_PASTE
+        MENUITEM "Cu&t",                                 ID_TRACK_CUT
+        MENUITEM "&Delete",                              ID_TRACK_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Increase Step Size\tCtrl+Num +",            ID_SONG_INCREASE_PATTERN_STEP_SIZE
+        MENUITEM "Decrease Step Size\tCtrl+Num -",            ID_SONG_DECREASE_PATTERN_STEP_SIZE
+        MENUITEM SEPARATOR
+        MENUITEM "&Info about current track...",         ID_TRACK_INFOABOUTUSINGOFACTUALTRACK
+        MENUITEM "Search and &build wise loop",          ID_TRACK_SEARCHANDBUILDLOOP
+        MENUITEM "E&xpand loop",                         ID_TRACK_EXPANDLOOP
+        MENUITEM SEPARATOR
+        MENUITEM "Search and rebuild wise loops in all tracks...", ID_SONG_SEARCHANDBUILDLOOPSINALLTRACKS
+        MENUITEM "Expand loops in all tracks",           ID_SONG_EXPANDLOOPSINALLTRACKS
+        MENUITEM "Renumber all tracks...",               ID_TRACK_RENUMBERALLTRACKS
+        MENUITEM SEPARATOR
+        MENUITEM "&Load track from file...",             ID_TRACK_LOAD
+        MENUITEM "&Save track as...",                    ID_TRACK_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "Clear all duplicated tracks, adjust song...", ID_TRACK_CLEARALLDUPLICATEDTRACKS
+        MENUITEM "Clear all tracks unused in song...",   ID_TRACK_CLEARALLTRACKSUNUSEDINSONG
+        MENUITEM "All tracks cleanup...",                ID_TRACK_ALLTRACKSCLEANUP
+    END
+    POPUP "&Block"
+    BEGIN
+        MENUITEM "Restore From &Backup\tCtrl+B",         ID_BLOCK_BACKUP
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy\tCtrl+C",                        ID_BLOCK_COPY
+        MENUITEM "&Paste\tCtrl+V",                       ID_BLOCK_PASTE
+        POPUP "Paste Sp&ecial"
+        BEGIN
+            MENUITEM "&Merge With Current Content\tCtrl+M", ID_BLOCK_PASTESPECIAL_MERGEWITHCURRENTCONTENT
+            MENUITEM "Paste Only &Volume Values",        ID_BLOCK_PASTESPECIAL_VOLUMEVALUESONLY
+            MENUITEM "Paste Only &Speed Values",         ID_BLOCK_PASTESPECIAL_SPEEDVALUESONLY
+        END
+        MENUITEM "Cu&t\tCtrl+X",                         ID_BLOCK_CUT
+        MENUITEM "&Delete\tDel",                         ID_BLOCK_DELETE
+        MENUITEM "Exchange Block and Clipboard\tCtrl+E", ID_BLOCK_EXCHANGE
+        MENUITEM SEPARATOR
+        MENUITEM "E&ffects/Tools...\tCtrl+F",            ID_BLOCK_EFFECT
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",                  ID_BLOCK_SELECTALL
     END
     POPUP "Poke&y"
     BEGIN
+        MENUITEM "Pokey Chip &Registers",                ID_VIEW_POKEYREGS
+        MENUITEM "Activate Pokey E&xplorer Mode\tCtrl+Shift+F5", ID_EDIT_ACTIVATE_POKEY_EXPLORER_MODE
         POPUP "Channel &1"
         BEGIN
             POPUP "AUD&F0"
             BEGIN
-                MENUITEM "&Increase By 0x01\t1", ID_POKEY_AUDF0_INCREASE_BY_01
-                MENUITEM "I&ncrease By 0x10\tShift+1", ID_POKEY_AUDF0_INCREASE_BY_10
-                MENUITEM "&Decrease By 0x01\tQ", ID_POKEY_AUDF0_DECREASE_BY_01
-                MENUITEM "D&ecrease By 0x10\tShift+Q", ID_POKEY_AUDF0_DECREASE_BY_10
+                MENUITEM "&Increase By 0x01\t1",         ID_POKEY_AUDF0_INCREASE_BY_01
+                MENUITEM "I&ncrease By 0x10\tShift+1",   ID_POKEY_AUDF0_INCREASE_BY_10
+                MENUITEM "&Decrease By 0x01\tQ",         ID_POKEY_AUDF0_DECREASE_BY_01
+                MENUITEM "D&ecrease By 0x10\tShift+Q",   ID_POKEY_AUDF0_DECREASE_BY_10
             END
             POPUP "AUD&C0"
             BEGIN
-                MENUITEM "&Increase By 0x01\t2", ID_POKEY_AUDC0_INCREASE_BY_01
-                MENUITEM "I&ncrease By 0x10\tShift+2", ID_POKEY_AUDC0_INCREASE_BY_10
-                MENUITEM "&Decrease By 0x01\tW", ID_POKEY_AUDC0_DECREASE_BY_01
-                MENUITEM "D&ecrease By 0x10\tShift+W", ID_POKEY_AUDC0_DECREASE_BY_10
+                MENUITEM "&Increase By 0x01\t2",         ID_POKEY_AUDC0_INCREASE_BY_01
+                MENUITEM "I&ncrease By 0x10\tShift+2",   ID_POKEY_AUDC0_INCREASE_BY_10
+                MENUITEM "&Decrease By 0x01\tW",         ID_POKEY_AUDC0_DECREASE_BY_01
+                MENUITEM "D&ecrease By 0x10\tShift+W",   ID_POKEY_AUDC0_DECREASE_BY_10
             END
         END
         POPUP "Channel &2"
         BEGIN
             POPUP "AUD&F1"
             BEGIN
-                MENUITEM "&Increase By 0x01\t3", ID_POKEY_AUDF1_INCREASE_BY_01
-                MENUITEM "I&ncrease By 0x10\tShift+3", ID_POKEY_AUDF1_INCREASE_BY_10
-                MENUITEM "&Decrease By 0x01\tE", ID_POKEY_AUDF1_DECREASE_BY_01
-                MENUITEM "D&ecrease By 0x10\tShift+E", ID_POKEY_AUDF1_DECREASE_BY_10
+                MENUITEM "&Increase By 0x01\t3",         ID_POKEY_AUDF1_INCREASE_BY_01
+                MENUITEM "I&ncrease By 0x10\tShift+3",   ID_POKEY_AUDF1_INCREASE_BY_10
+                MENUITEM "&Decrease By 0x01\tE",         ID_POKEY_AUDF1_DECREASE_BY_01
+                MENUITEM "D&ecrease By 0x10\tShift+E",   ID_POKEY_AUDF1_DECREASE_BY_10
             END
             POPUP "AUD&C1"
             BEGIN
-                MENUITEM "&Increase By 0x01\t4", ID_POKEY_AUDC1_INCREASE_BY_01
-                MENUITEM "I&ncrease By 0x10\tShift+4", ID_POKEY_AUDC1_INCREASE_BY_10
-                MENUITEM "&Decrease By 0x01\tR", ID_POKEY_AUDC1_DECREASE_BY_01
-                MENUITEM "D&ecrease By 0x10\tShift+R", ID_POKEY_AUDC1_DECREASE_BY_10
+                MENUITEM "&Increase By 0x01\t4",         ID_POKEY_AUDC1_INCREASE_BY_01
+                MENUITEM "I&ncrease By 0x10\tShift+4",   ID_POKEY_AUDC1_INCREASE_BY_10
+                MENUITEM "&Decrease By 0x01\tR",         ID_POKEY_AUDC1_DECREASE_BY_01
+                MENUITEM "D&ecrease By 0x10\tShift+R",   ID_POKEY_AUDC1_DECREASE_BY_10
             END
         END
         POPUP "Channel &3"
         BEGIN
             POPUP "AUD&F2"
             BEGIN
-                MENUITEM "Increase By 0x01\t5", ID_POKEY_AUDF2_INCREASE_BY_01
-                MENUITEM "Increase By 0x10\tShift+5", ID_POKEY_AUDF2_INCREASE_BY_10
-                MENUITEM "Decrease By 0x01\tT", ID_POKEY_AUDF2_DECREASE_BY_01
-                MENUITEM "Decrease By 0x10\tShift+T", ID_POKEY_AUDF2_DECREASE_BY_10
+                MENUITEM "Increase By 0x01\t5",          ID_POKEY_AUDF2_INCREASE_BY_01
+                MENUITEM "Increase By 0x10\tShift+5",    ID_POKEY_AUDF2_INCREASE_BY_10
+                MENUITEM "Decrease By 0x01\tT",          ID_POKEY_AUDF2_DECREASE_BY_01
+                MENUITEM "Decrease By 0x10\tShift+T",    ID_POKEY_AUDF2_DECREASE_BY_10
             END
             POPUP "AUD&C2"
             BEGIN
-                MENUITEM "&Increase By 0x01\t6", ID_POKEY_AUDC2_INCREASE_BY_01
-                MENUITEM "I&ncrease By 0x10\tShift+6", ID_POKEY_AUDC2_INCREASE_BY_10
-                MENUITEM "&Decrease By 0x01\tY", ID_POKEY_AUDC2_DECREASE_BY_01
-                MENUITEM "D&ecrease By 0x10\tShift+Y", ID_POKEY_AUDC2_DECREASE_BY_10
+                MENUITEM "&Increase By 0x01\t6",         ID_POKEY_AUDC2_INCREASE_BY_01
+                MENUITEM "I&ncrease By 0x10\tShift+6",   ID_POKEY_AUDC2_INCREASE_BY_10
+                MENUITEM "&Decrease By 0x01\tY",         ID_POKEY_AUDC2_DECREASE_BY_01
+                MENUITEM "D&ecrease By 0x10\tShift+Y",   ID_POKEY_AUDC2_DECREASE_BY_10
             END
         END
         POPUP "Channel &4"
         BEGIN
             POPUP "AUD&F3"
             BEGIN
-                MENUITEM "Increase By 0x01\t7", ID_POKEY_AUDF3_INCREASE_BY_01
-                MENUITEM "Increase By 0x10\tShift+7", ID_POKEY_AUDF3_INCREASE_BY_10
-                MENUITEM "Decrease By 0x01\tU", ID_POKEY_AUDF3_DECREASE_BY_01
-                MENUITEM "Decrease By 0x10\tShift+U", ID_POKEY_AUDF3_DECREASE_BY_10
+                MENUITEM "Increase By 0x01\t7",          ID_POKEY_AUDF3_INCREASE_BY_01
+                MENUITEM "Increase By 0x10\tShift+7",    ID_POKEY_AUDF3_INCREASE_BY_10
+                MENUITEM "Decrease By 0x01\tU",          ID_POKEY_AUDF3_DECREASE_BY_01
+                MENUITEM "Decrease By 0x10\tShift+U",    ID_POKEY_AUDF3_DECREASE_BY_10
             END
             POPUP "AUD&C3"
             BEGIN
-                MENUITEM "&Increase By 0x01\t8", ID_POKEY_AUDC3_INCREASE_BY_01
-                MENUITEM "I&ncrease By 0x10\tShift+8", ID_POKEY_AUDC3_INCREASE_BY_10
-                MENUITEM "&Decrease By 0x01\tI", ID_POKEY_AUDC3_DECREASE_BY_01
-                MENUITEM "D&ecrease By 0x10\tShift+I", ID_POKEY_AUDC3_DECREASE_BY_10
+                MENUITEM "&Increase By 0x01\t8",         ID_POKEY_AUDC3_INCREASE_BY_01
+                MENUITEM "I&ncrease By 0x10\tShift+8",   ID_POKEY_AUDC3_INCREASE_BY_10
+                MENUITEM "&Decrease By 0x01\tI",         ID_POKEY_AUDC3_DECREASE_BY_01
+                MENUITEM "D&ecrease By 0x10\tShift+I",   ID_POKEY_AUDC3_DECREASE_BY_10
             END
         END
         POPUP "AUDCTL"
@@ -1345,44 +1397,84 @@ BEGIN
         END
         POPUP "SKCTL"
         BEGIN
-            MENUITEM "&Two Tone Mode\tM", ID_POKEY_SKCTL_TWO_TONE_MODE
+            MENUITEM "&Two Tone Mode\tM",                ID_POKEY_SKCTL_TWO_TONE_MODE
         END
         POPUP "Debug &Channel"
         BEGIN
-            MENUITEM "Next Channel\tEnter", ID_POKEY_NEXTCHANNEL
-            MENUITEM "Previous Channel\tBackspace", ID_POKEY_PREVIOUSCHANNEL
+            MENUITEM "Next Channel\tEnter",              ID_POKEY_NEXTCHANNEL
+            MENUITEM "Previous Channel\tBackspace",      ID_POKEY_PREVIOUSCHANNEL
         END
         POPUP "&Divisor"
         BEGIN
-            MENUITEM "Increase By 0.1\t+", ID_POKEY_DIVISOR_INCREASE_BY_01
-            MENUITEM "Increase By 1.0\tShift++", ID_POKEY_DIVISOR_INCREASE_BY_1
-            MENUITEM "Decrease By 0.1\t-", ID_POKEY_DIVISOR_DECREASE_BY_01
-            MENUITEM "Decrease By 1.0\tShift+-", ID_POKEY_DIVISOR_DECREASE_BY_1
+            MENUITEM "Increase By 0.1\t+",               ID_POKEY_DIVISOR_INCREASE_BY_01
+            MENUITEM "Increase By 1.0\tShift++",         ID_POKEY_DIVISOR_INCREASE_BY_1
+            MENUITEM "Decrease By 0.1\t-",               ID_POKEY_DIVISOR_DECREASE_BY_01
+            MENUITEM "Decrease By 1.0\tShift+-",         ID_POKEY_DIVISOR_DECREASE_BY_1
         END
     END
-    POPUP "&View"
+    POPUP "&Tools"
     BEGIN
-        MENUITEM "&Configuration...",           ID_VIEW_CONFIGURATION
+        MENUITEM "Open &ASMA",                           ID_TOOLS_OPEN_ASMA
+        MENUITEM "Open A&SAP File...",                   ID_TOOLS_OPEN_ASAP_FILE
+        MENUITEM "&Run Script...",                       ID_TOOLS_RUN_SCRIPT
         MENUITEM SEPARATOR
-        MENUITEM "&Tuning...",                  ID_VIEW_TUNING
-        MENUITEM SEPARATOR
-        MENUITEM "Main &toolbar",               ID_VIEW_TOOLBAR
-        MENUITEM "&Block toolbar",              ID_VIEW_BLOCKTOOLBAR
-        MENUITEM SEPARATOR
-        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
-        MENUITEM SEPARATOR
-        MENUITEM "&Play time counter",          ID_VIEW_PLAYTIMECOUNTER
-        MENUITEM "&Volume analyzer",            ID_VIEW_VOLUMEANALYZER
-        MENUITEM "Pokey chip &registers",       ID_VIEW_POKEYREGS
-        MENUITEM SEPARATOR
-        MENUITEM "&Instrument active help",     ID_VIEW_INSTRUMENTACTIVEHELP
+        MENUITEM "&Options...",                          ID_VIEW_CONFIGURATION
+        MENUITEM "&Tuning...",                           ID_VIEW_TUNING
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&Help Topics\tF1",             ID_HELP_HELP_TOPICS
-        MENUITEM "&Online Help\tShift+F1",      ID_HELP_ONLINE_HELP
-        MENUITEM "&About RASTER Music Tracker", ID_HELP_ABOUT_APP
+        MENUITEM "&Help\tF1",                            ID_HELP_HELP_TOPICS
+        MENUITEM "&Online Help\tShift+F1",               ID_HELP_ONLINE_HELP
+        MENUITEM "&About RASTER Music Tracker",          ID_HELP_ABOUT_APP
     END
+END
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS
+BEGIN
+    // Not in the table: Esc, Ctrl+Space and Ctrl+Num + / Ctrl+Num - are handled by CRmtView::OnKeyDown, which
+    // passes them on to the part being edited (cancel a text edit; the numeric keypad's keys are note and value
+    // keys there). Their menu items show the keys.
+    "1", ID_CHANNELS_CHANNEL1, VIRTKEY, CONTROL, NOINVERT
+    "2", ID_CHANNELS_CHANNEL2, VIRTKEY, CONTROL, NOINVERT
+    "3", ID_CHANNELS_CHANNEL3, VIRTKEY, CONTROL, NOINVERT
+    "4", ID_CHANNELS_CHANNEL4, VIRTKEY, CONTROL, NOINVERT
+    "5", ID_CHANNELS_CHANNEL5, VIRTKEY, CONTROL, NOINVERT
+    "6", ID_CHANNELS_CHANNEL6, VIRTKEY, CONTROL, NOINVERT
+    "7", ID_CHANNELS_CHANNEL7, VIRTKEY, CONTROL, NOINVERT
+    "8", ID_CHANNELS_CHANNEL8, VIRTKEY, CONTROL, NOINVERT
+    VK_F9, ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_ON_OFF, VIRTKEY, NOINVERT
+    VK_F9, ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_SOLO, VIRTKEY, CONTROL, NOINVERT
+    VK_F9, ID_CHANNELS_TOGGLE_ALL_CHANNELS_ON_OFF, VIRTKEY, SHIFT, NOINVERT
+    VK_F1, ID_HELP_HELP_TOPICS, VIRTKEY, NOINVERT
+    VK_F1, ID_HELP_ONLINE_HELP, VIRTKEY, SHIFT, NOINVERT
+    VK_F5, ID_EDIT_ACTIVATE_POKEY_EXPLORER_MODE, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "Y", ID_UNDO_REDO, VIRTKEY, CONTROL, NOINVERT
+    "Z", ID_UNDO_UNDO, VIRTKEY, CONTROL, NOINVERT
+    "N", ID_FILE_NEW, VIRTKEY, CONTROL, NOINVERT
+    "O", ID_FILE_OPEN, VIRTKEY, CONTROL, NOINVERT
+    "P", ID_FILE_PRINT, VIRTKEY, CONTROL, NOINVERT
+    "R", ID_FILE_RELOAD, VIRTKEY, CONTROL, NOINVERT
+    "S", ID_FILE_SAVE, VIRTKEY, CONTROL, NOINVERT
+    "S", ID_FILE_SAVE_AS, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    VK_RETURN, ID_FILE_PROPERTIES, VIRTKEY, ALT, NOINVERT
+    VK_F4, ID_EM_INFO, VIRTKEY, SHIFT, NOINVERT
+    VK_F3, ID_EM_INSTRUMENTS, VIRTKEY, NOINVERT
+    VK_F4, ID_EM_SONG, VIRTKEY, NOINVERT
+    VK_F2, ID_EM_TRACKS, VIRTKEY, NOINVERT
+    VK_F8, ID_SONG_CLEAR_BOOKMARK, VIRTKEY, CONTROL, NOINVERT
+    VK_F12, ID_PLAYFOLLOW, VIRTKEY, NOINVERT
+    VK_F7, ID_PLAY0, VIRTKEY, SHIFT, NOINVERT
+    VK_F7, ID_PLAY2, VIRTKEY, NOINVERT
+    VK_F6, ID_PLAY3, VIRTKEY, NOINVERT
+    VK_F5, ID_PLAY1, VIRTKEY, NOINVERT
+    VK_F8, ID_SONG_SET_BOOKMARK, VIRTKEY, NOINVERT
+    VK_F12, ID_SONG_TOGGLE_NTSC, VIRTKEY, CONTROL, NOINVERT
+    VK_F6, ID_BLOCK_PLAY, VIRTKEY, SHIFT, NOINVERT
 END
 
 
@@ -1428,6 +1520,24 @@ END
 //
 // String Table
 //
+
+STRINGTABLE
+BEGIN
+    ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_ON_OFF"Mute/unmute the active channel\nMute/Unmute Active Channel (F9)"
+    ID_CHANNELS_TOGGLE_ACTIVE_CHANNEL_SOLO  "Mute all channels except active channel / Unmute all channels\nSolo Active Channel (Ctrl+F9)"
+    ID_CHANNELS_TOGGLE_ALL_CHANNELS_ON_OFF  "Mute / Unmute all channels\nMute/Unmute All Channels (Shift+F9)"
+    ID_EDIT_ACTIVATE_POKEY_EXPLORER_MODE    "Activate POKEY Explorer Mode\nActivate Pokey Explorer Mode (Ctrl+Shift+F5)"
+    ID_SONG_CLEAR_BOOKMARK                  "Clear the bookmark in the current song line\nClear Bookmark (Ctrl+F8)"
+    ID_SONG_DECREASE_PATTERN_STEP_SIZE      "Decrease the pattern step size\nDecrease Step Size (Ctrl+Num -)"
+    ID_SONG_INCREASE_PATTERN_STEP_SIZE      "Increase the pattern step size\nIncrease Step Size (Ctrl+Num +)"
+    ID_SONG_SET_BOOKMARK                    "Set a bookmark in the current song line\nSet Bookmark (F8)"
+    ID_SONG_TOGGLE_NTSC                     "Toggle NTSC/PAL\nToggle NTSC/PAL (Ctrl+F12)"
+    ID_TOOLS_OPEN_ASAP_FILE                 "Open an .SAP or other Atari Sound Module File"
+    ID_TOOLS_OPEN_ASMA                      "Open the Atari Sound Music Archive Website"
+    ID_TOOLS_RUN_SCRIPT                     "Run an RMT script file (open, export, save) on the current session\nRun Script..."
+    ID_UNDO_REDO                            "Redo the last action\nRedo (Ctrl+Y)"
+    ID_UNDO_UNDO                            "Undo the last action\nUndo (Ctrl+Z)"
+END
 
 STRINGTABLE
 BEGIN

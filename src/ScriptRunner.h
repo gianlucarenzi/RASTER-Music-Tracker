@@ -38,6 +38,11 @@ public:
     // reads, parses and runs the script; returns the exit code.
     int RunFile(const CString& scriptFilePath);
 
+    // Tools > Run Script: runs the script on the window's session - the message boxes stay boxes (errors and
+    // warnings still fail the command) and the commands' output is collected in output for one result box at
+    // the end. Returns the exit code.
+    int RunInteractive(const CString& scriptFilePath, std::string& output);
+
     // Runs parsed commands, resolving relative paths against baseFolder.
     int Run(const std::vector<TScriptCommand>& commands, const std::filesystem::path& baseFolder);
 
@@ -47,9 +52,11 @@ private:
     std::filesystem::path m_outputFolder;   // "set output", empty = the script's folder
     std::filesystem::path m_outputOverride; // SetOutputFolder(), empty = none
     bool m_overwrite = false;
+    bool m_interactive = false;
+    std::string* m_capture = nullptr; // RunInteractive: every line of output, stdout and stderr
 
-    void Out(const std::string& line); // a line to stdout
-    void Err(const std::string& line); // a line to stderr
+    void Out(const std::string& line); // a line to stdout (and the capture)
+    void Err(const std::string& line); // a line to stderr (and the capture)
 
     // false for quit; throws CScriptError on a failure
     bool Execute(const TScriptCommand& command);

@@ -39,6 +39,7 @@ public:
 
     CString GetVersionAndBuild() const;
     void OpenOnlineHelp() const;
+    void OpenUrl(const char* url) const;
 
 
     // Implementation

@@ -324,20 +324,52 @@ int CScriptRunner::RunFile(const CString& scriptFilePath)
     return Run(commands, folder);
 }
 
+int CScriptRunner::RunInteractive(const CString& scriptFilePath, std::string& output)
+{
+    m_interactive = true;
+    m_capture = &output;
+    int code;
+    std::ifstream in(scriptFilePath, std::ios::binary);
+    if (!in) {
+        Err("The script file '" + std::string((LPCTSTR)scriptFilePath) + "' cannot be read.");
+        code = EXIT_SCRIPT_INVALID;
+    } else {
+        std::stringstream buffer;
+        buffer << in.rdbuf();
+        try {
+            std::vector<TScriptCommand> commands = CScriptParser::Parse(CScriptParser::SplitLines(buffer.str()));
+            std::filesystem::path folder = std::filesystem::absolute(std::filesystem::path((LPCTSTR)scriptFilePath)).parent_path();
+            code = Run(commands, folder);
+        } catch (const CScriptError& e) {
+            Err(e.GetLocatedMessage());
+            code = EXIT_SCRIPT_INVALID;
+        }
+    }
+    m_capture = nullptr;
+    m_interactive = false;
+    return code;
+}
+
 void CScriptRunner::Out(const std::string& line)
 {
     printf("%s\n", line.c_str());
+    if (m_capture != nullptr) {
+        *m_capture += line + "\n";
+    }
 }
 
 void CScriptRunner::Err(const std::string& line)
 {
     fprintf(stderr, "%s\n", line.c_str());
+    if (m_capture != nullptr) {
+        *m_capture += line + "\n";
+    }
 }
 
 int CScriptRunner::Run(const std::vector<TScriptCommand>& commands, const std::filesystem::path& baseFolder)
 {
     m_baseFolder = baseFolder;
-    SetScriptMessageMode(true);
+    SetScriptMessageMode(true, m_interactive);
     int code = EXIT_OK;
     for (const TScriptCommand& command : commands) {
         ClearScriptProblems();
