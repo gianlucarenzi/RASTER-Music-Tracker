@@ -373,7 +373,12 @@ public:
             }
             if (hint.empty()) return {};
             QKeySequence sequence(QString::fromLatin1(hint.c_str()), QKeySequence::PortableText);
-            if (sequence.count() != 1 || sequence[0] == 0 || sequence[0] == Qt::Key_unknown) return {};
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            const int combined = sequence.count() == 1 ? sequence[0].toCombined() : 0; // Qt6: QKeyCombination
+#else
+            const int combined = sequence.count() == 1 ? sequence[0] : 0;
+#endif
+            if (combined == 0 || combined == Qt::Key_unknown) return {};
             return { sequence };
         };
         std::vector<QMenu*> menus; // menus[n]: where the entries of level n + 1 go
