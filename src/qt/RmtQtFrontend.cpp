@@ -11,6 +11,7 @@
 
 #include "RmtQtFrontend.h"
 #include "ScriptMessages.h"
+#include "ActionTable.h"
 #include "RmtQtKeys.h"
 #include "RmtQtDialogs.h"
 
@@ -466,6 +467,55 @@ public:
         };
         for (QAction* act : bar->actions())
             if (act->menu()) wireUpdate(act->menu());
+    }
+
+    // The command table of the program (script command "dump actions"): the items of the menu bar with their
+    // texts and shortcuts, the buttons of the toolbars with their tooltips
+    std::string ActionTable(QMenuBar* bar, int& errorCount)
+    {
+        std::map<QAction*, UINT> idOfAction;
+        for (const auto& entry : m_menuActions) {
+            idOfAction[entry.second] = entry.first;
+        }
+        std::vector<TActionMenuItem> menuItems;
+        std::function<void(QMenu*, std::vector<std::string>&)> walk = [&](QMenu* menu, std::vector<std::string>& path) {
+            for (QAction* act : menu->actions()) {
+                if (act->isSeparator()) continue;
+                if (act->menu()) {
+                    path.push_back(act->text().toStdString());
+                    walk(act->menu(), path);
+                    path.pop_back();
+                    continue;
+                }
+                auto it = idOfAction.find(act);
+                if (it == idOfAction.end()) continue;
+                TActionMenuItem item;
+                item.id = it->second;
+                item.path = path;
+                item.label = act->text().toStdString();
+                item.key = act->shortcut().toString(QKeySequence::PortableText).toStdString();
+                menuItems.push_back(item);
+            }
+        };
+        for (QAction* top : bar->actions()) {
+            if (!top->menu()) continue;
+            std::vector<std::string> path{ top->text().toStdString() };
+            walk(top->menu(), path);
+        }
+        std::vector<TActionToolButton> buttons;
+        for (const ToolAction& t : m_toolActions) {
+            TActionToolButton button;
+            button.id = t.id;
+            button.bar = t.bar->windowTitle().toStdString();
+            const std::string suffix = " toolbar"; // "Main toolbar" is the Main one
+            if (button.bar.size() > suffix.size() && button.bar.compare(button.bar.size() - suffix.size(), suffix.size(), suffix) == 0) {
+                button.bar.resize(button.bar.size() - suffix.size());
+            }
+            button.tip = t.action->toolTip().toStdString();
+            button.status = t.action->statusTip().toStdString();
+            buttons.push_back(button);
+        }
+        return BuildActionTable(menuItems, buttons, errorCount);
     }
 
     // The toolbars of the .rc (IDR_MAINFRAME, IDR_TOOLBARBLOCK): 16x15 images
@@ -1002,4 +1052,11 @@ void RmtMainWindow::closeEvent(QCloseEvent* e)
     }
     e->ignore();
     m_bridge->Dispatch(ID_FILE_EXIT);
+}
+
+// The command table of the running program as Markdown, for the script command "dump actions" (ScriptRunner.cpp)
+std::string RmtActionTable(int& errorCount)
+{
+    auto* bridge = static_cast<RmtQtBridge*>(g_rmtHost);
+    return bridge->ActionTable(bridge->m_win->menuBar(), errorCount);
 }

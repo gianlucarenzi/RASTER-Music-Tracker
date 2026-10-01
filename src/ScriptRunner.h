@@ -5,7 +5,7 @@
 // ScriptRunner: open, save, export (the Export dialog's eight formats, each
 // through the dialog-independent *Apply/exporter entry point with the
 // parameters the dialog would have collected), set overwrite|output|ntsc|driver,
-// dump notekeys, echo, quit. Paths are
+// dump actions|notekeys, echo, quit. Paths are
 // relative to the script's folder. Exit codes: 0 =
 // every command succeeded, 1 = a command failed (the script stops there),
 // 2 = the script could not be read or parsed.

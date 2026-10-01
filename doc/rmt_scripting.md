@@ -76,7 +76,7 @@ Exit codes of the command line:
 | `set midi-volume-offset <0-15>` | The Options dialog's MIDI "Atari Volume Offset". Default: `rmt.ini`'s. |
 | `set midi-note-off yes\|no` | The Options dialog's MIDI "Record note off". Default: `rmt.ini`'s. |
 | `midi <status> <data1> [<data2>]` | Handles a MIDI message given as hex bytes exactly as one from the MIDI IN device would be (see the manual's "MIDI Input"): `midi 90 3C 64` is note on C-3, velocity 100, on channel 1 and records the note at the cursor; `midi CA 05` selects instrument 5. The window counts as focused. |
-| `dump actions <file>` | Not available in this program (it needs the command table of `Rmt.exe`); the command fails. |
+| `dump actions <file>` | Writes the program's command table - every menu item and toolbar button with its key and its prompt from `Rmt.rc` - as a Markdown table. The table is read from the running program's menus and toolbars, so it lists the keys the menu items really have (the tracker's own keys, handled in the editing code, appear only where a menu label shows them). A row marked ERROR is a menu label that shows another key than the item has and fails the command. |
 | `dump notekeys <file>` | Writes the note keys of the QWERTY, AZERTY and QWERTZ keyboard layouts (which key plays which note) as keyboard pictures and Markdown tables . |
 | `echo <text ...>` | Prints the text. |
 | `quit` | Ends the script (implicit at its end). |

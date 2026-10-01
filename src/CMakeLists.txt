@@ -14,6 +14,11 @@ rmt_embed_resources(${RMT_EMBEDDED_RESOURCES}
     IDR_TOOLBARCHANNELS ${CMAKE_CURRENT_SOURCE_DIR}/res/bmp00001.bmp
 )
 
+# The prompts of Rmt.rc's string tables, for the script command "dump actions"
+include(${PROJECT_SOURCE_DIR}/cmake/GeneratePrompts.cmake)
+set(RMT_PROMPTS ${CMAKE_CURRENT_BINARY_DIR}/RmtPrompts.cpp)
+rmt_generate_prompts(${RMT_PROMPTS} ${CMAKE_CURRENT_SOURCE_DIR}/Rmt.rc ${CMAKE_CURRENT_SOURCE_DIR}/resource.h)
+
 # Check if MFC is available (MSVC only; the Qt frontend never uses it)
 if(MSVC AND NOT RMT_USE_QT)
     message(STATUS "MSVC detected, MFC will be linked")
@@ -111,6 +116,7 @@ else()
         emu/PokeySound.cpp
         ASMFileBuilder.cpp
         ASMFile.cpp
+        ActionTable.cpp
         ASMFileExporter.cpp
         AssemblerTypes.cpp
         AtariBinaries.cpp
@@ -212,13 +218,13 @@ else()
     )
 
     if(RMT_USE_QT)
-        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES})
+        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES} ${RMT_PROMPTS})
         if(NOT MFC_AVAILABLE)
             # Non-MFC type shim (Fase 0)
             list(APPEND RMT_SOURCES MfcTypes.cpp MfcAudio.cpp MfcDialogStubs.cpp RmtMidiRt.cpp ${RMT_EMBEDDED_RESOURCES})
         endif()
     else()
-        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES})
+        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES} ${RMT_PROMPTS})
     endif()
 
 set(RMT_HEADERS

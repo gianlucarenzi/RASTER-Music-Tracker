@@ -21,7 +21,7 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
 - Scripting from the command line, as in the Windows program and the Java port of
   RMT 1.36: `rmt /SCRIPT:<file>` runs a script (open, save, export in the eight
   formats with the dialogs' options, set ntsc/driver/overwrite/output, midi,
-  dump notekeys, echo) without showing the window and exits with its code;
+  dump actions, dump notekeys, echo) without showing the window and exits with its code;
   see doc/rmt_scripting.md and scripts/test-scripting.sh. The export dialogs
   were split into the dialog and a dialog-independent "Apply" half
   (ExportAsAsmApply, ExportAsRelocatableAsmForRmtPlayerApply,

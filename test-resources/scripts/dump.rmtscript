@@ -1,0 +1,6 @@
+# The command table of the program (every menu item and toolbar button with its
+# key and prompt) and the note keys of the keyboard layouts as Markdown.
+set output out/dump
+set overwrite yes
+dump actions actions.md
+dump notekeys notekeys.md

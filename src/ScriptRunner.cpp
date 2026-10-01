@@ -58,6 +58,10 @@ extern BOOL g_msx_shuffle;
 extern BOOL g_region_auto;
 extern int g_msxcol;
 
+#ifdef RMT_QT_GUI
+extern std::string RmtActionTable(int& errorCount); // qt/RmtQtFrontend.cpp
+#endif
+
 namespace {
 
 // The Export dialog's file-type list, in its order: script format name, extension, io type.
@@ -736,6 +740,19 @@ void CScriptRunner::Dump(const TScriptCommand& command)
         Out("Dumped the note keys to " + file.string());
         return;
     }
-    // The command table of the program's resources (Rmt.rc, CCommands): not part of this build
-    throw CScriptError(command.line, "'dump actions' is not available in this build (use 'dump notekeys').");
+    // The command table of the program: every menu item and toolbar button with its key and prompt. The Qt
+    // frontend collects it from its menus; an ERROR marker (a label that shows another key than the item has) fails the command.
+#ifdef RMT_QT_GUI
+    int errors = 0;
+    std::string text = RmtActionTable(errors);
+    std::ofstream out(file, std::ios::binary);
+    out.write(text.data(), text.size());
+    out.close();
+    Out("Dumped the actions to " + file.string());
+    if (errors > 0) {
+        throw CScriptError(command.line, "The action table has " + std::to_string(errors) + " ERROR marker(s), see " + file.string() + ".");
+    }
+#else
+    throw CScriptError(command.line, "'dump actions' is available in the Qt frontend only (use 'dump notekeys').");
+#endif
 }

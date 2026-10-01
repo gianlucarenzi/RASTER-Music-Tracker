@@ -34,6 +34,7 @@ check() { # name expected-files...
 
 check delta delta.rmt delta.txt delta.rmw d1.rmt d1.asm d1.sapr d1.lzss d1.sap d1.xex d1_player.asm d1.wav d2.sap d2.xex d3.sapr
 check midi midi.rmt midi.txt midi.rmw
+check dump actions.md notekeys.md
 
 # the failure paths: a syntax error is exit code 2, a failing command 1
 printf 'open "unterminated\n' >"$WORK/syntax.rmtscript"
