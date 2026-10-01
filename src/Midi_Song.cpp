@@ -93,6 +93,9 @@ void CSong::MidiEvent(DWORD dwParam, bool hasFocus)
         if (cmd == 0xB0 && chn == 15) //control change and key pressed
         {
             int o = (m_ch_offset) ? 2 : 0;
+            if (pr1 >= 71 && pr1 <= 78 && g_prove != EditMode::MIDI_CH15_MODE) {
+                return; //the knobs are the SPECIAL MIDI CH15 MODE only (their cases sit inside an "if" that a switch jump never evaluates - they worked in every mode)
+            }
             switch (pr1) {
                 case 1: //Modulation wheel
                     m_mod_wheel = (pr2 - 64) / 8;
