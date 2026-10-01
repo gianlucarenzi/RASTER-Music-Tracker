@@ -38,7 +38,7 @@ if [ "${RMT_APPIMAGE_DEPS:-1}" = 1 ]; then
     apt-get install -y --no-install-recommends \
         gcc-10 g++-10 ninja-build pkg-config git ca-certificates wget file \
         python3-pip python3-dev python3.9 python3.9-venv python3.9-dev imagemagick \
-        portaudio19-dev librtmidi-dev \
+        portaudio19-dev librtmidi-dev libcups2 \
         libgl1-mesa-dev libegl1 libfontconfig1 libfreetype6 libdbus-1-3 \
         libxkbcommon-dev libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
         libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0 \

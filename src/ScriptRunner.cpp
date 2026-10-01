@@ -28,6 +28,9 @@
 #include <io.h>
 #define dup2   _dup2
 #define fileno _fileno
+// <windows.h> would clash with the shim of MfcTypes.h: the one function needed, as it declares it
+extern "C" __declspec(dllimport) int __stdcall AttachConsole(unsigned long processId);
+#define ATTACH_PARENT_PROCESS ((unsigned long)-1)
 #else
 #include <unistd.h>
 #endif
