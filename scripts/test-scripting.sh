@@ -35,14 +35,18 @@ check() { # name expected-files...
 check delta delta.rmt delta.txt delta.rmw d1.rmt d1.asm d1.sapr d1.lzss d1.sap d1.xex d1_player.asm d1.wav d2.sap d2.xex d3.sapr
 check midi midi.rmt midi.txt midi.rmw
 check dump actions.md notekeys.md
+check stereo stereo.rmt stereo.txt stereo.rmw s1.rmt s1.asm s1.sapr s1.lzss s1_player.asm s1.wav s2.rmt s2.asm s2_player.asm
 
 # the SAP type B files: the blocks must hold the player (an earlier export left the driver out)
 if command -v python3 >/dev/null; then
     for f in d1.sap d2.sap; do
         scripts/check-sap.py "$WORK/delta-a/$f" 1 || fail=1
     done
+    # the WAV lasts as long as the SAP-R stream (the stereo song is at instrument speed 4)
+    scripts/check-wav.py "$WORK/delta-a/d1.sapr" "$WORK/delta-a/d1.wav" || fail=1
+    scripts/check-wav.py "$WORK/stereo-a/s1.sapr" "$WORK/stereo-a/s1.wav" || fail=1
 else
-    echo "skip SAP structure check: no python3"
+    echo "skip the SAP and WAV structure checks: no python3"
 fi
 
 # the failure paths: a syntax error is exit code 2, a failing command 1

@@ -63,6 +63,13 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   memory beside the channel flags (CXPokey::CopyAtariMemoryToPokey wrote register 8 twice and read the flag of a
   ninth channel). Each POKEY now gets its own AUDCTL ($D208 and $D218 into registers 8 and $18). Songs whose two
   POKEYs use different AUDCTL bits sound as the Atari plays them; the others are unchanged.
+- Fixed: the WAV export of a song at instrument speed 2, 3 or 4 lasted that many times as long (and sounded that
+  many times slower, 1-2 octaves lower): the register stream holds one frame per call of the tracker driver, and every
+  frame was rendered as a whole VBI. Each frame now renders 1/instrument speed of a VBI (CXPokey::RenderSoundV2Call; the
+  remainder of the division is carried, so the WAV lasts as long as the stream). The stereo reference song, at instrument
+  speed 4, lasted 486 s instead of 121.6 s. Songs at instrument speed 1 are unchanged. The same defect is in the Windows
+  program. Found by rendering the SAP-R stream through ASAP's POKEY and comparing it with the WAV
+  (scripts/check-wav.py is part of scripts/test-scripting.sh).
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
   layout (the first start takes the layout from the keyboard language), the Pokey
   Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes

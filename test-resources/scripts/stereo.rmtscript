@@ -1,0 +1,23 @@
+# The stereo reference song (instrument speed 4) through the saves and the exports that fit: the SAP-R stream and the WAV
+# must last the same (scripts/check-wav.py), the LZSS and SAP type B exports of a stereo song.
+set output out/stereo
+set overwrite yes
+open "../songs/Stereo.rmt"
+
+save stereo.rmt
+save stereo.txt
+save stereo.rmw
+
+export stripped-rmt s1.rmt
+export asm s1.asm
+export sapr s1.sapr date="01/01/2026"
+export lzss s1.lzss
+# no sap/xex: this song's compressed stream does not fit the LZSS player's
+# memory ("LZSS data is too big to fit in memory" - both programs refuse it)
+export rmtplayer-asm s1_player.asm
+export wav s1.wav
+
+export stripped-rmt s2.rmt address=$4800 sfx=yes
+export asm s2.asm type=song prefix=ST
+export rmtplayer-asm s2_player.asm relocate=tracks asmformat=atasm
+echo stereo done

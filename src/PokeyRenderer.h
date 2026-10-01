@@ -28,6 +28,8 @@ public:
 
     // Called by WaveFileExporter
     void RenderSoundV2(int instrspeed, BYTE* buffer, int& length);
+    void RenderSoundV2Call(int instrspeed, BYTE* buffer, int& length); // one call of the driver: 1/instrspeed of a chunk
+    void ResetRenderCalls() { m_renderCallRest = 0; }                  // before a series of calls
 
 
 private:
@@ -54,6 +56,8 @@ private:
     DWORD m_WriteCursor = 0;
     DWORD m_WriteCursorStart = 0;
 
+    int RenderPartV2(int renderpartsize, BYTE* buffer);
+    int m_renderCallRest = 0; // the bytes RenderSoundV2Call() has not yet rendered of its chunks, times the instrument speed
     static int GetFrameRate(bool ntsc);
     static int GetCyclesPerFrame(bool ntsc);
 

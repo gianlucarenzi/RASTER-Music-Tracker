@@ -47,6 +47,7 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
     buffer = new BYTE[CXPokey::BUFFER_SIZE];
     memset(buffer, 0x80, bufferSize);
 
+    pokey.ResetRenderCalls();
     while (frames < pokeyStream.GetFirstCountPoint()) {
         // Copy the SAP-R bytes to memory for this frame
         streambuffer = pokeyStream.GetStreamBuffer() + frames * frameSize;
@@ -68,8 +69,9 @@ bool CWaveFileExporter::ExportWAV(CSongExport& songExport, std::ofstream& ou, CX
             memory[RMTPLAYR_V_AUDCTL2] = pokey2[8];
         }
 
-        // Fill the POKEY buffer with 1 rendered chunk
-        pokey.RenderSoundV2(songExport.GetSong().GetInstrumentSpeed(), buffer, length);
+        // Fill the POKEY buffer with the sound of this frame: one call of the driver, 1/instrument speed of a VBI
+        // (rendering a whole VBI for every frame made the WAV of a song at instrument speed 4 four times as long)
+        pokey.RenderSoundV2Call(songExport.GetSong().GetInstrumentSpeed(), buffer, length);
 
         // Write the buffer to WAV file
         wavefile.WriteWave(buffer, length);
