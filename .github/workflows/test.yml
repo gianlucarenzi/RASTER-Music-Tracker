@@ -1,0 +1,49 @@
+name: Test RMT on Linux
+
+# The Qt6 frontend built with the distribution's packages, then the checks that
+# need no display (Qt draws offscreen): the menu test of the frontend (every menu
+# item and toolbar button is triggered and has a handler) and the scripting tests
+# (scripts/test-scripting.sh: the reference scripts run twice and compared, the
+# exit codes, the structure of the SAP type B files).
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0              # the version comes from the nearest git tag
+
+      - name: Install the dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake g++ qt6-base-dev portaudio19-dev librtmidi-dev libgl1-mesa-dev python3
+
+      - name: Build
+        run: |
+          cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
+          cmake --build build-qt -j"$(nproc)"
+
+      - name: Menu test of the frontend
+        run: |
+          cd build-qt/out
+          RMT_QT_GRAB=/tmp/rmt-menu.png RMT_QT_MENU_TEST=1 QT_QPA_PLATFORM=offscreen ./rmt 2>&1 | tee /tmp/menu-test.log
+          grep -q "RMT_QT_MENU_TEST: PASS" /tmp/menu-test.log
+
+      - name: Scripting tests
+        run: scripts/test-scripting.sh build-qt/out/rmt
+
+      - name: Keep the outputs of a failed run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: /tmp/menu-test.log
