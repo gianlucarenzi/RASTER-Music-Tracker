@@ -469,7 +469,7 @@ void CSong::FileImport()
     SetChannelOnOff(-1, 1); // -1 = all, 1 = on
 
     // Initialise RMT routine
-    g_AtariTrackerDriver->Init();
+    ReInitSound();
 }
 
 /// <summary>
