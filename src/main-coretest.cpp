@@ -21,6 +21,7 @@
 #include "emu/PokeySound.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 extern CSong g_Song;
@@ -105,6 +106,8 @@ static int Screenshot(const char* out, int w, int h, const char* song)
 // the built-in POKEY
 static int PlaySong(const char* song, int frames, const char* regsOut, const char* wavOut)
 {
+    // RMT_DRIVER=1..7: the tracker driver of the Options dialog (TrackerDriverVersion)
+    if (const char* d = std::getenv("RMT_DRIVER")) g_trackerDriverVersion = (TrackerDriverVersion)std::atoi(d);
     g_Atari.Init(g_Song.IsNTSC());
     g_AtariTrackerDriver = new CAtariTrackerDriver(g_Atari);
     g_AtariTrackerDriver->LoadRMTRoutines(g_trackerDriverVersion);

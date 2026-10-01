@@ -216,6 +216,9 @@ void CSong::ClearSong(int numOfTracks)
     // Changes in the module
     g_changes = 0;
 
+    // The driver of the Options dialog again, after one chosen for the previous song only (see FileOpen)
+    if (g_AtariTrackerDriver->GetLoadedVersion() != g_trackerDriverVersion) g_AtariTrackerDriver->LoadRMTRoutines(g_trackerDriverVersion);
+
     // Initialise RMT routine, to clear anything leftover in Atari memory
     g_Atari.Init(IsNTSC());
     g_AtariTrackerDriver->Init();

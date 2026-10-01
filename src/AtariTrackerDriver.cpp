@@ -26,7 +26,18 @@ int CAtariTrackerDriver::LoadRMTRoutines(const TrackerDriverVersion trackerDrive
         return 0;
     }
 
+    m_loadedVersion = trackerDriverVersion;
     return CAtariIO::LoadDataAsBinaryFile(bin, size, m_atari->GetMemoryAt(0), min, max);
+}
+
+// Switch to another driver version when it is not the loaded one: load it, then the frequency tables of the tuning
+// and the driver init, as at the start of the program
+void CAtariTrackerDriver::UseVersion(const TrackerDriverVersion trackerDriverVersion, const bool ntsc)
+{
+    if (m_loadedVersion == trackerDriverVersion) return;
+    LoadRMTRoutines(trackerDriverVersion);
+    m_atari->Init(ntsc);
+    Init();
 }
 
 

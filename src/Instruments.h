@@ -21,6 +21,7 @@ public:
     void CheckInstrumentParameters(int instr);
     void RecalculateFlag(int instr);
     BOOL CalculateNotEmpty(int instr);
+    bool UsesAutofilter();
     void SetEnvelopeVolume(int instr, BOOL right, int px, int py);
     int GetFrequency(int instr, int note);
     int GetNote(int instr, int note);

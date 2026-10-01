@@ -208,6 +208,21 @@ BOOL CInstruments::CalculateNotEmpty(int instr)
 }
 
 /// <summary>
+/// Check if any instrument has the Autofilter (FILTER) set in its envelope.
+/// The Patch16 driver plays it differently from RMT 1.28 (see CSong::FileOpen).
+/// </summary>
+bool CInstruments::UsesAutofilter()
+{
+    for (int instr = 0; instr < INSTRSNUM; instr++) {
+        TInstrument* ti = GetInstrument(instr);
+        for (int i = 0; i <= ti->parameters[PAR_ENV_LENGTH]; i++) {
+            if (ti->envelope[i][ENV_FILTER]) return true;
+        }
+    }
+    return false;
+}
+
+/// <summary>
 /// Set the volume level for a channel
 /// </summary>
 /// <param name="instr">Instrument #</param>

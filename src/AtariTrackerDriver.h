@@ -10,6 +10,8 @@ public:
     CAtari* GetAtari();
 
     int LoadRMTRoutines(const TrackerDriverVersion trackerDriverVersion);
+    TrackerDriverVersion GetLoadedVersion() const { return m_loadedVersion; }
+    void UseVersion(const TrackerDriverVersion trackerDriverVersion, const bool ntsc);
     int Init();
     void Play();
     void SetPokey();
@@ -22,4 +24,5 @@ public:
 
 private:
     CAtari* m_atari;
+    TrackerDriverVersion m_loadedVersion = NONE;
 };

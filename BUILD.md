@@ -251,7 +251,10 @@ with `rmtplay`, with the same delay at the start and at the end (no drift).
 `RmtCoreTest --play song.rmt frames regs.txt [out.wav]` plays a song with the
 engine (one `CSong::TimerRoutine()` per frame), writes the POKEY registers of
 every frame and the sound of the built-in POKEY (see
-[Linux native core build](#linux-native-core-build)).
+[Linux native core build](#linux-native-core-build)). `RMT_DRIVER=1..7` chooses
+the tracker driver (the numbers of `TrackerDriverVersion.h`, default 6 = Patch16);
+without a window a message box answers Yes, so a song with the AUTOFILTER plays
+with the Unpatched driver when the driver is Patch16.
 
 ### How it works
 
