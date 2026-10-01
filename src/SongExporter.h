@@ -80,4 +80,10 @@ private:
     // A dumb SAP-R LZSS optimisations bruteforcer, returns the optimal value and buffer
     static int BruteforceOptimalLZSS(unsigned char* src, int srclen, unsigned char* dst);
     static bool ShowXEXExportDialog(const CSong& song, CXEXFile& xexFile);
+
+public:
+    // The 5 lines of 40 characters the XEX export dialog proposes (the last one used, else the song's data), and the
+    // text put into the XEX file (a line end starts the next line)
+    static CString DefaultXexText(const CXEXFile& xexFile);
+    static void SetXexText(CXEXFile& xexFile, const CString& text);
 };

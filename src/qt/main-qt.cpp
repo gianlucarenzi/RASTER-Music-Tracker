@@ -13,6 +13,7 @@
 #include "resource.h"
 
 #include "RmtQtFrontend.h"
+#include "ScriptRunner.h"
 
 #include <QApplication>
 #include <QDir>
@@ -20,14 +21,40 @@
 #include <QMenuBar>
 #include <QTimer>
 
+#include <filesystem>
+
 extern CSong g_Song;
 extern CAtari g_Atari;
 extern TTuningSettings g_tuning;
 extern TTuningRatios g_tuningRatios;
 extern CRmtMidi g_Midi;
 
+// rmt /SCRIPT:<file> (also -script:<file> and --script=<file>): runs an RMT script (doc/rmt_scripting.md) and exits
+// with its code instead of showing the window. Empty when the command line has none.
+static QString ScriptFileFromCommandLine(int argc, char** argv)
+{
+    static const char* prefixes[] = { "/script:", "-script:", "--script=" };
+    for (int i = 1; i < argc; i++) {
+        const QString arg = QString::fromLocal8Bit(argv[i]);
+        for (const char* prefix : prefixes) {
+            if (arg.startsWith(QLatin1String(prefix), Qt::CaseInsensitive)) {
+                return arg.mid((int)strlen(prefix));
+            }
+        }
+    }
+    return QString();
+}
+
 int main(int argc, char** argv)
 {
+    const QString scriptFile = ScriptFileFromCommandLine(argc, argv);
+    const bool showScriptWindow = qEnvironmentVariableIntValue("RMT_SCRIPT_SHOW_WINDOW") != 0;
+#ifdef Q_OS_LINUX
+    // A script needs no display: without one chosen, Qt draws into memory
+    if (!scriptFile.isEmpty() && !showScriptWindow && !qEnvironmentVariableIsSet("QT_QPA_PLATFORM")) {
+        qputenv("QT_QPA_PLATFORM", "offscreen");
+    }
+#endif
     // Qt6 scales by the fractional desktop DPI (Xft.dpi 106 -> 1.1), which
     // blurs the pixel-exact bitmaps; round it down to a whole factor like Qt5
     // did (1.5 -> 1, not 2: the 1280x800 window must still fit the screen).
@@ -54,6 +81,28 @@ int main(int argc, char** argv)
 
     RmtMainWindow window;
     window.resize(1280, 800);
+
+    if (!scriptFile.isEmpty()) {
+        // The window exists (the session needs it) but stays hidden, unless RMT_SCRIPT_SHOW_WINDOW=1 shows what the
+        // script does. The configuration (rmt.ini, tuning.ini) is read as for the window; it is not written back.
+        if (showScriptWindow) {
+            window.show();
+        }
+        g_rmtAudioOutput = false; // nothing is played, the exports render through the POKEY by themselves
+        window.Start(QString());
+        const CString scriptPath = CString(scriptFile.toLocal8Bit().constData());
+        AttachScriptConsole(scriptPath);
+        CScriptRunner runner(g_Song);
+        const QByteArray outputOverride = qgetenv("RMT_SCRIPT_OUTPUT"); // runs one script into several folders
+        if (!outputOverride.isEmpty()) {
+            runner.SetOutputFolder(std::filesystem::path(outputOverride.constData()));
+        }
+        const int code = runner.RunFile(scriptPath);
+        g_Song.StopTimer();
+        g_Midi.MidiOff();
+        return code;
+    }
+
     window.show();
     // test hook: RMT_QT_GRAB=file.png saves the window after 1 s and quits
     // (with QT_QPA_PLATFORM=offscreen it runs without a display; the delay is

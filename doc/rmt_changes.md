@@ -18,6 +18,22 @@ Changes in RMT 2.00 (Planned)
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
 Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
+- Scripting from the command line, as in the Windows program and the Java port of
+  RMT 1.36: `rmt /SCRIPT:<file>` runs a script (open, save, export in the eight
+  formats with the dialogs' options, set ntsc/driver/overwrite/output, midi,
+  dump notekeys, echo) without showing the window and exits with its code;
+  see doc/rmt_scripting.md and scripts/test-scripting.sh. The export dialogs
+  were split into the dialog and a dialog-independent "Apply" half
+  (ExportAsAsmApply, ExportAsRelocatableAsmForRmtPlayerApply,
+  ExportAsStrippedRMTApply, CSAPFile::ParseSubsongs, CSongExporter::DefaultXexText/SetXexText),
+  the message boxes of a script go to the console (ScriptMessages.cpp).
+- Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard
+  layout (the first start takes the layout from the keyboard language), the Pokey
+  Explorer in CPokeyController with the Pokey menu and positional keys, and bug fixes
+  (CFraction::operator==, DEFSONG line of the SAP files, RMW main parameters of 4
+  bytes, heap buffers for the LZSS exports, MIDI note off quantization, zeroed
+  instruments and POKEY renderer members, the dump of the registers leaves the
+  cursor and the play time unchanged).
 - The Qt frontend moved to Qt6 (6.8.3 in the packages of 2.1): CMake takes
   Qt6, or Qt 5.15 where Qt6 is not installed (-DRMT_QT_MAJOR=5|6 chooses).
   The GitHub builds use Qt6 on Linux (official Qt, aqtinstall), Windows

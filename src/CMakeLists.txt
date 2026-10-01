@@ -137,6 +137,9 @@ else()
         PokeyRenderer.cpp
         PokeyStream.cpp
         RuntimeException.cpp
+        Script.cpp
+        ScriptMessages.cpp
+        ScriptRunner.cpp
         SAPFile.cpp
         SAPFileExporter.cpp
         Shell.cpp
@@ -278,6 +281,9 @@ set(RMT_HEADERS
     RmtTest.h
     RmtView.h
     RuntimeException.h
+    Script.h
+    ScriptMessages.h
+    ScriptRunner.h
     SAPFile.h
     SAPFileExportDialog.h
     SAPFileExporter.h
@@ -653,6 +659,8 @@ if(RMT_CORE_TEST)
         PokeyRenderer.cpp
         PokeyStream.cpp
         RuntimeException.cpp
+        Script.cpp
+        ScriptMessages.cpp
         SAPFile.cpp
         SAPFileExporter.cpp
         Shell.cpp

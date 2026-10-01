@@ -40,6 +40,15 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
     // Save for future ASM exports
     g_PrefixForAllAsmLabels = dlg.m_prefixForAllAsmLabels;
 
+    return ExportAsAsmApply(song, ou, dlg.m_exportType, dlg.m_notesIndexOrFreq, dlg.m_durationsType);
+}
+
+/// <summary>
+/// The dialog-independent half of ExportAsAsm(): the dialog's answers as parameters
+/// (exportType 1 = tracks, 2 = whole song; the label prefix is g_PrefixForAllAsmLabels).
+/// </summary>
+bool CASMFileExporter::ExportAsAsmApply(const CSong& song, std::ofstream& ou, int exportType, int notesIndexOrFreq, int durationsType)
+{
     CString s, snot;
     int maxova = 16; // maximal amount of data per line
 
@@ -56,7 +65,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
         ou << CASMFile::EOL << s;
     }
     //
-    if (dlg.m_exportType == 1 /* Tracks only*/) {
+    if (exportType == 1 /* Tracks only*/) {
         // Tracks
         int j, note, dur, instrumentNr;
         for (int trackNr = 0; trackNr < TRACKSNUM; trackNr++) {
@@ -84,7 +93,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                 note = tempTrack.note[idx];
                 if (note >= 0) {
                     instrumentNr = tempTrack.instr[idx];
-                    if (dlg.m_notesIndexOrFreq == 1) //notes
+                    if (notesIndexOrFreq == 1) //notes
                         note = g_Instruments.GetNote(instrumentNr, note);
                     else //frequencies
                         note = g_Instruments.GetFrequency(instrumentNr, note);
@@ -95,7 +104,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                     snot = "XXX";
                 for (dur = 1; idx + dur < tempTrack.len && tempTrack.note[idx + dur] < 0; dur++)
                     ;
-                if (dlg.m_durationsType == 1 /* Notes only */) {
+                if (durationsType == 1 /* Notes only */) {
                     if (ova > 0) ou << ",";
                     ou << snot;
                     ova++;
@@ -106,12 +115,12 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                         } else
                             ou << ",XXX";
                     }
-                } else if (dlg.m_durationsType == 2 /* Note, duration */) {
+                } else if (durationsType == 2 /* Note, duration */) {
                     if (ova > 0) ou << ",";
                     ou << snot;
                     ou << "," << dur;
                     ova += 2;
-                } else if (dlg.m_durationsType == 3 /* Duration, Note */) {
+                } else if (durationsType == 3 /* Duration, Note */) {
                     if (ova > 0) ou << ",";
                     ou << dur << ",";
                     ou << snot;
@@ -120,7 +129,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                 idx += dur - 1;
             }
         }
-    } else if (dlg.m_exportType == 2 /* Whole song */) {
+    } else if (exportType == 2 /* Whole song */) {
         // song columns
         int clm;
         for (clm = 0; clm < song.GetTracks(); clm++) {
@@ -161,7 +170,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                         s.Format("%s_column%s_line%02X", g_PrefixForAllAsmLabels, cnames[clm], sline);
                         ou << CASMFile::EOL << s;
                     }
-                    if (dlg.m_durationsType == 1) {
+                    if (durationsType == 1) {
                         for (i = 0; i < trackslen; i++, ova++) {
                             if (ova >= maxova) {
                                 ova = 0;
@@ -169,11 +178,11 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                             } else
                                 ou << ",XXX";
                         }
-                    } else if (dlg.m_durationsType == 2) {
+                    } else if (durationsType == 2) {
                         ou << CASMFile::EOL << "\tdta XXX,";
                         ou << trackslen;
                         ova += 2;
-                    } else if (dlg.m_durationsType == 3) {
+                    } else if (durationsType == 3) {
                         ou << CASMFile::EOL << "\tdta ";
                         ou << trackslen << ",XXX";
                         ova += 2;
@@ -201,7 +210,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                     anot = tempTrack.note[i];
                     if (anot >= 0) {
                         ins = tempTrack.instr[i];
-                        if (dlg.m_notesIndexOrFreq == 1) //notes
+                        if (notesIndexOrFreq == 1) //notes
                             anot = g_Instruments.GetNote(ins, anot);
                         else //frequencies
                             anot = g_Instruments.GetFrequency(ins, anot);
@@ -212,7 +221,7 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                         snot = "XXX";
                     for (dur = 1; i + dur < trackslen && tempTrack.note[i + dur] < 0; dur++)
                         ;
-                    if (dlg.m_durationsType == 1) {
+                    if (durationsType == 1) {
                         if (ova > 0) ou << ",";
                         ou << snot;
                         ova++;
@@ -223,12 +232,12 @@ bool CASMFileExporter::ExportAsAsm(const CSong& song, std::ofstream& ou, TExport
                             } else
                                 ou << ",XXX";
                         }
-                    } else if (dlg.m_durationsType == 2) {
+                    } else if (durationsType == 2) {
                         if (ova > 0) ou << ",";
                         ou << snot;
                         ou << "," << dur;
                         ova += 2;
-                    } else if (dlg.m_durationsType == 3) {
+                    } else if (durationsType == 3) {
                         if (ova > 0) ou << ",";
                         ou << dur << ",";
                         ou << snot;
@@ -290,6 +299,27 @@ bool CASMFileExporter::ExportAsRelocatableAsmForRmtPlayer(CSong& song, std::ofst
     g_rmtstripped_gvf = dlg.m_globalVolumeFade;
     g_rmtstripped_nos = dlg.m_noStartingSongLine;
 
+    TRelocatableAsmExportParams params;
+    params.strAsmLabelForStartOfSong = dlg.m_strAsmLabelForStartOfSong;
+    params.wantRelocatableInstruments = dlg.m_wantRelocatableInstruments;
+    params.wantRelocatableTracks = dlg.m_wantRelocatableTracks;
+    params.wantRelocatableSongLines = dlg.m_wantRelocatableSongLines;
+    params.strAsmInstrumentsLabel = dlg.m_strAsmInstrumentsLabel;
+    params.strAsmTracksLabel = dlg.m_strAsmTracksLabel;
+    params.strAsmSongLinesLabel = dlg.m_strAsmSongLinesLabel;
+    params.assemblerFormat = dlg.m_assemblerFormat;
+    params.sfxSupport = dlg.m_sfxSupport;
+    params.globalVolumeFade = dlg.m_globalVolumeFade;
+    params.noStartingSongLine = dlg.m_noStartingSongLine;
+    return ExportAsRelocatableAsmForRmtPlayerApply(song, ou, exportDescStripped, &exportDescWithSFX, params);
+}
+
+/// <summary>
+/// The dialog-independent half of ExportAsRelocatableAsmForRmtPlayer(): the dialog's answers as parameters.
+/// exportDescWithSFX is the module including the unused instruments and tracks.
+/// </summary>
+bool CASMFileExporter::ExportAsRelocatableAsmForRmtPlayerApply(CSong& song, std::ofstream& ou, TExportDescription* exportDescStripped, TExportDescription* exportDescWithSFX, const TRelocatableAsmExportParams& p)
+{
     // Which one is to be exported?
     // Full or stripped down version (names are never exported)
     CString strAsmForModule;
@@ -297,15 +327,15 @@ bool CASMFileExporter::ExportAsRelocatableAsmForRmtPlayer(CSong& song, std::ofst
     BOOL isGood = BuildRelocatableAsm(
         song,
         strAsmForModule,
-        dlg.m_sfxSupport ? &exportDescWithSFX : exportDescStripped,
-        dlg.m_strAsmLabelForStartOfSong,
-        dlg.m_wantRelocatableTracks ? dlg.m_strAsmTracksLabel : (CString) "",
-        dlg.m_wantRelocatableSongLines ? dlg.m_strAsmSongLinesLabel : (CString) "",
-        dlg.m_wantRelocatableInstruments ? dlg.m_strAsmInstrumentsLabel : (CString) "",
-        dlg.m_assemblerFormat,
-        dlg.m_sfxSupport,
-        dlg.m_globalVolumeFade,
-        dlg.m_noStartingSongLine,
+        p.sfxSupport ? exportDescWithSFX : exportDescStripped,
+        p.strAsmLabelForStartOfSong,
+        p.wantRelocatableTracks ? p.strAsmTracksLabel : (CString) "",
+        p.wantRelocatableSongLines ? p.strAsmSongLinesLabel : (CString) "",
+        p.wantRelocatableInstruments ? p.strAsmInstrumentsLabel : (CString) "",
+        p.assemblerFormat,
+        p.sfxSupport,
+        p.globalVolumeFade,
+        p.noStartingSongLine,
         false);
 
     if (!isGood)

@@ -43,7 +43,7 @@ public:
 
     void ClearSong(int numoftracks);
 
-    void MidiEvent(DWORD dwParam);
+    void MidiEvent(DWORD dwParam, bool hasFocus); // hasFocus: g_RmtHasFocus from the MIDI callback, true from a script (the recording needs the focused window or a jam mode)
 
     void DrawSong(); // Draw the song line info on the right
     void DrawTracks();
@@ -238,6 +238,8 @@ public:
     static bool ExportV2(CSong& song, std::ofstream& ou, SongIOType iotype, LPCTSTR filename = NULL);
     static bool ExportAsRMT(CSong& song, std::ofstream& ou, TExportDescription* exportDesc);
     static bool ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescription* exportDesc, LPCTSTR filename);
+    // The dialog-independent half: the module at targetAddrOfModule, with or without the unused instruments and tracks (SFX support)
+    static bool ExportAsStrippedRMTApply(CSong& song, std::ofstream& ou, int targetAddrOfModule, BOOL sfxSupport);
 
     void DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, int songline, int trackline);
 
@@ -296,6 +298,14 @@ public:
 
     CString GetFilename() { return m_filename; };
     SongIOType GetIOType() { return m_ioType; };
+
+    // For the script runner: the file FileSave() writes, and the last export format (as the dialogs set them)
+    void SetLoadedFile(const CString& filename, SongIOType ioType)
+    {
+        m_filename = filename;
+        m_ioType = ioType;
+    };
+    void SetLastExportIOType(SongIOType ioType) { m_lastExportIOType = ioType; };
 
     int (*GetSong())[SONGLEN][SONGTRACKS] { return &m_song; };
     int (*GetSongGo())[SONGLEN] { return &m_songgo; };

@@ -41,6 +41,8 @@ public:
     void SetPlayerAddress(MemoryAddress player);
 
     void Init(const CSong& song);
+    // The number of subsongs in a "Subsongs" line of hex songline numbers separated by blanks
+    static int ParseSubsongs(const CString& subsongs);
     void Normalize();
     void Export(std::ofstream& ou); // Not const, because it calls Normalize
 

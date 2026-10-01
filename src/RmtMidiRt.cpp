@@ -53,7 +53,7 @@ static void MidiInCallback(double, std::vector<unsigned char>* message, void*)
     if (!message || message->empty() || message->size() > 3) return;
     DWORD data = 0;
     for (size_t i = 0; i < message->size(); i++) data |= (DWORD)(*message)[i] << (8 * i);
-    g_Song.MidiEvent(data);
+    g_Song.MidiEvent(data, g_RmtHasFocus != 0);
 }
 
 #else

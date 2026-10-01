@@ -60,17 +60,24 @@ bool CSong::ExportAsStrippedRMT(CSong& song, std::ofstream& ou, TExportDescripti
     g_rmtstripped_nos = dlg.m_noStartingSongLine;
     g_AsmFormat = dlg.m_assemblerFormat;
 
-    // Now we can regenerate the RMT module with the selected configuration
-    // - known start address
-    // - know if we want to strip out unused instruments and tracks => RMTSTRIPPED : RMT
-    memset(&exportTempDescription, 0, sizeof(TExportDescription));       // Clear it all again
-    exportTempDescription.targetAddrOfModule = g_rmtstripped_adr_module; // Standard RMT modules are set to start @ $4000
+    return ExportAsStrippedRMTApply(song, ou, g_rmtstripped_adr_module, g_rmtstripped_sfx);
+}
+
+/// <summary>
+/// The dialog-independent half of ExportAsStrippedRMT(): regenerates the RMT module with the confirmed
+/// target address and saves it - with the unused instruments and tracks stripped out when SFX support is on.
+/// </summary>
+bool CSong::ExportAsStrippedRMTApply(CSong& song, std::ofstream& ou, int targetAddrOfModule, BOOL sfxSupport)
+{
+    TExportDescription exportTempDescription;
+    memset(&exportTempDescription, 0, sizeof(TExportDescription));
+    exportTempDescription.targetAddrOfModule = targetAddrOfModule;
 
     exportTempDescription.firstByteAfterModule =
         song.MakeModule(
             exportTempDescription.mem,
             exportTempDescription.targetAddrOfModule,
-            g_rmtstripped_sfx ? SongIOType::RMTSTRIPPED : SongIOType::RMT,
+            sfxSupport ? SongIOType::RMTSTRIPPED : SongIOType::RMT,
             exportTempDescription.instrumentSavedFlags,
             exportTempDescription.trackSavedFlags);
     if (exportTempDescription.firstByteAfterModule < 0) {

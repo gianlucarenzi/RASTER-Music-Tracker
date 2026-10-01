@@ -10,6 +10,7 @@
 #include "Song.h"
 
 #include "RmtQtFrontend.h"
+#include "ScriptMessages.h"
 #include "RmtQtKeys.h"
 #include "RmtQtDialogs.h"
 
@@ -666,6 +667,10 @@ public:
 
     int MessageBox(const char* text, const char* caption, UINT type) override
     {
+        int scriptAnswer = IDOK;
+        if (ScriptMessageBox(text, caption, type, scriptAnswer)) { // rmt /SCRIPT: the console takes the box's place
+            return scriptAnswer;
+        }
         if (!qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) { // test run: no modal dialogs
             qWarning("[MessageBox] %s: %s", caption ? caption : "", text ? text : "");
             return (type & 0x0F) == MB_YESNO || (type & 0x0F) == MB_YESNOCANCEL ? IDNO : IDOK;

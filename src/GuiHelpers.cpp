@@ -2,6 +2,7 @@
 #include "General.h"
 
 #include "GuiHelpers.h"
+#include "ScriptMessages.h"
 
 #include "Global.h"
 
@@ -38,6 +39,10 @@ void SendErrorMessage(const char* message)
 
 void SendErrorMessage(const char* title, const char* message)
 {
+    int scriptAnswer = IDOK;
+    if (ScriptMessageBox(message, title, MB_ICONERROR, scriptAnswer)) { // rmt /SCRIPT: to the console
+        return;
+    }
     if (g_statusBar == nullptr) {
         OutputDebugString("ERROR: ");
         if (title) {

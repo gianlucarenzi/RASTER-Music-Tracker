@@ -452,10 +452,11 @@ static INT_PTR RunExportStrippedRmt(QWidget* parent, CExportStrippedRMTDialog* d
 
 // IDD_EXPMSX - CExpMSXDlg (XEX with the LZSS driver); the options are kept
 // for the next export like g_msxcheck, g_msx_shuffle, g_region_auto, g_msxcol
-static bool s_msxRasterbar = true;
-static bool s_msxShuffle = true;
-static bool s_msxRegionAuto = true;
-static int s_msxColor = 6;
+// (also set by the script command "export xex", ScriptRunner.cpp)
+BOOL g_msxcheck = 1;
+BOOL g_msx_shuffle = 1;
+BOOL g_region_auto = 1;
+int g_msxcol = 6;
 
 static INT_PTR RunExportXex(QWidget* parent, CExpMSXDlg* dlg)
 {
@@ -489,8 +490,8 @@ static INT_PTR RunExportXex(QWidget* parent, CExpMSXDlg* dlg)
 
     auto* rasterbar = new QCheckBox("Display rasterbar for CPU usage");
     auto* shuffle = new QCheckBox("Shuffle the rasterbar colors");
-    rasterbar->setChecked(s_msxRasterbar);
-    shuffle->setChecked(s_msxShuffle);
+    rasterbar->setChecked(g_msxcheck != 0);
+    shuffle->setChecked(g_msx_shuffle != 0);
     auto* checkRow = new QHBoxLayout;
     checkRow->addWidget(rasterbar);
     checkRow->addWidget(shuffle);
@@ -499,7 +500,7 @@ static INT_PTR RunExportXex(QWidget* parent, CExpMSXDlg* dlg)
     auto* color = new QScrollBar(Qt::Horizontal);
     color->setRange(1, 127);
     color->setPageStep(8);
-    color->setValue(s_msxColor / 2);
+    color->setValue(g_msxcol / 2);
     auto* colorInfo = new QLabel;
     colorInfo->setMinimumWidth(160);
     auto* colorRow = new QHBoxLayout;
@@ -510,15 +511,15 @@ static INT_PTR RunExportXex(QWidget* parent, CExpMSXDlg* dlg)
 
     layout->addWidget(new QLabel(FromCString(dlg->m_speedinfo)));
     auto* regionAuto = new QCheckBox("Automatically adjust playback speed");
-    regionAuto->setChecked(s_msxRegionAuto);
+    regionAuto->setChecked(g_region_auto != 0);
     layout->addWidget(regionAuto);
 
     // CExpMSXDlg::OnHScroll(): the color is 2 x the scroll position
     auto changeColor = [&](int c) {
         static const char* bar[] = { "Gray", "Rust", "Orange", "Red-orange", "Pink", "Purple", "Cobalt blue", "Blue",
                                      "Medium blue", "Dark blue", "Blue-grey", "Olive green", "Medium green", "Dark green", "Orange-green", "Brown" };
-        s_msxColor = c * 2;
-        colorInfo->setText(QString::asprintf("%i = %s %i", s_msxColor, bar[s_msxColor / 16], s_msxColor % 16));
+        g_msxcol = c * 2;
+        colorInfo->setText(QString::asprintf("%i = %s %i", g_msxcol, bar[g_msxcol / 16], g_msxcol % 16));
     };
     QObject::connect(color, &QScrollBar::valueChanged, &dialog, changeColor);
     changeColor(color->value());
@@ -561,10 +562,10 @@ static INT_PTR RunExportXex(QWidget* parent, CExpMSXDlg* dlg)
     if (!ExecDialog(dialog, [buttons] { ClickOk(buttons); })) return IDCANCEL;
 
     // CExpMSXDlg::OnOK() and its DDX
-    dlg->m_metercolor = s_msxColor;
-    s_msxShuffle = shuffle->isChecked();
-    s_msxRegionAuto = regionAuto->isChecked();
-    s_msxRasterbar = rasterbar->isChecked();
+    dlg->m_metercolor = g_msxcol;
+    g_msx_shuffle = shuffle->isChecked();
+    g_region_auto = regionAuto->isChecked();
+    g_msxcheck = rasterbar->isChecked();
     dlg->m_meter = rasterbar->isChecked();
     dlg->m_msx_shuffle = shuffle->isChecked();
     dlg->m_region_auto = regionAuto->isChecked();

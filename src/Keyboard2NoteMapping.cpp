@@ -4,6 +4,10 @@
 
 #include "General.h"
 
+#include "Notes.h"
+
+#include <cstdio>
+#include <string>
 #include <vector>
 
 
@@ -204,7 +208,124 @@ std::vector<int> StripIsoKey(const std::vector<int>& row)
 {
     return (!row.empty() && row[0] == 0xE2) ? std::vector<int>(row.begin() + 1, row.end()) : row;
 }
+// The legend of a virtual key as the keyboard of the layout prints it: the
+// letters are the same physical keys in both layouts; the number row of the
+// French AZERTY keyboard prints & é " ' ( - è _ ç à (the digits are its
+// Shift level), and the OEM keys differ.
+std::string KeyLegend(int vk, KeyboardLayout layout)
+{
+    bool azerty = layout == KeyboardLayout::AZERTY;
+    bool qwertz = layout == KeyboardLayout::QWERTZ; // the German keyboard: ü + ö ä # ß ´ ^ -
+    if (vk >= '0' && vk <= '9') {
+        static const char* azertyDigits[10] = { "\xC3\xA0", "&", "\xC3\xA9", "\"", "'", "(", "-", "\xC3\xA8", "_", "\xC3\xA7" }; // à & é " ' ( - è _ ç
+        return azerty ? azertyDigits[vk - '0'] : std::string(1, (char)vk);
+    }
+    if (vk >= 'A' && vk <= 'Z') {
+        return std::string(1, (char)vk);
+    }
+    switch (vk) {
+        case 0xBA: return azerty ? "$" : qwertz ? "\xC3\xBC"
+                                                : ";"; // VK_OEM_1 (u umlaut, UTF-8)
+        case 0xBB: return qwertz ? "+" : "=";          // VK_OEM_PLUS
+        case 0xBC: return ",";                         // VK_OEM_COMMA
+        case 0xBD: return "-";                         // VK_OEM_MINUS
+        case 0xBE: return azerty ? ";" : ".";          // VK_OEM_PERIOD
+        case 0xBF: return azerty ? ":" : qwertz ? "#"
+                                                : "/"; // VK_OEM_2
+        case 0xC0: return azerty ? "\xC3\xB9" : qwertz ? "\xC3\xB6"
+                                                       : "`"; // VK_OEM_3 (u with grave accent / o umlaut, UTF-8)
+        case 0xDB: return azerty ? ")" : qwertz ? "\xC3\x9F"
+                                                : "["; // VK_OEM_4 (sharp s, UTF-8)
+        case 0xDC: return azerty ? "*" : qwertz ? "^"
+                                                : "\\"; // VK_OEM_5
+        case 0xDD: return azerty ? "^" : qwertz ? "\xC2\xB4"
+                                                : "]"; // VK_OEM_6 (acute accent, UTF-8)
+        case 0xDE: return azerty ? "\xC2\xB2" : qwertz ? "\xC3\xA4"
+                                                       : "'"; // VK_OEM_7 (superscript two / a umlaut, UTF-8)
+        case 0xDF: return "!";                                // VK_OEM_8
+        case 0xE2: return "<";                                // VK_OEM_102
+        default:
+            break;
+    }
+    char buffer[16];
+    snprintf(buffer, sizeof(buffer), "VK_%02X", vk);
+    return buffer;
+}
+
+// A UTF-8 string padded with blanks to width columns (one column per code point).
+std::string Pad(const std::string& s, size_t width)
+{
+    size_t columns = 0;
+    for (unsigned char c : s) {
+        if ((c & 0xC0) != 0x80) {
+            columns++;
+        }
+    }
+    return columns < width ? s + std::string(width - columns, ' ') : s;
+}
+
+// The keyboard as a picture: per row a line of key legends and a line with
+// the note each key plays, the rows staggered as on a keyboard.
+void AppendKeyboard(std::string& out, const unsigned char* table, KeyboardLayout layout)
+{
+    const auto& rows = KeyboardRows(layout);
+    out += "```\n";
+    for (size_t r = 0; r < rows.size(); r++) {
+        std::string keys(r * 2, ' ');
+        std::string notes(r * 2, ' ');
+        for (int vk : rows[r]) {
+            keys += Pad(" " + KeyLegend(vk, layout), 5);
+            notes += Pad(table[vk] != 0xFF ? CNotes::GetNote(table[vk]) : "", 5);
+        }
+        while (!keys.empty() && keys.back() == ' ') {
+            keys.pop_back();
+        }
+        while (!notes.empty() && notes.back() == ' ') {
+            notes.pop_back();
+        }
+        out += keys + "\n" + notes + "\n";
+    }
+    out += "```\n\n";
+}
+
+void AppendLayout(std::string& out, const char* name, const unsigned char* table, KeyboardLayout layout)
+{
+    out += "### ";
+    out += name;
+    out += "\n\n";
+    AppendKeyboard(out, table, layout);
+    out += "| Note | Keys |\n|---|---|\n";
+    for (int note = 0; note < CNotes::NOTESNUM; note++) {
+        std::string keys;
+        for (int vk = 0; vk < 256; vk++) {
+            if (table[vk] == note) {
+                if (!keys.empty()) {
+                    keys += ", ";
+                }
+                keys += "`" + KeyLegend(vk, layout) + "`";
+            }
+        }
+        if (!keys.empty()) {
+            out += "| ";
+            out += CNotes::GetNote(note);
+            out += " | " + keys + " |\n";
+        }
+    }
+}
 } // namespace
+
+std::string NoteKeysTable()
+{
+    std::string out;
+    // The order the Options dialog offers the layouts in (the Java port's
+    // KeyboardLayout sort key, 2026-10-01) - both programs write the same file.
+    AppendLayout(out, "QWERTY", keynotes_QWERTY, KeyboardLayout::QWERTY);
+    out += "\n";
+    AppendLayout(out, "QWERTZ", keynotes_QWERTZ, KeyboardLayout::QWERTZ);
+    out += "\n";
+    AppendLayout(out, "AZERTY", keynotes_AZERTY, KeyboardLayout::AZERTY);
+    return out;
+}
 
 int ToQwertyPosition(int vk, KeyboardLayout layout)
 {

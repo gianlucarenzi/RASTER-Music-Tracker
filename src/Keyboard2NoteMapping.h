@@ -2,6 +2,8 @@
 
 #include "General.h" // KeyboardLayout
 
+#include <string>
+
 extern char NoteKey(int vk);
 extern char NumbKey(int vk);
 extern char Numblock09Key(int vk);
@@ -10,3 +12,8 @@ extern char Numblock09Key(int vk);
 // mean a position (the Pokey Explorer's): the three letter rows, the ISO key
 // discounted; + and - (0xBB/0xBD) and everything else stay themselves.
 extern int ToQwertyPosition(int vk, KeyboardLayout layout);
+
+// The note keys of the three layouts as a Markdown document ("### QWERTY", a
+// keyboard picture, a Note/Keys table, "### QWERTZ", ...) - written by the
+// script command "dump notekeys <file>".
+extern std::string NoteKeysTable();

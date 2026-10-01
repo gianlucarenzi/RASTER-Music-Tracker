@@ -13,7 +13,7 @@ extern CXPokey g_Pokey;
 extern CRmtMidi g_Midi;
 extern CAtariTrackerDriver* g_AtariTrackerDriver;
 
-void CSong::MidiEvent(DWORD dwParam)
+void CSong::MidiEvent(DWORD dwParam, bool hasFocus)
 {
     auto memory = g_AtariTrackerDriver->GetAtari()->GetMemoryAt(0);
     unsigned char chn, cmd, pr1, pr2;
@@ -85,7 +85,7 @@ void CSong::MidiEvent(DWORD dwParam)
         return; //END
     }
 
-    if (!g_RmtHasFocus && !g_prove) return; //when it has no focus and is not in prove mode, the MIDI input will be ignored, to avoid overwriting patterns accidentally
+    if (!hasFocus && !g_prove) return; //when it has no focus and is not in prove mode, the MIDI input will be ignored, to avoid overwriting patterns accidentally
 
     //test input from my own MIDI controller. CH15 for most events input, and CH9 specifically for the drumpad buttons, used for certain shortcuts triggered with MIDI NOTE ON events
     if (chn == 15 || chn == 9) {
