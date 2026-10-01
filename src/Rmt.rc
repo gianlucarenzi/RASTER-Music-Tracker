@@ -1274,8 +1274,8 @@ BEGIN
         MENUITEM "Cu&t",                                 ID_TRACK_CUT
         MENUITEM "&Delete",                              ID_TRACK_DELETE
         MENUITEM SEPARATOR
-        MENUITEM "Increase Step Size\tCtrl+Num +",            ID_SONG_INCREASE_PATTERN_STEP_SIZE
-        MENUITEM "Decrease Step Size\tCtrl+Num -",            ID_SONG_DECREASE_PATTERN_STEP_SIZE
+        MENUITEM "Increase Step Size\tNum +",            ID_SONG_INCREASE_PATTERN_STEP_SIZE
+        MENUITEM "Decrease Step Size\tNum -",            ID_SONG_DECREASE_PATTERN_STEP_SIZE
         MENUITEM SEPARATOR
         MENUITEM "&Info about current track...",         ID_TRACK_INFOABOUTUSINGOFACTUALTRACK
         MENUITEM "Search and &build wise loop",          ID_TRACK_SEARCHANDBUILDLOOP
@@ -1436,9 +1436,9 @@ END
 
 IDR_MAINFRAME ACCELERATORS
 BEGIN
-    // Not in the table: Esc, Ctrl+Space and Ctrl+Num + / Ctrl+Num - are handled by CRmtView::OnKeyDown, which
-    // passes them on to the part being edited (cancel a text edit; the numeric keypad's keys are note and value
-    // keys there). Their menu items show the keys.
+    // Not in the table: Esc and Ctrl+Space are handled by CRmtView::OnKeyDown, which passes them on to the part being
+    // edited (cancel a text edit). Their menu items show the keys. The Qt frontend leaves the keypad's Num + and Num -
+    // to OnKeyDown too (Qt does not tell the keypad's keys from the others in a shortcut).
     "1", ID_CHANNELS_CHANNEL1, VIRTKEY, CONTROL, NOINVERT
     "2", ID_CHANNELS_CHANNEL2, VIRTKEY, CONTROL, NOINVERT
     "3", ID_CHANNELS_CHANNEL3, VIRTKEY, CONTROL, NOINVERT
@@ -1468,6 +1468,8 @@ BEGIN
     VK_F2, ID_EM_TRACKS, VIRTKEY, NOINVERT
     VK_F8, ID_SONG_CLEAR_BOOKMARK, VIRTKEY, CONTROL, NOINVERT
     VK_F12, ID_PLAYFOLLOW, VIRTKEY, NOINVERT
+    VK_SUBTRACT, ID_SONG_DECREASE_PATTERN_STEP_SIZE, VIRTKEY, NOINVERT
+    VK_ADD, ID_SONG_INCREASE_PATTERN_STEP_SIZE, VIRTKEY, NOINVERT
     VK_F7, ID_PLAY0, VIRTKEY, SHIFT, NOINVERT
     VK_F7, ID_PLAY2, VIRTKEY, NOINVERT
     VK_F6, ID_PLAY3, VIRTKEY, NOINVERT
@@ -1528,8 +1530,8 @@ BEGIN
     ID_CHANNELS_TOGGLE_ALL_CHANNELS_ON_OFF  "Mute / Unmute all channels\nMute/Unmute All Channels (Shift+F9)"
     ID_EDIT_ACTIVATE_POKEY_EXPLORER_MODE    "Activate POKEY Explorer Mode\nActivate Pokey Explorer Mode (Ctrl+Shift+F5)"
     ID_SONG_CLEAR_BOOKMARK                  "Clear the bookmark in the current song line\nClear Bookmark (Ctrl+F8)"
-    ID_SONG_DECREASE_PATTERN_STEP_SIZE      "Decrease the pattern step size\nDecrease Step Size (Ctrl+Num -)"
-    ID_SONG_INCREASE_PATTERN_STEP_SIZE      "Increase the pattern step size\nIncrease Step Size (Ctrl+Num +)"
+    ID_SONG_DECREASE_PATTERN_STEP_SIZE      "Decrease the pattern step size\nDecrease Step Size (Num -)"
+    ID_SONG_INCREASE_PATTERN_STEP_SIZE      "Increase the pattern step size\nIncrease Step Size (Num +)"
     ID_SONG_SET_BOOKMARK                    "Set a bookmark in the current song line\nSet Bookmark (F8)"
     ID_SONG_TOGGLE_NTSC                     "Toggle NTSC/PAL\nToggle NTSC/PAL (Ctrl+F12)"
     ID_TOOLS_OPEN_ASAP_FILE                 "Open an .SAP or other Atari Sound Module File"

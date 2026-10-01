@@ -1636,15 +1636,15 @@ void CRmtView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
             goto AllModesDefaultKey;
             break;
 
-        case VK_SUBTRACT:
-            if (g_controlkey && !g_shiftkey) {
+        case VK_SUBTRACT: // the step size; with CONTROL or SHIFT the volume of the new notes (the editing parts)
+            if (!g_controlkey && !g_shiftkey) {
                 OnSongDecreasePatternStepSize();
             } else
                 goto AllModesDefaultKey;
             break;
 
         case VK_ADD:
-            if (g_controlkey && !g_shiftkey) {
+            if (!g_controlkey && !g_shiftkey) {
                 OnSongIncreasePatternStepSize();
             } else
                 goto AllModesDefaultKey;

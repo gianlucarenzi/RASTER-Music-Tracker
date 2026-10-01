@@ -51,8 +51,9 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   the one place to change a menu or a key. The shortcuts belong to the main window (the dialogs on top of it keep their own
   keys). New commands: Channels 1-8 (Ctrl+1-8, checked while they play), Mute/Unmute Active Channel (F9), All Channels
   (Shift+F9), Solo (Ctrl+F9), Set and Clear Bookmark (F8, Ctrl+F8), Toggle NTSC/PAL (Ctrl+F12), Activate Pokey
-  Explorer Mode (Ctrl+Shift+F5), Increase and Decrease Step Size (Ctrl+Num + / Ctrl+Num -), Open ASMA, Run Script.
-  Esc, Ctrl+Space and Ctrl+Num +/- stay keys of the editing code (they go on to the part being edited). Ctrl+S asks
+  Explorer Mode (Ctrl+Shift+F5), Increase and Decrease Step Size (Num + / Num -; the volume of the new notes moves to Ctrl+Num +/- and
+  Shift+Num +/-, as in 1.36), Open ASMA, Run Script. Esc, Ctrl+Space and the keypad's + and - stay keys of the editing code
+  (they go on to the part being edited). Ctrl+S asks
   whether to overwrite also from the menu and the toolbar now (the option "Prompt a save dialog each time CTRL+S is
   pressed" was only honoured by the key handler, which the menu shortcut bypassed).
 - Ported from the 1.36 development of the Windows/Java repository: QWERTZ keyboard

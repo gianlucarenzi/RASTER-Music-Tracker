@@ -82,8 +82,8 @@
 | Menu Track | Paste |  |  |
 | Menu Track | Cut |  |  |
 | Menu Track | Delete |  |  |
-| Menu Track | Increase Step Size | `Ctrl+Num +` | Increase the pattern step size |
-| Menu Track | Decrease Step Size | `Ctrl+Num -` | Decrease the pattern step size |
+| Menu Track | Increase Step Size | `Num +` | Increase the pattern step size |
+| Menu Track | Decrease Step Size | `Num -` | Decrease the pattern step size |
 | Menu Track | Info about current track... |  |  |
 | Menu Track | Search and build wise loop |  |  |
 | Menu Track | Expand loop |  |  |

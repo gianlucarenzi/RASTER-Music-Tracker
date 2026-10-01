@@ -18,3 +18,25 @@ dump actions $PWD/doc/rmt_action_infos.md
 dump notekeys $PWD/doc/rmt_note_keys.md
 SCRIPT
 "$RMT" "/SCRIPT:$WORK/docs.rmtscript"
+
+# The manual: doc/rmt_en.md with the generated tables included, as HTML (doc/rmt_en.html), when pandoc is there
+if command -v pandoc >/dev/null; then
+    awk -v dir=doc '
+        /^<!-- include: .* -->$/ { f = $3; while ((getline line < (dir "/" f)) > 0) print line; close(dir "/" f); next }
+        { print }' doc/rmt_en.md >"$WORK/rmt_en.md"
+    cat >"$WORK/style.html" <<'STYLE'
+<style>
+body { font-family: sans-serif; max-width: 62em; margin: 1em auto; padding: 0 1em; }
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { border: 1px solid #c0c0c0; padding: 0.2em 0.5em; vertical-align: top; }
+th { background: #e0e0e0; }
+code { background: #f0f0f0; }
+pre { background: #f0f0f0; padding: 0.5em; overflow-x: auto; }
+img { max-width: 100%; }
+</style>
+STYLE
+    pandoc -f gfm -t html5 -s --metadata title="RASTER Music Tracker (RMT) - Manual" -H "$WORK/style.html" "$WORK/rmt_en.md" -o doc/rmt_en.html
+    echo "Wrote doc/rmt_en.html"
+else
+    echo "pandoc not found: doc/rmt_en.html not regenerated"
+fi
