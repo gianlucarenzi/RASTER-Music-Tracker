@@ -2,6 +2,8 @@
 // Experimental changes and additions by VinsCool, 2021-2023
 // FIXME: Use a better backend (DirectSound is outdated...)
 
+#include <cstdio>
+#include <cstdlib>
 #include "PlatformTypes.h"
 #include "PokeyRenderer.h"
 #include "AtariTrackerDriver.h"
@@ -217,6 +219,12 @@ BOOL CXPokey::RenderSound1_50(int instrspeed)
 
     const auto chunkSize = GetChunkSize();
     const auto latencySize = GetLatencySize();
+    static const bool dbg = std::getenv("RMT_AUDIO_DEBUG") != nullptr;
+    if (dbg) {
+        static int n = 0;
+        if (delta > latencySize + (int)chunkSize || delta < (int)chunkSize || (n++ % 50) == 0)
+            std::fprintf(stderr, "DBG delta %d latency %d chunk %d play %u write %u load %u\n", delta, (int)latencySize, (int)chunkSize, (unsigned)m_PlayCursor, (unsigned)m_WriteCursor, (unsigned)m_LoadPos);
+    }
 
     m_LoadSize = chunkSize; // 1764  (882 samples * 2 channels)
     if (delta > latencySize) {

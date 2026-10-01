@@ -80,6 +80,11 @@ UINT timeSetEvent(UINT delay, UINT, LPTIMECALLBACK callback, DWORD_PTR user, UIN
         while (!timer->stop) {
             std::this_thread::sleep_until(deadline);
             if (timer->stop) break;
+            static const bool audioDebug = std::getenv("RMT_AUDIO_DEBUG") != nullptr; // RMT_AUDIO_DEBUG=1: timer and ring diagnostics on stderr
+            if (audioDebug) {
+                double late = std::chrono::duration<double, std::milli>(Clock::now() - deadline).count();
+                if (late > 5) std::fprintf(stderr, "DBG timer late %.1f ms\n", late);
+            }
             std::promise<void> done;
             t_callbackDone = done.get_future().share();
             t_callback = callback;
