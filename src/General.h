@@ -34,7 +34,8 @@ public:
 // Keyboard layouts that may be used with RMT for Notes input
 enum class KeyboardLayout : int {
     QWERTY = 0,
-    AZERTY = 1
+    AZERTY = 1,
+    QWERTZ = 2 // the German keyboard: the QWERTY piano by key position, Y and Z exchanged, the OEM keys moved
 };
 
 // ----------------------------------------------------------------------------

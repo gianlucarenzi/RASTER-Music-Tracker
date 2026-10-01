@@ -20,6 +20,9 @@ extern long g_playtime;
 void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, int songline, int trackline)
 {
     CString statusBarLog;
+    int savedSongActiveLine = m_songactiveline;
+    int savedTrackActiveLine = m_trackactiveline;
+    long savedPlayTime = g_playtime;
 
     Stop();                       // Make sure RMT is stopped
     g_AtariTrackerDriver->Init(); // Reset the RMT routines
@@ -40,6 +43,7 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
         DisableEventSection section;
 
         // The SAP-R dumper is running during that time...
+        DWORD lastStatusTick = GetTickCount();
         while (m_play != PLAY_STOP) {
             // 1 VBI of module playback
             PlayVBI();
@@ -57,15 +61,13 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
                 pokeyStream.Record();
             }
 
-            // Update the screen only once every few frames
-            // Displaying everything in real time slows things down considerably!
-            if (!RefreshScreen(1)) {
-                continue;
+            // The number of frames dumped so far, a few times per second
+            DWORD now = GetTickCount();
+            if (now - lastStatusTick >= 250) {
+                lastStatusTick = now;
+                statusBarLog.Format("Generating Pokey stream, playing song in quick mode... %i frames recorded", pokeyStream.GetCurrentFrame());
+                SetStatusBarText(statusBarLog);
             }
-
-            // Display the number of frames dumped so far
-            statusBarLog.Format("Generating Pokey stream, playing song in quick mode... %i frames recorded", pokeyStream.GetCurrentFrame());
-            SetStatusBarText(statusBarLog);
         }
         g_AtariTrackerDriver->Init(); // Reset the RMT routines
 
@@ -74,6 +76,11 @@ void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, 
 
         // Deactivate stream recording.
         m_pokeyStream = nullptr;
+
+        // The dump leaves no traces: the cursor and the play time as before
+        m_songactiveline = savedSongActiveLine;
+        m_trackactiveline = savedTrackActiveLine;
+        g_playtime = savedPlayTime;
 
         statusBarLog.Format("Done... %i frames recorded in total, Loop point found at frame %i", pokeyStream.GetCurrentFrame(), pokeyStream.GetFirstCountPoint());
         SetStatusBarText(statusBarLog);

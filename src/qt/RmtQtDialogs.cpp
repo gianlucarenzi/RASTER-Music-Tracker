@@ -852,7 +852,7 @@ static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
     auto* keyboard = new QGroupBox("Keyboard");
     auto* keyboardLayout = new QVBoxLayout(keyboard);
     auto* layoutCombo = new QComboBox;
-    layoutCombo->addItems({ "QWERTY Layout", "AZERTY Layout" }); // index = KeyboardLayout
+    layoutCombo->addItems({ "QWERTY Layout", "AZERTY Layout", "QWERTZ Layout" }); // index = KeyboardLayout
     layoutCombo->setCurrentIndex((int)dlg->m_keyboard_layout);
     auto* layoutRow = new QHBoxLayout;
     layoutRow->addWidget(new QLabel("Keyboard layout:"));

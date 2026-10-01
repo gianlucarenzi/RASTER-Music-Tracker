@@ -207,3 +207,10 @@ void Sleep(DWORD ms)
 {
     std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
+
+DWORD GetTickCount()
+{
+    return (DWORD)std::chrono::duration_cast<std::chrono::milliseconds>(
+               std::chrono::steady_clock::now().time_since_epoch())
+        .count();
+}

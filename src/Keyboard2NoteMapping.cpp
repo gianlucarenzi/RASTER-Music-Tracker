@@ -130,6 +130,29 @@ const char keynumblock09[256] = {
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
 };
+//QWERTZ keys layout: the QWERTY table by key position - Y and Z exchanged, the OEM keys moved to the German keys at the QWERTY
+//positions (ue + for [ ], oe for ;, acute for =, - for /; sharp s, ae, # and < unmapped like -, ' and the keys QWERTY has not there)
+struct TQwertzTable {
+    unsigned char keys[256];
+    TQwertzTable()
+    {
+        for (int i = 0; i < 256; i++) {
+            keys[i] = keynotes_QWERTY[i];
+        }
+        keys['Y'] = 0x00;  // C-1, QWERTY Z (bottom left)
+        keys['Z'] = 0x15;  // A-2, QWERTY Y (under the 6)
+        keys[0xBA] = 0x1D; // ue: F-3, QWERTY [
+        keys[0xBB] = 0x1F; // +: G-3, QWERTY ]
+        keys[0xBD] = 0x10; // -: E-2, QWERTY /
+        keys[0xBF] = 0xFF; // #: no QWERTY key there
+        keys[0xC0] = 0x0F; // oe: D#2, QWERTY ;
+        keys[0xDB] = 0xFF; // sharp s: QWERTY - (unmapped)
+        keys[0xDD] = 0x1E; // acute: F#3, QWERTY =
+    }
+};
+const TQwertzTable qwertzTable;
+const unsigned char* const keynotes_QWERTZ = qwertzTable.keys;
+
 // clang-format on
 
 char NoteKey(int vk)
@@ -138,6 +161,8 @@ char NoteKey(int vk)
         return keynotes_QWERTY[vk];
     } else if (g_keyboard_layout == KeyboardLayout::AZERTY) {
         return keynotes_AZERTY[vk];
+    } else if (g_keyboard_layout == KeyboardLayout::QWERTZ) {
+        return keynotes_QWERTZ[vk];
     } else
         return -1;
 };

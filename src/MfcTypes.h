@@ -1311,6 +1311,7 @@ inline void ZeroMemory(void* dst, size_t size)
 
 // Sleep() / GetTickCount()
 void Sleep(DWORD ms);
+DWORD GetTickCount(); // milliseconds, wraps like the Windows one
 
 // Windows MIDI API: only the device enumeration used by the configuration
 // code of RmtView.cpp, over the RtMidi input ports (RmtMidiRt.cpp, which is

@@ -103,6 +103,7 @@ BOOL COptionsDialog::OnInitDialog()
 
     m_keyboard_c_layout.AddString("QWERTY Layout");
     m_keyboard_c_layout.AddString("AZERTY Layout");
+    m_keyboard_c_layout.AddString("QWERTZ Layout");
     m_keyboard_c_layout.SetCurSel((int)m_keyboard_layout);
 
     m_trackerDriver_c_Version.AddString("No RMT Driver");
