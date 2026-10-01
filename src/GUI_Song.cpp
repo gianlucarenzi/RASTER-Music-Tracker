@@ -2224,6 +2224,11 @@ BOOL CSong::CursorToSpeedColumn()
     return 1;
 }
 
+BOOL CSong::PokeyCommand(UINT id)
+{
+    return m_PokeyController->OnCommand(id);
+}
+
 BOOL CSong::ProveKey(int vk, int shift, int control)
 {
     int note, i;

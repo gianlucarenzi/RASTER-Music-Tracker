@@ -28,6 +28,7 @@
 #include "ChannelControl.h"
 #include "Undo.h"
 #include "Song.h"
+#include "PokeyController.h"
 #include "Tuning.h"
 #ifdef RMT_HAS_MFC
 #include "Rmt.h" // outside MFC, CRmtApp/g_app come from MfcTypes.h
@@ -2396,6 +2397,39 @@ void CRmtView::OnUpdateViewVolumeanalyzer(CCmdUI* pCmdUI)
 {
     pCmdUI->SetCheck(g_view.volumeAnalyzer);
 }
+
+BOOL CRmtView::OnPokeyCommand(UINT id)
+{
+    if (!CPokeyController::IsCommand(id)) return FALSE;
+    if (g_prove == EditMode::POKEY_EXPLORER_MODE) {
+        g_Song.PokeyCommand(id);
+    }
+    return TRUE; // handled (or ignored outside the explorer mode, where the items are greyed)
+}
+
+BOOL CRmtView::OnUpdatePokeyCommand(CCmdUI* pCmdUI)
+{
+    if (!CPokeyController::IsCommand(pCmdUI->m_nID)) return FALSE;
+    pCmdUI->Enable(g_prove == EditMode::POKEY_EXPLORER_MODE);
+    return TRUE;
+}
+
+#ifdef RMT_HAS_MFC
+// The 47 items have no message map entries of their own: routed here before the view's map.
+BOOL CRmtView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+    if (CPokeyController::IsCommand(nID)) {
+        if (nCode == CN_COMMAND) {
+            if (pHandlerInfo == NULL) OnPokeyCommand(nID);
+            return TRUE;
+        }
+        if (nCode == CN_UPDATE_COMMAND_UI && pHandlerInfo == NULL) {
+            return OnUpdatePokeyCommand((CCmdUI*)pExtra);
+        }
+    }
+    return CView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+#endif
 
 void CRmtView::OnViewPokeyregs()
 {

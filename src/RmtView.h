@@ -81,6 +81,14 @@ protected:
     // Implementation
 public:
     virtual ~CRmtView();
+
+    // The Pokey menu's explorer items (ID_POKEY_*): the same operations as the explorer keys,
+    // enabled in the Pokey Explorer mode only. FALSE if id is not one of them.
+    BOOL OnPokeyCommand(UINT id);
+    BOOL OnUpdatePokeyCommand(CCmdUI* pCmdUI);
+#ifdef RMT_HAS_MFC
+    BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
+#endif
 #ifdef _DEBUG
     virtual void AssertValid() const;
     virtual void Dump(CDumpContext& dc) const;

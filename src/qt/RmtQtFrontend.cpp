@@ -207,7 +207,7 @@ public:
     // WM_COMMAND: the view, then the frame (as the MFC command routing)
     void Dispatch(UINT id)
     {
-        if (m_view.OnCmdMsg(id) || m_frame.OnCmdMsg(id)) return;
+        if (m_view.OnPokeyCommand(id) || m_view.OnCmdMsg(id) || m_frame.OnCmdMsg(id)) return;
         switch (id) {
             case ID_APP_ABOUT:
             case ID_HELP_ABOUT_APP:
@@ -269,7 +269,7 @@ public:
                     UINT id = act->data().toUInt();
                     if (!id) continue;
                     QtCCmdUI ui(id, act);
-                    if (!m_view.OnUpdateCmdUI(&ui)) m_frame.OnUpdateCmdUI(&ui);
+                    if (!m_view.OnUpdatePokeyCommand(&ui) && !m_view.OnUpdateCmdUI(&ui)) m_frame.OnUpdateCmdUI(&ui);
                 }
             });
         };
@@ -386,6 +386,52 @@ public:
         addItemTagged(mSong, "Change maximal length of tracks...", ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS);
         mSong->addSeparator();
         addItemTagged(mSong, "All size optimizations...", ID_SONG_SIZEOPTIMIZATION);
+
+        // ---- Pokey ---- (the explorer items are enabled in the Pokey Explorer mode only;
+        // the keys are handled by the view, so no accelerator is attached to the actions)
+        QMenu* mPokey = bar->addMenu("Poke&y");
+        struct PokeyItem {
+            const char* text;
+            UINT id;
+        };
+        auto addPokeyChannel = [&](const char* channel, const char* audf, const char* audc, const PokeyItem(&f)[4], const PokeyItem(&c)[4]) {
+            QMenu* mChannel = mPokey->addMenu(channel);
+            QMenu* mAudf = mChannel->addMenu(audf);
+            for (const auto& item : f) addItemTagged(mAudf, item.text, item.id);
+            QMenu* mAudc = mChannel->addMenu(audc);
+            for (const auto& item : c) addItemTagged(mAudc, item.text, item.id);
+        };
+        addPokeyChannel("Channel &1", "AUD&F0", "AUD&C0",
+                        { { "&Increase By 0x01\t1", ID_POKEY_AUDF0_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+1", ID_POKEY_AUDF0_INCREASE_BY_10 }, { "&Decrease By 0x01\tQ", ID_POKEY_AUDF0_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+Q", ID_POKEY_AUDF0_DECREASE_BY_10 } },
+                        { { "&Increase By 0x01\t2", ID_POKEY_AUDC0_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+2", ID_POKEY_AUDC0_INCREASE_BY_10 }, { "&Decrease By 0x01\tW", ID_POKEY_AUDC0_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+W", ID_POKEY_AUDC0_DECREASE_BY_10 } });
+        addPokeyChannel("Channel &2", "AUD&F1", "AUD&C1",
+                        { { "&Increase By 0x01\t3", ID_POKEY_AUDF1_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+3", ID_POKEY_AUDF1_INCREASE_BY_10 }, { "&Decrease By 0x01\tE", ID_POKEY_AUDF1_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+E", ID_POKEY_AUDF1_DECREASE_BY_10 } },
+                        { { "&Increase By 0x01\t4", ID_POKEY_AUDC1_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+4", ID_POKEY_AUDC1_INCREASE_BY_10 }, { "&Decrease By 0x01\tR", ID_POKEY_AUDC1_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+R", ID_POKEY_AUDC1_DECREASE_BY_10 } });
+        addPokeyChannel("Channel &3", "AUD&F2", "AUD&C2",
+                        { { "&Increase By 0x01\t5", ID_POKEY_AUDF2_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+5", ID_POKEY_AUDF2_INCREASE_BY_10 }, { "&Decrease By 0x01\tT", ID_POKEY_AUDF2_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+T", ID_POKEY_AUDF2_DECREASE_BY_10 } },
+                        { { "&Increase By 0x01\t6", ID_POKEY_AUDC2_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+6", ID_POKEY_AUDC2_INCREASE_BY_10 }, { "&Decrease By 0x01\tY", ID_POKEY_AUDC2_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+Y", ID_POKEY_AUDC2_DECREASE_BY_10 } });
+        addPokeyChannel("Channel &4", "AUD&F3", "AUD&C3",
+                        { { "&Increase By 0x01\t7", ID_POKEY_AUDF3_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+7", ID_POKEY_AUDF3_INCREASE_BY_10 }, { "&Decrease By 0x01\tU", ID_POKEY_AUDF3_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+U", ID_POKEY_AUDF3_DECREASE_BY_10 } },
+                        { { "&Increase By 0x01\t8", ID_POKEY_AUDC3_INCREASE_BY_01 }, { "I&ncrease By 0x10\tShift+8", ID_POKEY_AUDC3_INCREASE_BY_10 }, { "&Decrease By 0x01\tI", ID_POKEY_AUDC3_DECREASE_BY_01 }, { "D&ecrease By 0x10\tShift+I", ID_POKEY_AUDC3_DECREASE_BY_10 } });
+        QMenu* mAudctl = mPokey->addMenu("AUDCTL");
+        addItemTagged(mAudctl, "Bit &0 - Change Main Base Clock From 64 KHz To 15 KHz\tC", ID_POKEY_AUDCTL_BIT0);
+        addItemTagged(mAudctl, "Bit &1 - High Pass Filter Into Channel 2, Clocked By Channel 4\tG", ID_POKEY_AUDCTL_BIT1);
+        addItemTagged(mAudctl, "Bit &2 - High Pass Filter Into Channel 1, Clocked By Channel 3\tF", ID_POKEY_AUDCTL_BIT2);
+        addItemTagged(mAudctl, "Bit &3 - Join Channels 3 and 4 (16-bit Frequency)\tK", ID_POKEY_AUDCTL_BIT3);
+        addItemTagged(mAudctl, "Bit &4 - Join Channels 1 and 2 (16-Bit Frequency)\tJ", ID_POKEY_AUDCTL_BIT4);
+        addItemTagged(mAudctl, "Bit &5 - Clock Channel 3 With 1.79 MHz\tD", ID_POKEY_AUDCTL_BIT5);
+        addItemTagged(mAudctl, "Bit &6 - Clock channel 1 with 1.79 MHz\tA", ID_POKEY_AUDCTL_BIT6);
+        addItemTagged(mAudctl, "Bit &7 - Change The 17-Bit Poly To 9-Bit Poly (Only For Distortion 0 and 8)\tP", ID_POKEY_AUDCTL_BIT7);
+        QMenu* mSkctl = mPokey->addMenu("SKCTL");
+        addItemTagged(mSkctl, "&Two Tone Mode\tM", ID_POKEY_SKCTL_TWO_TONE_MODE);
+        QMenu* mDebugChannel = mPokey->addMenu("Debug &Channel");
+        addItemTagged(mDebugChannel, "Next Channel\tEnter", ID_POKEY_NEXTCHANNEL);
+        addItemTagged(mDebugChannel, "Previous Channel\tBackspace", ID_POKEY_PREVIOUSCHANNEL);
+        QMenu* mDivisor = mPokey->addMenu("&Divisor");
+        addItemTagged(mDivisor, "Increase By 0.1\t+", ID_POKEY_DIVISOR_INCREASE_BY_01);
+        addItemTagged(mDivisor, "Increase By 1.0\tShift++", ID_POKEY_DIVISOR_INCREASE_BY_1);
+        addItemTagged(mDivisor, "Decrease By 0.1\t-", ID_POKEY_DIVISOR_DECREASE_BY_01);
+        addItemTagged(mDivisor, "Decrease By 1.0\tShift+-", ID_POKEY_DIVISOR_DECREASE_BY_1);
 
         // ---- View ---- (toggle items are checkable at construction)
         QMenu* mView = bar->addMenu("&View");

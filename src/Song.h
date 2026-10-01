@@ -74,6 +74,7 @@ public:
 
     BOOL CursorToSpeedColumn();
     BOOL ProveKey(int vk, int shift, int control);
+    BOOL PokeyCommand(UINT id); // a Pokey menu item (Pokey Explorer mode)
     BOOL TrackKey(int vk, int shift, int control);
     BOOL TrackCursorGoto(CPoint point);
     BOOL TrackUp(int lines);
