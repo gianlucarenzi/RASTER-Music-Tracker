@@ -3,6 +3,7 @@
 
 #include "GuiHelpers.h"
 #include "Song.h"
+#include "PokeyController.h"
 
 #include "Notes.h"
 
@@ -38,6 +39,7 @@ CSongTimer g_SongTimer;
 // ----------------------------------------------------------------------------
 
 CSong::CSong()
+    : m_PokeyController(new CPokeyController(&g_Atari))
 {
     // Attributes
     memset(m_songname, 0, SONG_NAME_MAX_LEN);

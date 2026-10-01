@@ -246,6 +246,9 @@
     <ClCompile Include="Pokey.cpp">
       <Filter>Source Files\Atari Sound Generator</Filter>
     </ClCompile>
+    <ClCompile Include="PokeyController.cpp">
+      <Filter>Source Files\Atari Sound Generator</Filter>
+    </ClCompile>
     <ClCompile Include="wasap.c">
       <Filter>Source Files\Atari Sound Generator</Filter>
     </ClCompile>
@@ -450,6 +453,12 @@
       <Filter>Source Files\Atari Sound Generator</Filter>
     </ClInclude>
     <ClInclude Include="Pokey.h">
+      <Filter>Source Files\Atari Sound Generator</Filter>
+    </ClInclude>
+    <ClInclude Include="PokeyController.h">
+      <Filter>Source Files\Atari Sound Generator</Filter>
+    </ClInclude>
+    <ClInclude Include="Keyboard.h">
       <Filter>Source Files\Atari Sound Generator</Filter>
     </ClInclude>
     <ClInclude Include="wasap.h">

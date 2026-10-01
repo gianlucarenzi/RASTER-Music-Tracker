@@ -4,6 +4,8 @@
 
 #include "General.h"
 
+#include <vector>
+
 
 extern KeyboardLayout g_keyboard_layout;
 
@@ -170,3 +172,55 @@ char NoteKey(int vk)
 char NumbKey(int vk) { return keynumbs[vk]; };
 
 char Numblock09Key(int vk) { return keynumblock09[vk]; };
+
+namespace {
+// The four key rows of the layout's keyboard, from the number row to the
+// bottom row, as virtual keys (0xE2 = the ISO "<" key position when present).
+const std::vector<std::vector<int>>& KeyboardRows(KeyboardLayout layout)
+{
+    static const std::vector<std::vector<int>> qwerty = {
+        { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0xBD, 0xBB },
+        { 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0xDB, 0xDD },
+        { 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0xBA, 0xDE },
+        { 'Z', 'X', 'C', 'V', 'B', 'N', 'M', 0xBC, 0xBE, 0xBF },
+    };
+    static const std::vector<std::vector<int>> azerty = {
+        { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0xDB, 0xBB },
+        { 'A', 'Z', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', 0xDD, 0xBA },
+        { 'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 0xC0, 0xDC },
+        { 0xE2, 'W', 'X', 'C', 'V', 'B', 'N', 0xBC, 0xBE, 0xBF, 0xDF },
+    };
+    static const std::vector<std::vector<int>> qwertz = {
+        { '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', 0xDB, 0xDD },
+        { 'Q', 'W', 'E', 'R', 'T', 'Z', 'U', 'I', 'O', 'P', 0xBA, 0xBB },
+        { 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 0xC0, 0xDE, 0xBF },
+        { 0xE2, 'Y', 'X', 'C', 'V', 'B', 'N', 'M', 0xBC, 0xBE, 0xBD },
+    };
+    return layout == KeyboardLayout::AZERTY ? azerty : layout == KeyboardLayout::QWERTZ ? qwertz : qwerty;
+}
+
+// A row without its leading ISO "<" key, so the letter positions of the layouts align.
+std::vector<int> StripIsoKey(const std::vector<int>& row)
+{
+    return (!row.empty() && row[0] == 0xE2) ? std::vector<int>(row.begin() + 1, row.end()) : row;
+}
+} // namespace
+
+int ToQwertyPosition(int vk, KeyboardLayout layout)
+{
+    if (layout == KeyboardLayout::QWERTY || vk == 0xBB || vk == 0xBD) {
+        return vk;
+    }
+    const auto& rows = KeyboardRows(layout);
+    const auto& qwertyRows = KeyboardRows(KeyboardLayout::QWERTY);
+    for (size_t r = 1; r < 4; r++) {
+        const auto row = StripIsoKey(rows[r]);
+        const auto qwertyRow = StripIsoKey(qwertyRows[r]);
+        for (size_t i = 0; i < row.size() && i < qwertyRow.size(); i++) {
+            if (row[i] == vk) {
+                return qwertyRow[i];
+            }
+        }
+    }
+    return vk;
+}

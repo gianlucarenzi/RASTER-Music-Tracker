@@ -3,6 +3,8 @@
 
 #include "General.h"
 
+#include <memory>
+
 #include "Undo.h"
 #include "Instruments.h"
 #include "Tracks.h"
@@ -11,6 +13,7 @@
 #include "SongTypes.h"
 
 class CASMFileExporter;
+class CPokeyController;
 
 
 class CSong {
@@ -354,12 +357,12 @@ private:
     BOOL m_ch_offset = 0;
 
     //POKEY EXPLORER variables, used for tests involving pitch calculations and sound debugging displayed on screen
-    int e_ch_idx = 0;
+    // (the channel and the divisor are kept by the controller)
+    std::unique_ptr<CPokeyController> m_PokeyController;
     int e_modoffset = 1;
     int e_coarse_divisor = 1;
     int e_modulo = 0;
     BOOL e_valid = 1;
-    double e_divisor = 1;
     double e_pitch = 0;
 
     EditArea m_infoact; // Which part of the info area is active for editing: 0 = name,

@@ -211,6 +211,7 @@
     <ClCompile Include="LZSSFile.cpp" />
     <ClCompile Include="Notes.cpp" />
     <ClCompile Include="Pokey.cpp" />
+    <ClCompile Include="PokeyController.cpp" />
     <ClCompile Include="PokeyRenderer.cpp" />
     <ClCompile Include="RmtCommandLineInfo.cpp" />
     <ClCompile Include="RmtTest.cpp" />
@@ -366,6 +367,8 @@
     <ClInclude Include="LZSSFile.h" />
     <ClInclude Include="Notes.h" />
     <ClInclude Include="Pokey.h" />
+    <ClInclude Include="PokeyController.h" />
+    <ClInclude Include="Keyboard.h" />
     <ClInclude Include="PokeyRenderer.h" />
     <ClInclude Include="RmtCommandLineInfo.h" />
     <ClInclude Include="RmtFile.h" />

@@ -3,6 +3,7 @@
 
 // MFC interface code
 #include "Song.h"
+#include "PokeyController.h"
 
 #include "EffectsDlg.h"
 
@@ -629,13 +630,13 @@ void CSong::DrawAnalyzer()
                 snprintf(t, 2, "%d", tracks);
                 TextMiniXY(t, ANALYZER3_X + 8 * 56, ANALYZER3_Y + 8 * 10, TextMiniColor::WHITE);
 
-                if (DEBUG_SOUND && i == e_ch_idx) //Debug sound, must only be run once per loops, so this prevents it being overwritten
+                if (DEBUG_SOUND && i == m_PokeyController->GetChannelIndex()) //Debug sound, must only be run once per loops, so this prevents it being overwritten
                 {
                     TextMiniXY("COARSE_DIVISOR:    , DIVISOR:       , MODOFFSET:  , AUDF: $    , AUDC: $  ", ANALYZER3_X, ANALYZER3_Y + 8 * 12, TextMiniColor::GRAY);
                     TextMiniXY("CH_IDX:  , MODULO:    , IS_VALID:  ", ANALYZER3_X, ANALYZER3_Y + 8 * 13, TextMiniColor::GRAY);
                     TextMiniXY("         HZ = ((FREQ17 / (COARSE_DIVISOR * DIVISOR)) / (AUDF + MODOFFSET)) / 2", ANALYZER3_X, ANALYZER3_Y + 8 * 15, TextMiniColor::GRAY);
 
-                    //e_ch_idx = 0;				//defined manually elsewhere
+                    //e_ch_idx = 0; // defined manually elsewhere
 
                     int i_audf = (JOIN_16BIT || JOIN_64KHZ || JOIN_15KHZ) ? audf16 : audf;
                     int e_audf = audf;
@@ -665,7 +666,7 @@ void CSong::DrawAnalyzer()
                             break;
                     }
 
-                    e_pitch = g_Tuning.GetPitch(i_audf, e_coarse_divisor, e_divisor, e_modoffset);
+                    e_pitch = g_Tuning.GetPitch(i_audf, e_coarse_divisor, m_PokeyController->GetDivisor(), e_modoffset);
                     static constexpr auto color = TextMiniColor::WHITE;
                     snprintf(p, 10, "%9.2f", e_pitch);
                     TextMiniXY(p, ANALYZER3_X, ANALYZER3_Y + 8 * 15, color);
@@ -673,7 +674,7 @@ void CSong::DrawAnalyzer()
                     snprintf(t, 4, "%d", e_coarse_divisor);
                     TextMiniXY(t, ANALYZER3_X + 8 * 16, ANALYZER3_Y + 8 * 12, color);
 
-                    snprintf(p, 10, "%6.1f", e_divisor);
+                    snprintf(p, 10, "%6.1f", m_PokeyController->GetDivisor());
                     TextMiniXY(p, ANALYZER3_X + 8 * 30, ANALYZER3_Y + 8 * 12, color);
 
                     snprintf(t, 4, "%d", e_modoffset);
@@ -685,7 +686,7 @@ void CSong::DrawAnalyzer()
 
                     NumberMiniXY(e_audc, ANALYZER3_X + 8 * 72, ANALYZER3_Y + 8 * 12, color);
 
-                    snprintf(t, 4, "%d", e_ch_idx);
+                    snprintf(t, 4, "%d", m_PokeyController->GetChannelIndex());
                     TextMiniXY(t, ANALYZER3_X + 8 * 8, ANALYZER3_Y + 8 * 13, color);
 
                     snprintf(t, 4, "%d", e_modulo);
@@ -2230,177 +2231,7 @@ BOOL CSong::ProveKey(int vk, int shift, int control)
 
     if (g_prove == EditMode::POKEY_EXPLORER_MODE) //POKEY EXPLORER MODE: FULL CONTROL OVER THE POKEY (IGNORE RMT ROUTINES EXCEPT SETPOKEY)
     {
-        //trackn_audf => memory[0x3178]
-        //trackn_audc => memory[0x3180]
-        //v_audctl => memory[0x3C69]
-        //v_skctl => memory[0x3CD3]
-
-
-        const auto memory = g_Atari.GetMemoryAt(0);
-
-        int audf = 0x3178;
-        int audc = 0x3180;
-        int audctl = 0x3C69;
-        int skctl = 0x3CD3;
-
-        int ch = 0;                            //channel separation used in registers write
-        int step = (g_shiftkey) ? 0x10 : 0x01; //when the SHIFT key is held, increments/decrements are in steps are $10
-
-        switch (vk) {
-                //General variables manipulation
-
-            case 13: //VK_ENTER
-                e_ch_idx++;
-                if (e_ch_idx > 3)
-                    e_ch_idx = 0;
-                break;
-
-            case 8: //VK_BACKSPACE
-                e_ch_idx--;
-                if (e_ch_idx < 0)
-                    e_ch_idx = 3;
-                break;
-
-            case VK_OEM_PLUS:
-                e_divisor += (g_shiftkey) ? 1 : 0.1;
-                if (e_divisor > 10000)
-                    e_divisor = 10000;
-                break;
-
-            case VK_OEM_MINUS:
-                e_divisor -= (g_shiftkey) ? 1 : 0.1;
-                if (e_divisor < 1)
-                    e_divisor = 1;
-                break;
-
-                //AUDF channels
-
-            case 0x31: //VK_1
-                ch = 0;
-                memory[audf + ch] += step;
-                break;
-
-            case 0x51: //VK_Q
-                ch = 0;
-                memory[audf + ch] -= step;
-                break;
-
-            case 0x33: //VK_3
-                ch = 1;
-                memory[audf + ch] += step;
-                break;
-
-            case 0x45: //VK_E
-                ch = 1;
-                memory[audf + ch] -= step;
-                break;
-
-            case 0x35: //VK_5
-                ch = 2;
-                memory[audf + ch] += step;
-                break;
-
-            case 0x54: //VK_T
-                ch = 2;
-                memory[audf + ch] -= step;
-                break;
-
-            case 0x37: //VK_7
-                ch = 3;
-                memory[audf + ch] += step;
-                break;
-
-            case 0x55: //VK_U
-                ch = 3;
-                memory[audf + ch] -= step;
-                break;
-
-                //AUDC channels
-
-            case 0x32: //VK_2
-                ch = 0;
-                memory[audc + ch] += step;
-                break;
-
-            case 0x57: //VK_W
-                ch = 0;
-                memory[audc + ch] -= step;
-                break;
-
-            case 0x34: //VK_4
-                ch = 1;
-                memory[audc + ch] += step;
-                break;
-
-            case 0x52: //VK_R
-                ch = 1;
-                memory[audc + ch] -= step;
-                break;
-
-            case 0x36: //VK_6
-                ch = 2;
-                memory[audc + ch] += step;
-                break;
-
-            case 0x59: //VK_Y
-                ch = 2;
-                memory[audc + ch] -= step;
-                break;
-
-            case 0x38: //VK_8
-                ch = 3;
-                memory[audc + ch] += step;
-                break;
-
-            case 0x49: //VK_I
-                ch = 3;
-                memory[audc + ch] -= step;
-                break;
-
-                //AUDCTL bits
-
-            case 0x50: //VK_P
-                memory[audctl] ^= 0x80;
-                break;
-
-            case 0x41: //VK_A
-                memory[audctl] ^= 0x40;
-                break;
-
-            case 0x44: //VK_D
-                memory[audctl] ^= 0x20;
-                break;
-
-            case 0x4A: //VK_J
-                memory[audctl] ^= 0x10;
-                break;
-
-            case 0x4B: //VK_K
-                memory[audctl] ^= 0x08;
-                break;
-
-            case 0x46: //VK_F
-                memory[audctl] ^= 0x04;
-                break;
-
-            case 0x47: //VK_G
-                memory[audctl] ^= 0x02;
-                break;
-
-            case 0x43: //VK_C
-                memory[audctl] ^= 0x01;
-                break;
-
-                //SKCTL Two-Tone toggle
-
-            case 0x4D: //VK_M
-                memory[skctl] ^= 0x88;
-                break;
-
-            default:
-                return 0;
-        }
-        return 1;
+        return m_PokeyController->OnKeyDown(vk, shift, control);
     }
 
     if (note >= 0) {

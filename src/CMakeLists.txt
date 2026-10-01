@@ -133,6 +133,7 @@ else()
         Midi_Song.cpp
         Notes.cpp
         Pokey.cpp
+        PokeyController.cpp
         PokeyRenderer.cpp
         PokeyStream.cpp
         RuntimeException.cpp
@@ -265,6 +266,7 @@ set(RMT_HEADERS
     Memory.h
     Notes.h
     Pokey.h
+    PokeyController.h
     PokeyRenderer.h
     PokeyStream.h
     Resource.h
@@ -647,6 +649,7 @@ if(RMT_CORE_TEST)
         Midi_Song.cpp
         Notes.cpp
         Pokey.cpp
+        PokeyController.cpp
         PokeyRenderer.cpp
         PokeyStream.cpp
         RuntimeException.cpp
