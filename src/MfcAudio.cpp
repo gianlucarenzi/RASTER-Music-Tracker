@@ -11,7 +11,10 @@
 
 #include "PlatformTypes.h"
 
+#include <atomic>
 #include <chrono>
+#include <cstdio>
+#include <cstdlib>
 #include <future>
 #include <map>
 #include <memory>
@@ -27,6 +30,9 @@
 // ---------------------------------------------------------------------------
 
 namespace {
+
+// RMT_AUDIO_DEBUG=1: how often the audio server reported an underflow of the output stream (a click or a gap)
+static std::atomic<int> s_outputUnderflows{ 0 };
 
 using Clock = std::chrono::steady_clock;
 
@@ -84,6 +90,11 @@ UINT timeSetEvent(UINT delay, UINT, LPTIMECALLBACK callback, DWORD_PTR user, UIN
             if (audioDebug) {
                 double late = std::chrono::duration<double, std::milli>(Clock::now() - deadline).count();
                 if (late > 5) std::fprintf(stderr, "DBG timer late %.1f ms\n", late);
+                static int reported = 0;
+                if (s_outputUnderflows != reported) {
+                    reported = s_outputUnderflows;
+                    std::fprintf(stderr, "DBG audio output underflows so far: %d\n", reported);
+                }
             }
             std::promise<void> done;
             t_callbackDone = done.get_future().share();
@@ -224,8 +235,9 @@ HRESULT IDirectSoundBuffer::Unlock(void* p1, DWORD s1, void*, DWORD s2)
 
 #ifdef RMT_HAVE_PORTAUDIO
 static int PlayCallback(const void*, void* output, unsigned long frames, const PaStreamCallbackTimeInfo*,
-                        PaStreamCallbackFlags, void* user)
+                        PaStreamCallbackFlags flags, void* user)
 {
+    if (flags & paOutputUnderflow) s_outputUnderflows++;
     auto* buffer = (IDirectSoundBuffer*)user;
     TakeFromRing(buffer, (unsigned char*)output, (DWORD)frames * buffer->m_format.nBlockAlign);
     return paContinue;
@@ -257,6 +269,11 @@ HRESULT IDirectSoundBuffer::Play(DWORD, DWORD, DWORD)
     PaSampleFormat format = f.wBitsPerSample == 8 ? paUInt8 : paInt16;
     auto* s = new RmtAudioStream;
     unsigned long framesPerBuffer = f.nSamplesPerSec / 200; // 5 ms
+    // RMT_AUDIO_BUFFER_MS=<ms>: a larger callback buffer for slow machines (fewer wake-ups of the audio server)
+    if (const char* ms = std::getenv("RMT_AUDIO_BUFFER_MS")) {
+        int value = std::atoi(ms);
+        if (value >= 1 && value <= 100) framesPerBuffer = f.nSamplesPerSec / 1000 * value;
+    }
     if (Pa_OpenDefaultStream(&s->stream, 0, f.nChannels, format, f.nSamplesPerSec, framesPerBuffer,
                              PlayCallback, this) != paNoError) {
         std::fprintf(stderr, "RMT: cannot open the audio output (PortAudio)\n");
@@ -265,6 +282,13 @@ HRESULT IDirectSoundBuffer::Play(DWORD, DWORD, DWORD)
     }
     const PaStreamInfo* info = Pa_GetStreamInfo(s->stream);
     double latency = info ? info->outputLatency : 0.02;
+    if (std::getenv("RMT_AUDIO_DEBUG")) {
+        const PaDeviceInfo* device = Pa_GetDeviceInfo(Pa_GetDefaultOutputDevice());
+        const PaHostApiInfo* api = device ? Pa_GetHostApiInfo(device->hostApi) : nullptr;
+        std::fprintf(stderr, "DBG audio: host API %s, device %s, %u Hz requested, %.0f Hz opened, %lu frames per callback, output latency %.1f ms\n",
+                     api ? api->name : "?", device ? device->name : "?", (unsigned)f.nSamplesPerSec,
+                     info ? info->sampleRate : 0.0, framesPerBuffer, latency * 1000);
+    }
     // DirectSound's write cursor: where it is safe to write, past what the
     // device has already taken
     s->safety = ((DWORD)(latency * f.nSamplesPerSec) + framesPerBuffer) * f.nBlockAlign;
