@@ -2,8 +2,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_RMTVIEW_H__1709C74D_06D0_11D7_BEB0_00600854AFCA__INCLUDED_)
-#define AFX_RMTVIEW_H__1709C74D_06D0_11D7_BEB0_00600854AFCA__INCLUDED_
+#if !defined(RMT_RMTVIEW_H)
+#define RMT_RMTVIEW_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -65,7 +65,6 @@ private:
 public:
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CRmtView)
 public:
     virtual void OnDraw(CDC* pDC);                   // overridden to draw this view
     virtual void OnSize(UINT nType, int cx, int cy); //allows proper window resize and adjust things related to it
@@ -76,7 +75,6 @@ protected:
     virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
     virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
     virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-    //}}AFX_VIRTUAL
 
     // Implementation
 public:
@@ -86,15 +84,10 @@ public:
     // enabled in the Pokey Explorer mode only. FALSE if id is not one of them.
     BOOL OnPokeyCommand(UINT id);
     BOOL OnUpdatePokeyCommand(CCmdUI* pCmdUI);
-#ifdef _DEBUG
-    virtual void AssertValid() const;
-    virtual void Dump(CDumpContext& dc) const;
-#endif
 
 protected:
     // Generated message map functions
 protected:
-    //{{AFX_MSG(CRmtView)
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);
     afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
     afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
@@ -305,21 +298,16 @@ protected:
     afx_msg void OnViewStatusBar();
     afx_msg void OnUpdateViewStatusBar(CCmdUI* pCmdUI);
     afx_msg void OnSongSongchangemaximallengthoftracks();
-    //}}AFX_MSG
     afx_msg void OnWantExit();
     DECLARE_MESSAGE_MAP()
 };
 
-#ifndef _DEBUG // debug version in RmtView.cpp
 inline CRmtDoc* CRmtView::GetDocument()
 {
     return (CRmtDoc*)m_pDocument;
 }
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_RMTVIEW_H__1709C74D_06D0_11D7_BEB0_00600854AFCA__INCLUDED_)
+#endif // !defined(RMT_RMTVIEW_H)

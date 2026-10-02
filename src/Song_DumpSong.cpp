@@ -14,7 +14,7 @@ extern long g_playtime;
 
 /// <summary>
 /// Get the Pokey registers to be dumped to a stream buffer.
-/// GUI is disabled but MFC messages are being pumped, so the screen is updated
+/// GUI is disabled but window messages are being pumped, so the screen is updated
 /// </summary>
 /// <returns></returns>
 void CSong::DumpSongToPokeyStream(CPokeyStream& pokeyStream, PlayMode playMode, int songline, int trackline)

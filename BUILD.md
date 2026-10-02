@@ -1,14 +1,14 @@
-# Building RASTER Music Tracker with CMake
+# Building RITMO with CMake
 
-The **official build is the Qt6 frontend on Linux / POSIX** (`RMT_USE_QT=ON`,
-the default there). On Windows the MFC GUI built with MSVC is still the
-default; MinGW builds the engine and the audio/MIDI backends only.
+RITMO is a **Qt** program (Qt6, or Qt 5.15): the same build on Linux, Windows
+(MinGW / MSYS2) and macOS. `-DRMT_BUILD_CORE_ONLY=ON` builds the engine and
+the audio/MIDI backends only, without Qt.
 
 | Platform | Build | GUI | Section |
 |----------|-------|-----|---------|
-| Linux / POSIX | `cmake -B build-qt` | Qt6 (**official**) | [Qt6 frontend](#official-build-qt6-frontend-linux--posix) |
-| Windows | MSVC | MFC | [Windows with MSVC](#windows-with-msvc-mfc) |
-| Windows / Linux | MinGW | none (engine, backends, tests) | [MinGW](#mingw-engine-and-backends-only) |
+| Linux / POSIX | `cmake -B build-qt` | Qt6 | [Qt6 frontend](#official-build-qt6-frontend-linux--posix) |
+| Windows | MSYS2 MinGW64 | Qt6 | [Windows with MinGW native](#windows-with-mingw-native-msys2) |
+| Windows / Linux | MinGW, core only | none (engine, backends, tests) | [MinGW](#mingw-engine-and-backends-only) |
 
 ---
 
@@ -29,7 +29,7 @@ sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
 ### Build and run
 
 ```bash
-cmake -B build-qt -DCMAKE_BUILD_TYPE=Release   # RMT_USE_QT is ON by default off Windows
+cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
 cmake --build build-qt -j
 ./build-qt/out/ritmo song.rmt
 ```
@@ -48,18 +48,18 @@ Or via **File → Load…** (`Ctrl+L`) from the menu bar. Give the window focus
 and press **F5** to play.
 
 The file dialogs are Qt `QFileDialog`s: `CFileDialog::DoModal()` asks the
-frontend (`IRmtHost::FileDialog`), so the MFC code in `IO_Song.cpp` is
+frontend (`IRmtHost::FileDialog`), so the code in `IO_Song.cpp` is
 unchanged. They work for songs (Load, Save, Save As: RMT, TXT, RMW),
 instruments (RTI) and tracks (TXT), keep the last folder, propose the current
-file name and return the chosen file type as with MFC. The filters match
+file name and return the chosen file type like `CFileDialog`. The filters match
 upper case extensions too (`*.rmt *.RMT`), and a name typed without extension
 gets the one of the chosen type. Import works for MOD and TMC, Export As
 for all formats (see [Status](#status)).
 
 ### Configuration
 
-The configuration and the tuning (`rmt.ini` and `tuning.ini` of the MFC
-build, next to the program) are kept by the Qt frontend in `QSettings`
+The configuration and the tuning (`ritmo.ini` and `tuning.ini`, as text files
+next to the program in the earlier versions) are kept by the Qt frontend in `QSettings`
 (`qt/RmtQtSettings.cpp`), one key per line of those files in the groups
 `rmt` and `tuning`. They belong to the user, not to the program folder, so
 updating or reinstalling RMT keeps them:
@@ -72,7 +72,7 @@ updating or reinstalling RMT keeps them:
 
 The first start with nothing saved takes over the `rmt.ini` / `tuning.ini`
 of an earlier version next to the program, if there are any, else it saves
-the defaults (without the "Could not find" messages of the MFC build).
+the defaults (without a "Could not find" message).
 
 ### Menu bar
 
@@ -99,8 +99,8 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   shows the view's own bitmap (`m_mem_dc`) directly: `RmtQtBridge::Paint()`
   runs `CRmtView::OnDraw()` without its final `StretchBlt`, and the scaling
   (`SCALEPERCENTAGE` > 100) is done by `QPainter` (nearest neighbour; at
-  scaled sizes a duplicated row/column may land one pixel apart from the MFC
-  version)
+  scaled sizes a duplicated row/column may land one pixel apart from the Windows
+  version of RMT)
 - ✅ keyboard (navigation, editing keys), mouse buttons, wheel, cursors
 - ✅ a song given on the command line is loaded
 - ✅ full menu bar (7 menus, 81 actions, all with handlers; auto-tested)
@@ -130,8 +130,8 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   instrument occurrences (`IDD_INSTRCHANGE` with `IDD_CHANNELSSELECT`), insert
   copy or clone of song lines, maximal track length, renumber tracks /
   instruments, tracks loading, tuning (`IDD_TUNING`, Test now / Reset), and the
-  octave, volume and instrument popups of the info line; all MFC dialogs of
-  the tracker are now in Qt
+  octave, volume and instrument popups of the info line; all the dialogs of
+  the tracker are in Qt
 - ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
   `apokeysnd.dll` are not there (always outside Windows): the tracker driver
   runs, notes and instruments play inside the engine
@@ -164,7 +164,7 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   bitmaps, the tooltips and status texts of the string table and the
   "Insert note spacing" combo (`g_linesafter`, also followed when changed with
   Ctrl+numpad +/-); the buttons are checked and enabled by their
-  `ON_UPDATE_COMMAND_UI` handlers every 100 ms (MFC does it when idle), the
+  `ON_UPDATE_COMMAND_UI` handlers every 100 ms, the
   icons follow the interface size. View → Main toolbar / Block toolbar /
   Status Bar show and hide them (`ShowControlBar()`), kept in the
   configuration
@@ -258,9 +258,9 @@ with the Unpatched driver when the driver is Patch16.
 
 ### How it works
 
-The tracker GUI is the MFC code itself (`RmtView.cpp`, `RmtDoc.cpp` and the
+The tracker GUI is the code of RMT (`RmtView.cpp`, `RmtDoc.cpp` and the
 GUI-shared drawing code) compiled against `src/CompatTypes.h`, a small
-replacement of the MFC classes it uses: a software device context (`CDC`,
+layer with the Windows-style classes it was written with: a software device context (`CDC`,
 `CBitmap`, bitmaps of `src/res` compiled in by `cmake/EmbedResources.cmake`),
 message maps that build a real command table, and `CWnd`/`CView` whose window
 operations go to an `IRmtHost`. `src/qt/` implements that host with Qt6:
@@ -270,14 +270,14 @@ operations go to an `IRmtHost`. `src/qt/` implements that host with Qt6:
 | `qt/main-qt.cpp` | start-up and main window; `RMT_QT_GRAB` / `RMT_QT_MENU_TEST` test hooks |
 | `qt/RmtQtFrontend.cpp` | `RmtMainWindow` (menu bar, `QtCCmdUI`), `RmtViewWidget` (view, keys/mouse/wheel/focus), `IRmtHost` (timers, message boxes, cursors, key state, title/status bar) |
 | `qt/RmtQtKeys.cpp` | key events → Win32 VK codes: on Linux by physical key (scan code), like a US keyboard on Windows |
-| `qt/RmtQtDialogs.cpp` | the MFC dialogs rewritten with Qt: `CDialog::DoModal()` → `IRmtHost::DoModal()` → the dialog of `m_nIDTemplate` (`IDD_*`), which reads and writes the dialog's data members; an unknown `IDD` is cancelled |
-| `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses (MainFrm.cpp builds MFC toolbars) |
+| `qt/RmtQtDialogs.cpp` | the dialogs of the tracker, in Qt: `CDialog::DoModal()` → `IRmtHost::DoModal()` → the dialog of `m_nIDTemplate` (`IDD_*`), which reads and writes the dialog's data members; an unknown `IDD` is cancelled |
+| `qt/QtMainFrame.cpp` | the `CMainFrame` members the GUI code uses |
 
 ### Built-in 6502 and POKEY (`src/emu`)
 
 | File | Replaces | |
 |------|----------|---|
-| `emu/Cpu6502.cpp` | `sa_c6502.dll` | NMOS 6502, documented opcodes, cycle counted (page crossing, branches), flat 64 KB memory; `C6502_JSR` runs until the RTS or the cycles |
+| `emu/Cpu6502.cpp` | `sa_c6502.dll` | NMOS 6502, documented and stable undocumented opcodes (LAX, SAX, SLO, RLA, SRE, RRA, DCP, ISC, ANC, ALR, ARR, AXS, SBC $EB, the NOPs), cycle counted (page crossing, branches), flat 64 KB memory; `C6502_JSR` runs until the RTS or the cycles |
 | `emu/PokeySound.cpp` | `apokeysnd.dll` | one or two POKEYs (`PutByte` 0x10.. = second chip), cycle based model (clocks, 16 bit, filters, polys, distortions), 44100 Hz, 2 interleaved channels |
 
 Derived from the emulation of `AT2019/ATARI-Driver/RmtSkeleton/tools/rmtplay`.
@@ -290,36 +290,11 @@ and 0.97 (loudness per frame).
 
 ---
 
-## Windows with MSVC (MFC)
-
-Prerequisites:
-- Visual Studio 2022 or later
-- CMake 3.25+
-- Windows 10 SDK or later
-
-```bash
-cd RASTER-Music-Tracker
-mkdir build-msvc
-cd build-msvc
-cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --config Release
-```
-
-Output: `out\Ritmo.exe`
-
-On Windows `RMT_USE_QT` is OFF by default and the MFC GUI is built.
-`-DRMT_USE_QT=ON` selects the Qt6 frontend there too, but that is not tested
-yet (see [Remaining work](#remaining-work-on-the-qt-frontend)).
-
----
-
 ## MinGW (engine and backends only)
 
-**What builds with MinGW:** the RMT engine and the audio/MIDI backends.
-**What does not:** the full tracker. Its MFC GUI (Rmt.cpp, MainFrm.cpp,
-RmtView.cpp, RmtDoc.cpp and the dialogs, 18 files) exists only for MSVC:
-no MinGW toolchain provides `afxwin.h`. The Qt6 frontend (`-DRMT_USE_QT=ON`)
-needs a Qt6 built for MinGW (MSYS2 has one, used by the GitHub build). For the full MFC tracker use MSVC.
+**What builds with MinGW on Linux (cross-compile):** the RMT engine and the
+audio/MIDI backends (`-DRMT_BUILD_CORE_ONLY=ON`). The full tracker needs a Qt6
+built for MinGW: MSYS2 has one, it is the GitHub build for Windows (see below).
 
 Prerequisites:
 - MinGW-w64 x86_64 compiler (Linux: `sudo apt install cmake mingw-w64`)
@@ -339,7 +314,7 @@ Output in `build-mingw-core/out/`:
 
 | File | Content |
 |------|---------|
-| `RmtCoreTest.exe` | the RMT engine (Song, Tracks, Instruments, C6502, Pokey, IO, SAP/ASM/WAV export) + the GUI-shared drawing code, without MFC |
+| `RmtCoreTest.exe` | the RMT engine (Song, Tracks, Instruments, C6502, Pokey, IO, SAP/ASM/WAV export) + the GUI-shared drawing code, without Qt |
 | `Ritmo.exe` | audio backend test (`main-portaudio.cpp`) |
 | `RmtMidiTest.exe` | MIDI backend test (`main-midi.cpp`) |
 
@@ -352,8 +327,7 @@ Notes:
 - PortAudio is optional on Windows: when `portaudio.h` is not found the
   PortAudio backend is left out (`RMT_NO_PORTAUDIO`) and the audio factory uses
   DirectSound. DirectSound and WinMM come with MinGW.
-- Without `-DRMT_BUILD_CORE_ONLY=ON` the full MFC build is attempted and stops
-  on `afxwin.h` (see above).
+- Without `-DRMT_BUILD_CORE_ONLY=ON` the full build needs Qt6 for MinGW (see below).
 
 ### Windows with MinGW native (MSYS2)
 
@@ -385,9 +359,8 @@ are in `.clang-format` and `.clang-tidy` at the top of the repository; any
 clang-format / clang-tidy 11 or later reads them (on Debian/Ubuntu:
 `apt install clang-format clang-tidy`).
 
-Left out on purpose: the third-party and generated sources (`src/asap.c`,
-`src/asap.h`, `src/astil.*`, `src/info_dlg.*`, `src/wasap.*`,
-`src/lzss_sap.*`, `src/resource.h`) and `legacy/`. MFC message maps and
+Left out on purpose: the third-party and generated sources (`src/lzss_sap.*`,
+`src/resource.h`) and `legacy/`. The message maps and
 hand-aligned tables sit between `// clang-format off` and
 `// clang-format on`; do the same for new tables of that kind.
 
@@ -427,9 +400,7 @@ clang-tidy -p build-qt src/Song.cpp
 
 It checks `readability-misleading-indentation` and
 `bugprone-suspicious-semicolon`, i.e. that the layout matches the control
-flow. Only the sources of the configured build are checked: with the Qt build
-the MFC-only files (`MainFrm.cpp`, the real dialogs, ...) are formatted but
-not checked. clang-tidy 11 reports `clang-diagnostic-error` in
+flow. clang-tidy 11 reports `clang-diagnostic-error` in
 `src/qt/RmtQtDialogs.cpp` (lambdas capturing structured bindings, which GCC
 accepts and clang supports from version 16): that is not a style problem.
 
@@ -486,9 +457,8 @@ The last release is `v2.2`; `RMT_BASE_VERSION` is `"2.3"`.
 
 ## CMake Options
 
-- `-DRMT_USE_QT=ON|OFF` - Qt6 frontend (default ON on Linux/POSIX, OFF on Windows)
 - `-DRMT_QT_MAJOR=6|5` - Qt version of the frontend (default: Qt6, else Qt 5.15)
-- `-DRMT_BUILD_CORE_ONLY=ON` - Build the engine and backends only, no GUI
+- `-DRMT_BUILD_CORE_ONLY=ON` - Build the engine and backends only, no Qt
 - `-DRMT_CORE_TEST=ON` - Also build `RmtCoreTest` (with `RMT_BUILD_CORE_ONLY`)
 - `-DCMAKE_BUILD_TYPE=Release` - Build optimized release version
 - `-DCMAKE_BUILD_TYPE=Debug` - Build with debug symbols
@@ -523,7 +493,7 @@ Check that all prerequisites are installed and in PATH.
 
 - **Linux / POSIX (Qt6, official):** `build-qt/out/ritmo`, with `resources/` next to
   it
-- **Windows, MSVC:** `build-msvc/out/Ritmo.exe` (the full MFC tracker)
+- **Windows (MSYS2 MinGW64, Qt6):** `build/out/Ritmo.exe`
 - **MinGW:** `build-mingw-core/out/RmtCoreTest.exe`, `Ritmo.exe` (audio test),
   `RmtMidiTest.exe` - engine and backends only, no tracker GUI (see above)
 
@@ -566,9 +536,8 @@ The Windows screenshot has no menu texts: the `offscreen` platform finds no
 fonts there (the tracker draws with its own bitmap font); the real `windows`
 platform has them.
 
-PortAudio and RtMidi are used by every build without MFC, on Windows too;
-the MFC build keeps DirectSound and the winmm MIDI of `RmtMidi.cpp`. With
-MSVC, `-DRMT_USE_QT=ON` no longer turns MFC on.
+PortAudio and RtMidi are used on every platform, Windows too (where RtMidi
+uses WinMM).
 
 ## Remaining work on the Qt frontend
 
@@ -577,7 +546,7 @@ track for the 2.x series. Remaining work:
 
 1. **Windows and macOS** — run the GitHub builds (first tag push) and fix
    what they find; then test the packages on real machines (sound, MIDI),
-   and make Qt the default on Windows too
+   and fix what they show
 
 ---
 
@@ -594,7 +563,5 @@ MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 | Configuration | Result |
 |---------------|--------|
 | `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` | ✅ `RmtCoreTest.exe`, `Ritmo.exe`, `RmtMidiTest.exe` build (not run: needs Windows or Wine) |
-| default (full MFC GUI) | ❌ 18 MFC files: `afxwin.h` not available with MinGW |
-| `-DRMT_USE_QT=ON` | ❌ no Qt6 for MinGW installed (the MSYS2 build on GitHub has it) |
+| default (full Qt GUI) | ❌ no Qt6 for MinGW installed (the MSYS2 build on GitHub has it) |
 
-MSVC builds: not tested here.

@@ -1,5 +1,5 @@
-#if !defined(AFX_EFFECTSDLG_H__9E855445_82D2_11D7_BEB0_00600854AFCA__INCLUDED_)
-#define AFX_EFFECTSDLG_H__9E855445_82D2_11D7_BEB0_00600854AFCA__INCLUDED_
+#if !defined(RMT_EFFECTSDLG_H)
+#define RMT_EFFECTSDLG_H
 
 
 #include "resource.h"
@@ -18,7 +18,6 @@ public:
     CEffectsDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CEffectsDlg)
     enum { IDD = IDD_EFFECTS };
     CStatic m_p3;
     CStatic m_p2;
@@ -28,7 +27,6 @@ public:
     CEdit m_edit1;
     CComboBox m_eff_combo;
     CString m_info;
-    //}}AFX_DATA
 
     int m_effai;
     int m_bfro;
@@ -41,10 +39,8 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CEffectsDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 
@@ -53,7 +49,6 @@ private:
 
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CEffectsDlg)
     virtual BOOL OnInitDialog();
     afx_msg void OnSelchangeEffCombo();
     virtual void OnOK();
@@ -62,7 +57,6 @@ protected:
     afx_msg void OnRestore();
     virtual void OnCancel();
     afx_msg void OnPlaystop();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 
@@ -75,26 +69,21 @@ public:
     CSongTracksOrderDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CSongTracksOrderDlg)
     enum { IDD = IDD_SONGTRACKSORDER };
     CString m_songlinefrom;
     CString m_songlineto;
-    //}}AFX_DATA
 
     int m_tracksorder[8];
     int m_fromtrack, m_totrack;
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CSongTracksOrderDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CSongTracksOrderDlg)
     virtual BOOL OnInitDialog();
     afx_msg void OnPaint();
     afx_msg void OnDefault();
@@ -105,7 +94,6 @@ protected:
     afx_msg void OnCopyleftright();
     afx_msg void OnCopyrightleft();
     afx_msg void OnClearall();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -117,7 +105,6 @@ public:
     CInstrumentChangeDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CInstrumentChangeDlg)
     enum { IDD = IDD_INSTRCHANGE };
     CButton m_check6;
     CEdit m_edit2;
@@ -142,7 +129,6 @@ public:
     int m_combo10;
     int m_combo11;
     int m_combo12;
-    //}}AFX_DATA
 
     int m_onlytrack;
     int m_onlychannels;
@@ -152,15 +138,12 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CInstrumentChangeDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CInstrumentChangeDlg)
     virtual BOOL OnInitDialog();
     afx_msg void OnDefault();
     afx_msg void OnSelchangeComboX();
@@ -174,7 +157,6 @@ protected:
     afx_msg void OnCheckSomeChannelsOnly();
     afx_msg void OnCheckTrackOnly();
     afx_msg void OnCheckSomeSonglinesOnly();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -188,26 +170,20 @@ public:
     int m_radio;
 
     // Dialog Data
-    //{{AFX_DATA(CRenumberTracksDlg)
     enum { IDD = IDD_RENUMBERTRACKS };
     // NOTE: the ClassWizard will add data members here
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CRenumberTracksDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CRenumberTracksDlg)
     virtual BOOL OnInitDialog();
     virtual void OnOK();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -221,26 +197,20 @@ public:
     int m_radio;
 
     // Dialog Data
-    //{{AFX_DATA(CRenumberInstrumentsDlg)
     enum { IDD = IDD_RENUMBERINSTRUMENTS };
     // NOTE: the ClassWizard will add data members here
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CRenumberInstrumentsDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CRenumberInstrumentsDlg)
     virtual BOOL OnInitDialog();
     virtual void OnOK();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 
@@ -254,7 +224,6 @@ public:
     BOOL ValuesTest();
 
     // Dialog Data
-    //{{AFX_DATA(CInsertCopyOrCloneOfSongLinesDlg)
     enum { IDD = IDD_SONGINSERTCOPYORCLONEOFSONGLINES };
     CStatic m_c_info;
     CStatic m_c_text2;
@@ -264,7 +233,6 @@ public:
     CEdit m_c_lineto;
     CEdit m_c_linefrom;
     CButton m_c_clone;
-    //}}AFX_DATA
 
     int m_linefrom, m_lineto, m_lineinto;
     BOOL m_clone;
@@ -272,20 +240,16 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CInsertCopyOrCloneOfSongLinesDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CInsertCopyOrCloneOfSongLinesDlg)
     virtual BOOL OnInitDialog();
     virtual void OnOK();
     afx_msg void OnClonetracks();
     afx_msg void OnChangeSonglinerange();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -297,33 +261,27 @@ public:
     COctaveSelectDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(COctaveSelectDlg)
     enum { IDD = IDD_OCTAVESELECT };
     // NOTE: the ClassWizard will add data members here
-    //}}AFX_DATA
 
     CPoint m_pos;
     int m_octave;
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(COctaveSelectDlg)
 public:
     virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 
 protected:
     // Generated message map functions
-    //{{AFX_MSG(COctaveSelectDlg)
     virtual void OnOK();
     afx_msg void OnOctave();
     virtual BOOL OnInitDialog();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -335,10 +293,8 @@ public:
     CInstrumentSelectDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CInstrumentSelectDlg)
     enum { IDD = IDD_INSTRUMENTSELECT };
     CListBox m_list1;
-    //}}AFX_DATA
 
     CPoint m_pos;
     int m_selected;
@@ -346,21 +302,17 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CInstrumentSelectDlg)
 public:
     virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CInstrumentSelectDlg)
     virtual BOOL OnInitDialog();
     afx_msg void OnSelchangeList1();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -372,33 +324,27 @@ public:
     CVolumeSelectDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CVolumeSelectDlg)
     enum { IDD = IDD_VOLUMESELECT };
     CListBox m_list1;
     BOOL m_respectvolume;
-    //}}AFX_DATA
 
     CPoint m_pos;
     int m_volume;
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CVolumeSelectDlg)
 public:
     virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CVolumeSelectDlg)
     afx_msg void OnSelchangeList1();
     virtual BOOL OnInitDialog();
     virtual void OnOK();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -410,30 +356,22 @@ public:
     CChannelsSelectionDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CChannelsSelectionDlg)
     enum { IDD = IDD_CHANNELSSELECT };
     // NOTE: the ClassWizard will add data members here
-    //}}AFX_DATA
 
     int m_channelyes;
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CChannelsSelectionDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CChannelsSelectionDlg)
     virtual void OnOK();
     virtual BOOL OnInitDialog();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_EFFECTSDLG_H__9E855445_82D2_11D7_BEB0_00600854AFCA__INCLUDED_)
+#endif // !defined(RMT_EFFECTSDLG_H)

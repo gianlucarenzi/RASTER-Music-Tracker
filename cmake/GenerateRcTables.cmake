@@ -6,7 +6,7 @@
 #
 #   rmt_generate_prompts(<output.cpp> <Rmt.rc> <resource.h>)
 #
-# Only the command IDs (ID_...) that are defined (resource.h, or the MFC ones of CompatTypes.h) are taken.
+# Only the command IDs (ID_...) that are defined (resource.h, or the standard ones of CompatTypes.h) are taken.
 
 function(rmt_generate_prompts output rc header)
     file(READ ${rc} rc_text)

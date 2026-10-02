@@ -34,13 +34,6 @@
 #include "Tuning.h"
 
 
-// Activate MFC memory leak detection.
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 extern CRmtApp g_app;
 extern CSong g_Song;
 extern CRmtMidi g_Midi;
@@ -57,7 +50,6 @@ IMPLEMENT_DYNCREATE(CRmtView, CView)
 
 // clang-format off
 BEGIN_MESSAGE_MAP(CRmtView, CView)
-    //{{AFX_MSG_MAP(CRmtView)
     ON_WM_ERASEBKGND()
     ON_WM_LBUTTONDOWN()
     ON_WM_RBUTTONDOWN()
@@ -266,7 +258,6 @@ BEGIN_MESSAGE_MAP(CRmtView, CView)
     ON_COMMAND(ID_VIEW_STATUS_BAR, OnViewStatusBar)
     ON_UPDATE_COMMAND_UI(ID_VIEW_STATUS_BAR, OnUpdateViewStatusBar)
     ON_COMMAND(ID_SONG_SONGCHANGEMAXIMALLENGTHOFTRACKS, OnSongSongchangemaximallengthoftracks)
-    //}}AFX_MSG_MAP
     ON_COMMAND(ID_FILE_EXIT, OnWantExit)
     // Standard printing commands
     ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
@@ -432,63 +423,14 @@ void CRmtView::OnEndPrinting(CDC* /*pDC*/, CPrintInfo* /*pInfo*/)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CRmtView diagnostics
-
-#ifdef _DEBUG
-void CRmtView::AssertValid() const
-{
-    CView::AssertValid();
-}
-
-void CRmtView::Dump(CDumpContext& dc) const
-{
-    CView::Dump(dc);
-}
-
-CRmtDoc* CRmtView::GetDocument() // non-debug version is inline
-{
-    ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CRmtDoc)));
-    return (CRmtDoc*)m_pDocument;
-}
-#endif //_DEBUG
-
-/////////////////////////////////////////////////////////////////////////////
 // CRmtView message handlers
 
 // Where the text of the configuration (CONFIG_FILENAME) and of the tuning
-// (TUNING_FILENAME) is kept: "NAME = value" lines. The Qt frontend keeps it
-// in QSettings (qt/RmtQtSettings.cpp), the other builds in the files next to
-// the program.
-#ifdef RMT_QT_GUI
+// (TUNING_FILENAME) is kept: "NAME = value" lines, in QSettings
+// (qt/RmtQtSettings.cpp).
 bool RmtLoadConfigText(const char* fileName, std::string& text); // false: nothing saved yet
 bool RmtSaveConfigText(const char* fileName, const std::string& text);
 CString RmtConfigTextLocation(const char* fileName);
-#else
-static bool RmtLoadConfigText(const char* fileName, std::string& text)
-{
-    std::ifstream in(GetResourceFilePath(std::filesystem::path(""), fileName));
-    if (!in && strcmp(fileName, CONFIG_FILENAME) == 0) // the file of RMT, before RITMO
-        in.open(GetResourceFilePath(std::filesystem::path(""), CONFIG_FILENAME_RMT));
-    if (!in) return false;
-    std::ostringstream all;
-    all << in.rdbuf();
-    text = all.str();
-    return true;
-}
-
-static bool RmtSaveConfigText(const char* fileName, const std::string& text)
-{
-    std::ofstream ou(GetResourceFilePath(std::filesystem::path(""), fileName));
-    if (!ou) return false;
-    ou << text;
-    return (bool)ou;
-}
-
-static CString RmtConfigTextLocation(const char* fileName)
-{
-    return GetResourceFilePath(std::filesystem::path(""), fileName);
-}
-#endif
 
 void CRmtView::ReadRMTConfig()
 {
@@ -498,9 +440,6 @@ void CRmtView::ReadRMTConfig()
     char *tmp, *name, *value;
     std::string text;
     if (!RmtLoadConfigText(CONFIG_FILENAME, text)) {
-#ifndef RMT_QT_GUI // QSettings: nothing saved yet is the first start, not an error
-        MessageBox("Could not find: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nRITMO will use the default configuration.\n", "RITMO", MB_ICONEXCLAMATION);
-#endif
         ResetRMTConfig(); // In order to save the default configuration file
         return;
     }
@@ -727,16 +666,10 @@ void CRmtView::WriteRMTConfig()
 // The keyboard layout of a first start (no ritmo.ini): the keyboard language of
 // the system - German QWERTZ, French AZERTY, else QWERTY. The Qt frontend asks
 // Qt's input method (qt/RmtQtSettings.cpp).
-#ifdef RMT_QT_GUI
 KeyboardLayout RmtDefaultKeyboardLayout(); // qt/RmtQtSettings.cpp
-#endif
 static KeyboardLayout DefaultKeyboardLayout()
 {
-#ifdef RMT_QT_GUI
     return RmtDefaultKeyboardLayout();
-#else
-    return KeyboardLayout::QWERTY;
-#endif
 }
 
 void CRmtView::ResetRMTConfig()
@@ -806,9 +739,6 @@ void CRmtView::ReadTuningConfig()
     const char* value2;
     std::string text;
     if (!RmtLoadConfigText(TUNING_FILENAME, text)) {
-#ifndef RMT_QT_GUI // QSettings: nothing saved yet is the first start, not an error
-        MessageBox("Could not find: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nRITMO will use the default Tuning parameters.\n", "RITMO", MB_ICONEXCLAMATION);
-#endif
         g_Song.ResetTuningVariables();
         WriteTuningConfig(); // In order to save the default Tuning configuration file
         return;

@@ -1,7 +1,7 @@
 #include "PlatformTypes.h"
 #include "GuiHelpers.h"
 
-// MFC interface code
+// Tracker interface code
 #include "Song.h"
 #include "PokeyController.h"
 
@@ -23,10 +23,7 @@
 #include "Keyboard2NoteMapping.h"
 #include "ChannelControl.h"
 
-// Note: outside the real-MFC build, CRmtApp/g_app come from CompatTypes.h
-// (a tiny non-MFC stand-in with the same GetVersionAndBuild() method),
-// since Rmt.h is real-MFC-only (it hard-requires <afxwin.h> to already be
-// included).
+// CRmtApp/g_app come from CompatTypes.h
 
 extern CRmtApp g_app;
 extern CSong g_Song;

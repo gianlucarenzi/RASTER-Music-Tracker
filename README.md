@@ -27,7 +27,7 @@ Peter Dell (JAC!), itself the continuation of the original RMT 1.28 by Radek
 Štěrba (Raster/C.P.U.) and of RMT 1.34 by Vin Samuel (VinsCool). The port
 replaces only what tied RMT to Windows:
 
-- the MFC windows, menus, toolbars and dialogs are now Qt6 (the tracker
+- the windows, menus, toolbars and dialogs (MFC in the Windows version) are now Qt6 (the tracker
   screen itself is drawn by the original code, pixel for pixel)
 - the sound goes out through PortAudio, MIDI IN comes in through RtMidi
   (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS)
@@ -135,7 +135,7 @@ cmake --build build-qt -j
 [BUILD.md](BUILD.md) has all the details: the other platforms, the
 AppImage (`scripts/build-appimage.sh`), the GitHub workflows that build the
 packages, the test hooks, and the state of every part of the Qt frontend.
-The original Windows MFC version still builds with MSVC.
+RITMO builds with Qt only: the MFC (Windows-only) code of RMT was removed.
 
 
 ### Documentation

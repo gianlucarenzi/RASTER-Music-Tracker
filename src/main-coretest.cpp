@@ -1,9 +1,9 @@
 // main-coretest.cpp
 //
-// Smoke test for the "RmtCoreTest" target (Fase 0 of the MFC -> Qt
-// migration plan): links the whole RMT engine (Song/Tracks/Instruments/
-// C6502/Pokey/IO_*/ASM*/SAPFile*/GUI_Song/GUI_Instruments/GuiHelpers/
-// Global/TracksControl/ChannelControl/...) outside of MFC, on plain GCC.
+// Smoke test for the "RmtCoreTest" target: links the whole RMT engine
+// (Song/Tracks/Instruments/C6502/Pokey/IO_*/ASM*/SAPFile*/GUI_Song/
+// GUI_Instruments/GuiHelpers/Global/TracksControl/ChannelControl/...)
+// without the Qt frontend, on plain GCC.
 //
 // This intentionally does not exercise any UI - there is none yet, that's
 // a later phase of the plan. It only needs to prove that the engine
@@ -176,22 +176,11 @@ int main(int argc, char** argv)
         std::filesystem::path dir = ec ? std::filesystem::path(argv[0]).parent_path() : exe.parent_path();
         SetProgramFolderPath(CString((dir.string() + "/").c_str()));
     }
-    std::printf("RmtCoreTest - RITMO engine (non-MFC build)\n");
+    std::printf("RmtCoreTest - RITMO engine (no Qt)\n");
     std::printf("Version string: %s\n", g_app.GetVersionAndBuild().GetString());
 
-    // Mirror the harmless, non-GUI part of CRmtApp::InitInstance() (Rmt.cpp):
-    // detect/initialise the 6502 emulation "DLL" (gracefully reports "not
-    // found" here, exactly as it would on a real machine missing
-    // sa_c6502.dll - see C6502::Init()) and the tuning tables.
-    //
-    // Intentionally NOT calling CAtariTrackerDriver::Init()/Play() or
-    // CTracks::InitTracks()/CInstruments::InitInstruments() here: those
-    // ultimately call CAtari::JSR() -> the native 6502 emulator DLL, a real
-    // *runtime hardware/DLL dependency* of the engine (present on every real
-    // Windows install alongside Rmt.exe) that is simply out of scope for
-    // Fase 0 (MFC/type portability) - not something a Linux build can ever
-    // satisfy without a from-scratch 6502 emulator, and orthogonal to
-    // whether the engine *compiles and links* outside of MFC.
+    // The non-GUI part of the start-up: the 6502 emulation (the built-in one,
+    // emu/Cpu6502.cpp) and the tuning tables.
     g_Atari.Init();
     g_tuning.Initialize(g_Song.IsNTSC());
     g_tuningRatios.Initialize();

@@ -1,10 +1,8 @@
 // RmtMidiRt.cpp - MIDI IN of CRmtMidi (RmtMidi.h) without the Windows MIDI API
 //
-// Builds without MFC (Qt frontend, core-only) use this instead of RmtMidi.cpp:
-// the MIDI IN devices are the RtMidi input ports (the ALSA sequencer on
+// The MIDI IN devices are the RtMidi input ports (the ALSA sequencer on
 // Linux), and each message goes to CSong::MidiEvent() packed like the
-// dwParam1 of a MIM_DATA message, from the RtMidi thread, as the MidiInProc()
-// callback of RmtMidi.cpp does from the winmm one. midiInGetNumDevs() and
+// dwParam1 of a MIM_DATA message, from the RtMidi thread. midiInGetNumDevs() and
 // midiInGetDevCaps() (CompatTypes.h) list the same ports for the configuration
 // code, which finds the device by its name. Without RtMidi (RTMIDI_AVAILABLE
 // not defined) there are no devices.

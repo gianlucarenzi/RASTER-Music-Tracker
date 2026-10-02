@@ -1,27 +1,18 @@
 // CompatTypes.h
 //
-// Minimal, non-MFC replacement for the small subset of MFC/Windows-SDK
-// types and free functions that the RMT engine (Song/Tracks/Instruments/
-// C6502/Pokey/IO_*/GUI_Song/GUI_Instruments/GuiHelpers/...) happens to use.
+// The Windows-style types and free functions (CString, BOOL/WORD/DWORD,
+// HWND, COLORREF/RGB, CDC and friends, the message-map macros, the standard
+// command IDs) that the RMT engine, the tracker view (RmtView.cpp) and the
+// "GUI-shared" sources (GUI_Song.cpp, GUI_Instruments.cpp, GuiHelpers.cpp,
+// TracksControl.cpp, ChannelControl.cpp, Global.cpp/h, ...) were written
+// with. It is the compatibility layer of RITMO: the program is Qt only, the
+// view draws on CompatDC objects that the Qt frontend (qt/) turns into
+// pixels, and the window system is reached through IRmtHost.
 //
-// This header is only ever included when building WITHOUT real MFC
-// (see PlatformTypes.h). It is never included by the genuine MFC files
-// (Rmt.cpp, MainFrm.cpp, RmtDoc.cpp, RmtView.cpp, StdAfx.cpp, the *Dlg.cpp
-// dialog implementations) which keep including <afxwin.h> exactly as
-// before, so the Windows/MSVC build is completely unaffected by anything
-// in this file.
-//
-// Everything here exists purely to make the engine + "GUI-shared" source
-// files (GUI_Song.cpp, GUI_Instruments.cpp, GuiHelpers.cpp, TracksControl.cpp,
-// ChannelControl.cpp, Global.cpp/h, ...) COMPILE AND LINK on a plain
-// GCC/Linux toolchain. None of it attempts to reproduce real MFC/Win32
-// behaviour or produce real rendering output - that is the job of a later
-// migration phase (Qt backend). Where the original code takes a real
-// branch (e.g. loading a DLL, creating a DirectSound buffer, opening a
-// real dialog) the stub below simply reports "not available"/"cancelled"
-// exactly like the real APIs already do on a machine without that
-// resource - the existing error handling in the engine takes care of the
-// rest.
+// Where the original code takes a Windows-only branch (loading a DLL,
+// creating a DirectSound buffer, opening a real dialog) the code below
+// reports "not available" / "cancelled" and the error handling of the engine
+// takes care of the rest.
 
 #pragma once
 
@@ -110,7 +101,7 @@ typedef const void*         LPCVOID;
 #define TEXT(x) x
 #define _T(x)   x
 
-// Standard command IDs of MFC (afxres.h), used by the menus and message maps
+// Standard command IDs of the Windows-style classes (afxres.h), used by the menus and message maps
 #define ID_FILE_NEW           0xE100
 #define ID_FILE_OPEN          0xE101
 #define ID_FILE_CLOSE         0xE102
@@ -780,7 +771,7 @@ class CFrameWnd;
 typedef intptr_t LRESULT;
 
 // ---------------------------------------------------------------------------
-// IRmtHost - what the MFC window classes ask of the window system. The GUI
+// IRmtHost - what the window classes ask of the window system. The GUI
 // frontend (src/qt) implements it and sets g_rmtHost; with no host (headless
 // RmtCoreTest) the calls do nothing and MessageBox prints to stderr.
 // ---------------------------------------------------------------------------
@@ -1253,9 +1244,7 @@ inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0)
     return IDOK;
 }
 
-// A tiny non-MFC stand-in for CRmtApp (declared for real in Rmt.h, which is
-// real-MFC-only and therefore not included in this build - see the
-// RMT_HAS_MFC guard around '#include "Rmt.h"' in GUI_Song.cpp).
+// The application object: the version string and the web pages of the help.
 class CRmtApp {
 public:
     CString GetVersionAndBuild() const;

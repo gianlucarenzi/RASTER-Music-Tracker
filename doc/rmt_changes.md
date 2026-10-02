@@ -18,6 +18,10 @@ Changes in RMT 2.00 (Planned)
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
 Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
+- The MFC build (Windows, MSVC) is removed: RITMO is Qt only. Gone are the MFC windows
+  and dialogs (Rmt.cpp, MainFrm.cpp, the *dlg.cpp files), the WASAP test cluster, the Visual
+  Studio project and solution and the `RMT_USE_QT` option; the compatibility layer is now
+  CompatTypes.h / CompatAudio.cpp / CompatDialogs.cpp (was Mfc*).
 - The program is renamed RITMO ("RITMO Is a Tracker for Music On Atari"): the executable
   is `ritmo` (`Ritmo.exe` on Windows), the packages are `Ritmo-*`, the configuration is
   `ritmo.ini` / `ritmo.conf` (registry key, plist). The settings of RMT (`rmt.conf`,

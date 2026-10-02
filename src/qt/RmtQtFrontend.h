@@ -1,10 +1,10 @@
 // RmtQtFrontend.h - Qt6 frontend of RASTER Music Tracker
 //
-// The tracker GUI is the MFC one (CRmtView, CMainFrame, CRmtDoc) compiled
-// against the CompatTypes.h shim: RmtQtBridge (RmtQtFrontend.cpp) implements
-// IRmtHost for it and owns the MFC objects, RmtViewWidget shows the view and
-// passes it keyboard, mouse and paint events, RmtMainWindow is the frame.
-// Only Qt types here: the MFC shim stays out of the moc'ed header.
+// The tracker GUI is CRmtView, CMainFrame and CRmtDoc, compiled against the
+// CompatTypes.h layer: RmtQtBridge (RmtQtFrontend.cpp) implements IRmtHost for
+// it and owns those objects, RmtViewWidget shows the view and passes it
+// keyboard, mouse and paint events, RmtMainWindow is the frame.
+// Only Qt types here: CompatTypes.h stays out of the moc'ed header.
 
 #pragma once
 

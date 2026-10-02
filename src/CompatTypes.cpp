@@ -1,7 +1,6 @@
 // CompatTypes.cpp
 //
-// Out-of-line pieces of the CompatTypes.h shim: only compiled when building
-// without real MFC (see PlatformTypes.h / RmtCoreTest CMake target).
+// Out-of-line pieces of CompatTypes.h
 
 #include "PlatformTypes.h"
 #include "resource.h"
@@ -16,10 +15,8 @@
 // Only the resource IDs actually reached via LoadString() calls in the
 // engine + GUI-shared source files are listed here (verified by grep):
 //   IDS_RMTVERSION / IDS_RMT_VERSION (IO_Song.cpp)
-// The other two (IDS_RMT_AUTHOR, IDS_RMT_REPOSITORY) are only used from
-// AboutDialog.cpp, a real MFC dialog not part of this build, but are kept
-// here too since they cost nothing and keep the table self-documenting.
-// Text taken verbatim from Rmt.rc.
+// IDS_RMT_AUTHOR and IDS_RMT_REPOSITORY are kept here too, they cost nothing
+// and keep the table self-documenting. Text taken verbatim from Rmt.rc.
 // ---------------------------------------------------------------------------
 
 BOOL CString::LoadString(UINT id)
@@ -41,9 +38,8 @@ BOOL CString::LoadString(UINT id)
 }
 
 // ---------------------------------------------------------------------------
-// CRmtApp - tiny non-MFC stand-in (real CRmtApp lives in Rmt.h/Rmt.cpp,
-// which are real-MFC-only). Mirrors CRmtApp::GetVersionAndBuild() from
-// Rmt.cpp so the version string displayed by GUI_Song.cpp is identical.
+// CRmtApp - the application object: the version string displayed by
+// GUI_Song.cpp.
 // ---------------------------------------------------------------------------
 
 CRmtApp g_app;

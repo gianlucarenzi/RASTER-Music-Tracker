@@ -1,7 +1,7 @@
-// main-qt.cpp - RASTER Music Tracker, Qt6 frontend
+// main-qt.cpp - RITMO, Qt frontend
 //
-// The start-up of CRmtApp::InitInstance() (Rmt.cpp, MFC only), then the
-// main window. The first command line argument is a song to open.
+// The start-up of the program, then the main window. The first command line
+// argument is a song to open.
 
 #include "StdAfx.h"
 #include "Global.h"

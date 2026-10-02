@@ -59,7 +59,7 @@ fi
 # --- build -------------------------------------------------------------------
 
 git config --global --add safe.directory "$ROOT" 2>/dev/null || true
-cmake -S . -B "$WORK/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_USE_QT=ON -DRMT_QT_MAJOR=6 \
+cmake -S . -B "$WORK/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DRMT_QT_MAJOR=6 \
     -DCMAKE_C_COMPILER=gcc-10 -DCMAKE_CXX_COMPILER=g++-10 \
     -DCMAKE_PREFIX_PATH="$QT_DIR"
 cmake --build "$WORK/build" --parallel

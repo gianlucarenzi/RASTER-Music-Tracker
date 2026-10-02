@@ -1,5 +1,5 @@
-#if !defined(AFX_CONFIGDLG_H__71CF2041_5206_11D7_BEB0_00600854AFCA__INCLUDED_)
-#define AFX_CONFIGDLG_H__71CF2041_5206_11D7_BEB0_00600854AFCA__INCLUDED_
+#if !defined(RMT_CONFIGDLG_H)
+#define RMT_CONFIGDLG_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -27,7 +27,6 @@ public:
     COptionsDialog(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(COptionsDialog)
     enum { IDD = IDD_CONFIG };
     CComboBox m_keyboard_c_layout;
     CComboBox m_midi_c_device;
@@ -50,27 +49,22 @@ public:
     BOOL m_keyboard_escresetatarisound;
     BOOL m_keyboard_askwhencontrol_s;
     BOOL m_viewDebugDisplay;
-    //}}AFX_DATA
 
     int m_midi_device;
     KeyboardLayout m_keyboard_layout;
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(COptionsDialog)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(COptionsDialog)
     virtual BOOL OnInitDialog();
     virtual void OnOK();
     afx_msg void OnMidiTouchResponseClicked();
     afx_msg void OnPaths();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 public:
     //afx_msg void OnBnClickedDisplayflatnotes();
@@ -87,32 +81,24 @@ public:
     void BrowsePath(int itemID);
 
     // Dialog Data
-    //{{AFX_DATA(COptionsPathsDlg)
     enum { IDD = IDD_PATHS };
     CString m_path_songs;
     CString m_path_instruments;
     CString m_path_tracks;
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(COptionsPathsDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(COptionsPathsDlg)
     afx_msg void OnButton1();
     afx_msg void OnButton2();
     afx_msg void OnButton3();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_CONFIGDLG_H__71CF2041_5206_11D7_BEB0_00600854AFCA__INCLUDED_)
+#endif // !defined(RMT_CONFIGDLG_H)

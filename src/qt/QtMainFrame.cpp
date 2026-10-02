@@ -1,9 +1,7 @@
-// QtMainFrame.cpp - CMainFrame outside MFC
+// QtMainFrame.cpp - CMainFrame of the Qt frontend
 //
-// MainFrm.cpp builds the MFC toolbars, rebar and status bar from the .rc
-// resources and cannot be compiled without MFC. In the Qt frontend the frame
-// is RmtMainWindow (RmtQtFrontend.cpp); these are the CMainFrame members the
-// rest of the GUI code references.
+// The frame of the program is RmtMainWindow (RmtQtFrontend.cpp); these are
+// the CMainFrame members the rest of the GUI code references.
 
 #include "StdAfx.h"
 #include "MainFrm.h"

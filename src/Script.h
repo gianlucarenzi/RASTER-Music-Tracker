@@ -8,7 +8,7 @@
 // name a letter followed by letters, digits, '-' or '_') is an option whose
 // value may itself be quoted; everything else is a positional argument.
 // Command and option names are case-insensitive (stored lower case); values
-// keep their case. No MFC here, so it links into the test project as is.
+// keep their case. No GUI classes here, so it links into the test project as is.
 
 #include <map>
 #include <stdexcept>

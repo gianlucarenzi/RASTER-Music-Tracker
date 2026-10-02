@@ -1,4 +1,4 @@
-// RmtQtDialogs.cpp - the MFC dialogs of RMT, rewritten with Qt (see RmtQtDialogs.h)
+// RmtQtDialogs.cpp - the dialogs of RITMO, in Qt (see RmtQtDialogs.h)
 
 #include "RmtQtDialogs.h"
 
@@ -937,7 +937,7 @@ static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
 // importdlgs.cpp, TuningDialog.cpp)
 // ---------------------------------------------------------------------------
 
-// A hex number edit (ES_UPPERCASE), read with Hexstr() like the MFC dialogs
+// A hex number edit (ES_UPPERCASE), read with Hexstr() like the other dialogs
 static QLineEdit* HexEdit(int value)
 {
     auto* edit = UpperCaseEdit(QString::asprintf("%02X", value));
@@ -1121,7 +1121,7 @@ static INT_PTR RunInsertSongLines(QWidget* parent, CInsertCopyOrCloneOfSongLines
 }
 
 // IDD_OCTAVESELECT, IDD_VOLUMESELECT, IDD_INSTRUMENTSELECT - the small tool
-// windows of the info line. The MFC ones are placed at m_pos, the click point
+// windows of the info line. The other ones are placed at m_pos, the click point
 // moved left by dx and up by 7; here from the mouse position, which is the
 // click point on the screen
 static void PlacePopup(QDialog& dialog, int dx)

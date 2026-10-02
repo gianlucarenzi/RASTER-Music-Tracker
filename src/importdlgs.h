@@ -1,5 +1,5 @@
-#if !defined(AFX_IMPORTDLGS_H__75C2CF47_F291_11D7_BEB0_00600854AFCA__INCLUDED_)
-#define AFX_IMPORTDLGS_H__75C2CF47_F291_11D7_BEB0_00600854AFCA__INCLUDED_
+#if !defined(RMT_IMPORTDLGS_H)
+#define RMT_IMPORTDLGS_H
 
 #include "resource.h"
 
@@ -20,7 +20,6 @@ public:
     CString m_txtradio1, m_txtradio2;
 
     // Dialog Data
-    //{{AFX_DATA(CImportModDlg)
     enum { IDD = IDD_IMPORTMOD };
     CString m_info;
     BOOL m_check1;
@@ -31,24 +30,19 @@ public:
     BOOL m_check6;
     BOOL m_check7;
     BOOL m_check8;
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CImportModDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CImportModDlg)
     virtual BOOL OnInitDialog();
     virtual void OnOK();
     afx_msg void OnCheck2();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 
@@ -61,29 +55,23 @@ public:
     CImportModFinishedDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CImportModFinishedDlg)
     enum { IDD = IDD_IMPORTMODFINISHED };
     CStatic m_info2;
     CButton m_okbutt;
     CButton m_check1;
     CString m_info;
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CImportModFinishedDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CImportModFinishedDlg)
     virtual BOOL OnInitDialog();
     afx_msg void OnCheck1();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -95,28 +83,22 @@ public:
     CImportTmcDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CImportTmcDlg)
     enum { IDD = IDD_IMPORTTMC };
     BOOL m_check1;
     BOOL m_check6;
     BOOL m_check7;
     CString m_info;
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CImportTmcDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CImportTmcDlg)
     virtual BOOL OnInitDialog();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -128,29 +110,23 @@ public:
     CImportTmcFinishedDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CImportTmcFinishedDlg)
     enum { IDD = IDD_IMPORTTMCFINISHED };
     CStatic m_info2;
     CButton m_okbutt;
     CButton m_check1;
     CString m_info;
-    //}}AFX_DATA
 
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CImportTmcFinishedDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CImportTmcFinishedDlg)
     virtual BOOL OnInitDialog();
     afx_msg void OnCheck1();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 /////////////////////////////////////////////////////////////////////////////
@@ -162,10 +138,8 @@ public:
     CTracksLoadDlg(CWnd* pParent = NULL); // standard constructor
 
     // Dialog Data
-    //{{AFX_DATA(CTracksLoadDlg)
     enum { IDD = IDD_TRACKSLOAD };
     CStatic m_text1;
-    //}}AFX_DATA
 
     int m_trackfrom;
     int m_tracknum;
@@ -173,21 +147,15 @@ public:
 
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CTracksLoadDlg)
 protected:
     virtual void DoDataExchange(CDataExchange* pDX); // DDX/DDV support
-                                                     //}}AFX_VIRTUAL
 
     // Implementation
 protected:
     // Generated message map functions
-    //{{AFX_MSG(CTracksLoadDlg)
     virtual void OnOK();
     virtual BOOL OnInitDialog();
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_IMPORTDLGS_H__75C2CF47_F291_11D7_BEB0_00600854AFCA__INCLUDED_)
+#endif // !defined(RMT_IMPORTDLGS_H)

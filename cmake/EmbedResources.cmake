@@ -1,5 +1,5 @@
 # EmbedResources.cmake - compile the bitmaps of src/res into the program for
-# the builds without MFC (no .rc resources there): generates a C++ file with
+# the program (no .rc resources at run time): generates a C++ file with
 # one byte array per resource and RmtFindResource(), declared in CompatTypes.h.
 #
 #   rmt_embed_resources(<output.cpp> <ID> <file> [<ID> <file> ...])

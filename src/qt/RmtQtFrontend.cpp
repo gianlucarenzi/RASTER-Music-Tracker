@@ -50,7 +50,7 @@ extern CStatusBar* g_statusBar;
 extern CSong g_Song;
 
 // ---------------------------------------------------------------------------
-// The MFC classes, with their protected constructors and handlers opened up
+// The tracker classes, with their protected constructors and handlers opened up
 // for the frontend
 // ---------------------------------------------------------------------------
 
@@ -131,7 +131,7 @@ public:
 };
 
 // ---------------------------------------------------------------------------
-// RmtQtBridge - IRmtHost for the MFC code, owner of the MFC objects
+// RmtQtBridge - IRmtHost for the tracker code, owner of its objects
 // ---------------------------------------------------------------------------
 
 // An accelerator of Rmt.rc as a Qt key sequence; empty for the keys the view handles itself (the numeric keypad's)
@@ -269,7 +269,7 @@ public:
     }
 
     // File / Print, Print Preview, Print Setup: the tracker screen (the bitmap the window shows) on a page, as the
-    // MFC view prints its OnDraw(). The page is landscape and the picture fills it keeping its proportions.
+    // view prints its OnDraw(). The page is landscape and the picture fills it keeping its proportions.
     std::unique_ptr<QPrinter> m_printer;
 
     QPrinter& Printer()
@@ -322,7 +322,7 @@ public:
         }
     }
 
-    // WM_COMMAND: the view, then the frame (as the MFC command routing)
+    // WM_COMMAND: the view, then the frame (the command routing of the Windows-style classes)
     void Dispatch(UINT id)
     {
         if (id == ID_FILE_PRINT || id == ID_FILE_PRINT_PREVIEW || id == ID_FILE_PRINT_SETUP) { // (the view maps them to MFC's printing)
@@ -632,7 +632,7 @@ public:
         UpdateToolBars();
     }
 
-    // ON_UPDATE_COMMAND_UI of the buttons (MFC runs it when idle), the combo
+    // ON_UPDATE_COMMAND_UI of the buttons (run when idle), the combo
     // follows g_linesafter (Ctrl+numpad +/-, new song), the icons the
     // interface size
     void UpdateToolBars()
@@ -896,7 +896,7 @@ public:
     }
 };
 
-// CRmtApp::OpenUrl() (Rmt.cpp is MFC only); the test runs (RMT_QT_GRAB) open no browser
+// CRmtApp::OpenUrl() (the application object, CompatTypes.h); the test runs (RMT_QT_GRAB) open no browser
 void CRmtApp::OpenUrl(const char* url)
 {
     if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {
@@ -904,7 +904,7 @@ void CRmtApp::OpenUrl(const char* url)
     }
 }
 
-// CRmtApp::OpenOnlineHelp() (Rmt.cpp is MFC only)
+// CRmtApp::OpenOnlineHelp()
 void CRmtApp::OpenOnlineHelp()
 {
     QDesktopServices::openUrl(QUrl("https://html-preview.github.io/?url=https://github.com/raster-atari-org/RASTER-Music-Tracker/blob/1.35/doc//rmt_en.html"));

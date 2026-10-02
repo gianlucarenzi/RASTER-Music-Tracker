@@ -11,7 +11,7 @@
 #include <QKeyEvent>
 
 // Win32 VK codes (the same values as CompatTypes.h, repeated to keep this file
-// free of the MFC shim)
+// free of CompatTypes.h)
 enum : unsigned {
     K_BACK = 0x08,
     K_TAB = 0x09,

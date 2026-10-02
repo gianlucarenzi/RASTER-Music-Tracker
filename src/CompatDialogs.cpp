@@ -1,24 +1,17 @@
 // CompatDialogs.cpp
 //
-// The RMT engine is not as cleanly separated from the MFC dialog layer as
-// one might hope: a handful of engine files (Song.cpp, IO_Song.cpp,
+// The RMT engine is not as cleanly separated from the dialog layer as one
+// might hope: a handful of engine files (Song.cpp, IO_Song.cpp,
 // IO_Song_ExportAsm.cpp, IO_Importer.cpp, GUI_Song.cpp, Clipboard.cpp,
-// SongExporter.cpp, ASMFileExporter.cpp) directly instantiate real MFC
-// CDialog-derived classes (declared in EffectsDlg.h / filenewdlg.h /
-// importdlgs.h / exportdlgs.h) and call DoModal() on them. Those classes'
-// constructors and virtual overrides are normally defined in the
-// corresponding real-MFC-only *.cpp files (effectsdlg.cpp, filenewdlg.cpp,
-// importdlgs.cpp, exportdlgs.cpp) which are NOT part of this build (they
-// are genuine CDialog implementations, out of scope for Fase 0).
+// SongExporter.cpp, ASMFileExporter.cpp) instantiate the CDialog-derived
+// data classes (declared in EffectsDlg.h / filenewdlg.h / importdlgs.h /
+// exportdlgs.h / ...) and call DoModal() on them. The dialogs themselves are
+// Qt (qt/RmtQtDialogs.cpp), which reads and writes their data members.
 //
-// This file provides the minimum set of out-of-line definitions
-// (constructor + declared virtuals) needed to link those classes into the
-// RmtCoreTest binary, exactly mirroring the "always cancelled" behaviour
-// CDialog::DoModal() already has in CompatTypes.h. None of this is reachable
-// from main-coretest.cpp; it only needs to exist for the link to succeed.
-// It intentionally duplicates none of the real dialogs' business logic.
-//
-// Only compiled when building without real MFC.
+// This file defines the out-of-line members (constructor + declared
+// virtuals) of those classes, without any business logic of their own, so
+// that they link in every build, RmtCoreTest included, where DoModal() is
+// always cancelled (CompatTypes.h).
 
 #include "PlatformTypes.h"
 
@@ -174,7 +167,7 @@ BOOL CExportRelocatableAsmForRmtPlayer::OnInitDialog() { return TRUE; }
 //
 // Reached through the static Show() helper (SongExporter.cpp). The dialog is
 // shown by the Qt frontend; Show() is the one of SAPFileExportDialog.cpp
-// (MFC only, it also has the DDX code), kept identical.
+// (the dialog classes also have the DDX code), kept identical.
 // ---------------------------------------------------------------------------
 
 CSAPFileExportDialog::CSAPFileExportDialog(CWnd* pParent) : CDialog(CSAPFileExportDialog::IDD, pParent) {}

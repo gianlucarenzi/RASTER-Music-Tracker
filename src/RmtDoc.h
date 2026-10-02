@@ -2,8 +2,8 @@
 //
 /////////////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_RMTDOC_H__1709C74B_06D0_11D7_BEB0_00600854AFCA__INCLUDED_)
-#define AFX_RMTDOC_H__1709C74B_06D0_11D7_BEB0_00600854AFCA__INCLUDED_
+#if !defined(RMT_RMTDOC_H)
+#define RMT_RMTDOC_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -20,11 +20,9 @@ public:
 public:
     // Overrides
     // ClassWizard generated virtual function overrides
-    //{{AFX_VIRTUAL(CRmtDoc)
 public:
     virtual BOOL OnNewDocument();
     virtual void Serialize(CArchive& ar){};
-    //}}AFX_VIRTUAL
 
     // Implementation
 public:
@@ -33,16 +31,12 @@ public:
 protected:
     // Generated message map functions
 protected:
-    //{{AFX_MSG(CRmtDoc)
     // NOTE - the ClassWizard will add and remove member functions here.
     //    DO NOT EDIT what you see in these blocks of generated code !
-    //}}AFX_MSG
     DECLARE_MESSAGE_MAP()
 };
 
 /////////////////////////////////////////////////////////////////////////////
 
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_RMTDOC_H__1709C74B_06D0_11D7_BEB0_00600854AFCA__INCLUDED_)
+#endif // !defined(RMT_RMTDOC_H)

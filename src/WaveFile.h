@@ -1,8 +1,7 @@
 #pragma once
 
 #include "PlatformTypes.h"
-// Outside the real-MFC build there is no mmio*() API: the WAV file is
-// written with std::ofstream (RIFF header, "fmt " and "data" chunks).
+// The WAV file is written with std::ofstream (RIFF header, "fmt " and "data" chunks).
 #include <cstdint>
 #include <fstream>
 
