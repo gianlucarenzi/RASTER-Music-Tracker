@@ -4,7 +4,7 @@
 // same entry points (C6502_Initialise / C6502_JSR / C6502_About), a flat 64 KB
 // memory with no I/O (the tracker driver writes the POKEY registers at $D200
 // in memory, the renderer copies them to the POKEY emulation), documented
-// opcodes with their cycle counts (page crossing and taken branches included).
+// and stable undocumented opcodes with their cycle counts (page crossing and taken branches included).
 //
 // Derived from the 6502 core of AT2019/ATARI-Driver/RmtSkeleton/tools/rmtplay.
 
@@ -21,7 +21,7 @@ public:
     // Run the subroutine at adr (like JSR adr) with A/X/Y until its RTS, or
     // until cycles runs out. cycles is reduced by the cycles run; A/X/Y and adr
     // (the program counter reached) are updated. Returns 0 at RTS, 1 if the
-    // cycles ran out, 2 on an undocumented opcode.
+    // cycles ran out, 2 on an opcode that is not implemented (JAM, unstable).
     int Jsr(uint16_t& adr, uint8_t& a, uint8_t& x, uint8_t& y, int& cycles);
 
 private:
@@ -72,8 +72,11 @@ private:
     }
     uint16_t Imm() { return m_pc++; }
 
-    // one instruction; returns its cycles, 0 for an undocumented opcode
+    // one instruction; returns its cycles, 0 for an opcode not implemented
     int Step();
+    // the stable undocumented opcodes (LAX SAX SLO RLA SRE RRA DCP ISC ANC ALR
+    // ARR AXS, SBC $EB, the NOPs); 0 for the unstable ones and the JAMs
+    int StepUndocumented(uint8_t op);
 };
 
 } // namespace rmt_emu

@@ -468,7 +468,99 @@ int Cpu6502::Step()
     }
 #undef RMW
 #undef LD
-    return 0;
+    return StepUndocumented(op);
+}
+
+// pc is already past the opcode
+int Cpu6502::StepUndocumented(uint8_t op)
+{
+    uint16_t ea;
+    m_extra = 0;
+    switch (op) {
+        // NOPs: implied, immediate, zp, zp,x, abs, abs,x
+        case 0x1A: case 0x3A: case 0x5A: case 0x7A: case 0xDA: case 0xFA: return 2;
+        case 0x80: case 0x82: case 0x89: case 0xC2: case 0xE2: m_pc++; return 2;
+        case 0x04: case 0x44: case 0x64: m_pc++; return 3;
+        case 0x14: case 0x34: case 0x54: case 0x74: case 0xD4: case 0xF4: m_pc++; return 4;
+        case 0x0C: m_pc += 2; return 4;
+        case 0x1C: case 0x3C: case 0x5C: case 0x7C: case 0xDC: case 0xFC:
+            Absi(m_x, true);
+            return 4 + m_extra;
+
+        // immediate
+        case 0x0B: case 0x2B: // ANC
+            m_a &= Rd(Imm());
+            SetNZ(m_a);
+            m_p = (uint8_t)((m_p & ~FC) | (m_a >> 7));
+            return 2;
+        case 0x4B: // ALR
+            m_a &= Rd(Imm());
+            m_a = Lsr(m_a);
+            return 2;
+        case 0x6B: { // ARR (binary mode)
+            m_a &= Rd(Imm());
+            m_a = (uint8_t)((m_a >> 1) | ((m_p & FC) << 7));
+            SetNZ(m_a);
+            m_p = (uint8_t)(m_p & ~(FC | FV));
+            if (m_a & 0x40) m_p |= FC;
+            if (((m_a >> 6) ^ (m_a >> 5)) & 1) m_p |= FV;
+            return 2;
+        }
+        case 0xCB: { // AXS
+            uint8_t v = Rd(Imm()), t = (uint8_t)(m_a & m_x);
+            m_p = (uint8_t)((m_p & ~FC) | (t >= v ? FC : 0));
+            m_x = (uint8_t)(t - v);
+            SetNZ(m_x);
+            return 2;
+        }
+        case 0xEB: Sbc(Rd(Imm())); return 2;
+
+        // SAX
+        case 0x83: Wr(Izx(), (uint8_t)(m_a & m_x)); return 6;
+        case 0x87: Wr(Zp(), (uint8_t)(m_a & m_x)); return 3;
+        case 0x8F: Wr(Abs(), (uint8_t)(m_a & m_x)); return 4;
+        case 0x97: Wr(Zpy(), (uint8_t)(m_a & m_x)); return 4;
+
+        // LAX
+#define LAX(mode, cyc)        \
+    {                         \
+        m_a = m_x = Rd(mode); \
+        SetNZ(m_a);           \
+        return cyc + m_extra; \
+    }
+        case 0xA3: LAX(Izx(), 6)
+        case 0xA7: LAX(Zp(), 3)
+        case 0xAF: LAX(Abs(), 4)
+        case 0xB3: LAX(Izy(true), 5)
+        case 0xB7: LAX(Zpy(), 4)
+        case 0xBF: LAX(Absi(m_y, true), 4)
+#undef LAX
+    }
+
+    // read-modify-write then ALU: SLO RLA SRE RRA (op >> 5 = 0..3), DCP ISC (6, 7)
+    int fam = op >> 5, cyc;
+    switch (op & 0x1F) {
+        case 0x03: ea = Izx(); cyc = 8; break;
+        case 0x07: ea = Zp(); cyc = 5; break;
+        case 0x0F: ea = Abs(); cyc = 6; break;
+        case 0x13: ea = Izy(false); cyc = 8; break;
+        case 0x17: ea = Zpx(); cyc = 6; break;
+        case 0x1B: ea = Absi(m_y, false); cyc = 7; break;
+        case 0x1F: ea = Absi(m_x, false); cyc = 7; break;
+        default: return 0;
+    }
+    uint8_t v = Rd(ea);
+    switch (fam) {
+        case 0: v = Asl(v); m_a |= v; SetNZ(m_a); break; // SLO
+        case 1: v = Rol(v); m_a &= v; SetNZ(m_a); break; // RLA
+        case 2: v = Lsr(v); m_a ^= v; SetNZ(m_a); break; // SRE
+        case 3: v = Ror(v); Adc(v); break;               // RRA
+        case 6: v--; Cmp(m_a, v); break;                 // DCP
+        case 7: v++; Sbc(v); break;                      // ISC
+        default: return 0;
+    }
+    Wr(ea, v);
+    return cyc;
 }
 
 int Cpu6502::Jsr(uint16_t& adr, uint8_t& a, uint8_t& x, uint8_t& y, int& cycles)
@@ -489,7 +581,7 @@ int Cpu6502::Jsr(uint16_t& adr, uint8_t& a, uint8_t& x, uint8_t& y, int& cycles)
         uint8_t op = Rd(m_pc);
         int c = Step();
         if (!c) {
-            std::fprintf(stderr, "Cpu6502: undocumented opcode $%02X at $%04X\n", op, (unsigned)(m_pc - 1));
+            std::fprintf(stderr, "Cpu6502: unsupported opcode $%02X at $%04X\n", op, (unsigned)(m_pc - 1));
             result = 2;
             break;
         }
@@ -528,7 +620,7 @@ void RmtBuiltin_C6502_About(char** name, char** author, char** description)
 {
     static char n[] = "RMT built-in 6502";
     static char au[] = "RASTER Music Tracker";
-    static char d[] = "NMOS 6502, documented opcodes, cycle counted (replaces sa_c6502.dll)";
+    static char d[] = "NMOS 6502, documented and stable undocumented opcodes, cycle counted (replaces sa_c6502.dll)";
     *name = n;
     *author = au;
     *description = d;
