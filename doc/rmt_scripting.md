@@ -5,19 +5,19 @@ set what the export dialogs would ask, export in any format, save. This is
 meant for batch files, build scripts and CI, where the SAP, XEX, WAV and ASM
 files of a song are produced from its `.rmt` source reproducibly, and for
 repeated export sets while composing. The script format is the one of the
-Windows `Rmt.exe` and of the Java port of the RASTER-Music-Tracker
+Windows `Ritmo.exe` and of the Java port of the RASTER-Music-Tracker
 repository, so the same script runs in all of them.
 
 ## Running a script
 
 ```
-rmt /SCRIPT:build.rmtscript
+ritmo /SCRIPT:build.rmtscript
 ```
 
 `-script:<file>` and `--script=<file>` are accepted too. The program starts
 without showing its window and exits with the script's exit code. The
 configuration (`rmt.ini` and `tuning.ini`, kept in the user's settings -
-`~/.config/raster-atari.org/rmt.conf` on Linux) is read as for the window, so the
+`~/.config/raster-atari.org/ritmo.conf` on Linux) is read as for the window, so the
 tuning shapes the exports exactly as in the tracker; it is not written back.
 
 - **Linux:** no display is needed - without `QT_QPA_PLATFORM` set, a script
@@ -26,7 +26,7 @@ tuning shapes the exports exactly as in the tracker; it is not written back.
 - **Windows:** `rmt.exe` is a windowed program, so `cmd.exe` returns to the
   prompt at once unless it is started with `start /wait` (in PowerShell:
   `Start-Process rmt.exe "/SCRIPT:build.rmtscript" -Wait`).
-- **macOS:** `rmt.app/Contents/MacOS/rmt /SCRIPT:build.rmtscript`.
+- **macOS:** `Ritmo.app/Contents/MacOS/ritmo /SCRIPT:build.rmtscript`.
 
 Messages that would be boxes in the window are printed to the console:
 errors and warnings to stderr, information to stdout; a question is answered
@@ -117,7 +117,7 @@ echo finished
 ```
 
 ```
-rmt /SCRIPT:Delta/build.rmtscript
+ritmo /SCRIPT:Delta/build.rmtscript
 ```
 
 ## Environment variables
@@ -136,12 +136,12 @@ different outputs, without editing it:
 `test-resources/scripts` holds two reference scripts (`delta.rmtscript`: the
 mono reference song through every save and export, once with the defaults and
 once with every option set; `midi.rmtscript`: MIDI messages recorded into it).
-`scripts/test-scripting.sh [path/to/rmt]` runs both twice into separate
+`scripts/test-scripting.sh [path/to/ritmo]` runs both twice into separate
 folders and checks the exit codes, that the files exist and that the two runs
 are byte-identical; it also checks the exit codes 1 and 2. The scripts are the
 ones the Windows program and the Java port compare their exports with, so the
 output folders can be compared with those programs' as well (WAV files
-excepted: 8-bit in `Rmt.exe`, 16-bit in the Java port).
+excepted: 8-bit in `Ritmo.exe`, 16-bit in the Java port).
 
 ## Not available as script commands
 

@@ -1,15 +1,18 @@
-# RASTER Music Tracker 2.2.1 - the Qt port
+# RITMO - Atari POKEY music tracker
 
 ### About
 
-RASTER Music Tracker (short RMT) is a tool for making Atari XL/XE music
-for the POKEY sound chip. RMT uses the Atari XL/XE music routines created by
+RITMO (*RITMO Is a Tracker for Music On Atari*) is a tool for making Atari
+XL/XE music for the POKEY sound chip. It is the new name of RASTER Music
+Tracker (RMT), which uses the Atari XL/XE music routines created by
 Radek Štěrba from 2002 to 2009. It was a small revolution for all Atari
-musicians and fans.
+musicians and fans. *Ritmo* means "rhythm" in Italian, Spanish and Portuguese.
 
-**RMT 2.x is a port of RMT to Qt6, so that it runs natively on Linux,
+**RITMO 2.x is the port of RMT to Qt6, so that it runs natively on Linux,
 Windows and macOS** (Intel and Apple Silicon), and not only on Windows.
-(RMT 2.0 was built with Qt5, 2.1 moved to Qt6.)
+(2.0 was built with Qt5, 2.1 moved to Qt6.) The program was called RASTER
+Music Tracker / RMT up to 2.2.1; the file formats (`.rmt`, `.rmw`) and the
+RMT drivers keep their names.
 
 The heart of the program is **the original RMT code**: the tracker, the
 editor, the Atari 6502 music routines, the POKEY emulation, the file formats,
@@ -24,7 +27,8 @@ replaces only what tied RMT to Windows:
   (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS)
 - the 6502 and POKEY emulation is built in, no `sa_c6502.dll` /
   `apokeysnd.dll`
-- the configuration is kept per user (QSettings), so it survives updates
+- the configuration is kept per user (QSettings), so it survives updates;
+  the settings of RMT (`rmt.conf`, `rmt.ini`) are taken over at the first start
 
 Songs, instruments and tracks are the same files as in RMT 1.3x: you can
 move your work between the Windows version and this one.
@@ -81,10 +85,13 @@ different from the Windows version you know?
 | macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2.1/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
 | macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
 
+These packages are the last ones with the name RMT (`RMT-*`, `Rmt.exe`, `rmt`);
+the next releases are named `Ritmo-*` with the executable `ritmo` / `Ritmo.exe`.
+
 Everything the program needs is inside each package. The configuration is
-kept in `~/.config/raster-atari.org/rmt.conf` on Linux, in the registry
-(`HKEY_CURRENT_USER\Software\raster-atari.org\rmt`) on Windows and in
-`~/Library/Preferences/org.raster-atari.rmt.plist` on macOS.
+kept in `~/.config/raster-atari.org/ritmo.conf` on Linux, in the registry
+(`HKEY_CURRENT_USER\Software\raster-atari.org\ritmo`) on Windows and in
+`~/Library/Preferences/org.raster-atari.ritmo.plist` on macOS.
 
 The original Windows (MFC) versions of RMT are still available from the
 upstream project:
@@ -116,7 +123,7 @@ On Linux:
 sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
 cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
 cmake --build build-qt -j
-./build-qt/out/rmt song.rmt
+./build-qt/out/ritmo song.rmt
 ```
 
 [BUILD.md](BUILD.md) has all the details: the other platforms, the
@@ -178,7 +185,7 @@ Issues of the original RMT are tracked on the [upstream issue tracker](https://g
 ### Credits
 
 - [Radek Štěrba](http://atariki.krap.pl/index.php/Raster/C.P.U.), Raster/C.P.U., 2002-2009 ([original website](http://raster.infos.cz/atari/rmt/rmt.htm))<br>
-  Thank you for everything you did, we truly miss you <3.
+  **R.I.P.** Thank you for everything you did, we truly miss you <3.
 - Robert Petruzela, Bob!k/C.P.U. and - JirkaS/C.P.U.
 - [Vin Samuel](https://github.com/VinsCool), VinsCool, 2021-2024
 - [Peter Dell](https://www.wudsn.com), JAC!, 2024 to present

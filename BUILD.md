@@ -31,7 +31,7 @@ sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
 ```bash
 cmake -B build-qt -DCMAKE_BUILD_TYPE=Release   # RMT_USE_QT is ON by default off Windows
 cmake --build build-qt -j
-./build-qt/out/rmt song.rmt
+./build-qt/out/ritmo song.rmt
 ```
 
 The build is free of compiler warnings with GCC 10 (`-Wall -Wextra`).
@@ -41,7 +41,7 @@ The build is free of compiler warnings with GCC 10 (`-Wall -Wextra`).
 A song can be loaded from the command line at start-up:
 
 ```bash
-./build-qt/out/rmt legacy/rmt_128/songs/thrust.rmt
+./build-qt/out/ritmo legacy/rmt_128/songs/thrust.rmt
 ```
 
 Or via **File → Load…** (`Ctrl+L`) from the menu bar. Give the window focus
@@ -66,7 +66,7 @@ updating or reinstalling RMT keeps them:
 
 | System | Where |
 |--------|-------|
-| Linux | `~/.config/raster-atari.org/rmt.conf` (`$XDG_CONFIG_HOME`) |
+| Linux | `~/.config/raster-atari.org/ritmo.conf` (`$XDG_CONFIG_HOME`) |
 | Windows | registry, `HKEY_CURRENT_USER\Software\raster-atari.org\rmt` |
 | macOS | `~/Library/Preferences/org.raster-atari.rmt.plist` |
 
@@ -178,9 +178,9 @@ replaces the sound card with a thread that takes the sound buffer in real time
 and writes it to a WAV file:
 
 ```bash
-QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png ./build-qt/out/ritmo song.rmt
 QT_QPA_PLATFORM=offscreen RMT_AUDIO_DUMP=play.wav RMT_QT_KEYS=63 RMT_QT_GRAB_MS=6000 \
-    RMT_QT_GRAB=shot.png ./build-qt/out/rmt song.rmt
+    RMT_QT_GRAB=shot.png ./build-qt/out/ritmo song.rmt
 ```
 
 `RMT_QT_COMMANDS` then triggers the menu actions of the given command IDs
@@ -193,7 +193,7 @@ ASM export; none left: cancel). Load a song, save it as TXT, load the TXT and sa
 ```bash
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_GRAB_MS=3000 \
     RMT_QT_COMMANDS=0xE101,0xE104,0xE101,0xE104 \
-    RMT_QT_FILEDIALOG=gemx.rmt,/tmp/g.txt,/tmp/g.txt,/tmp/g2.rmt ./build-qt/out/rmt
+    RMT_QT_FILEDIALOG=gemx.rmt,/tmp/g.txt,/tmp/g.txt,/tmp/g2.rmt ./build-qt/out/ritmo
 cmp gemx.rmt /tmp/g2.rmt     # identical
 ```
 
@@ -205,10 +205,10 @@ understand", then OK), through the same checks as a click on OK:
 
 ```bash
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png RMT_QT_GRAB_MS=3000 \
-    RMT_QT_COMMANDS=0xE100 RMT_QT_DIALOG=new.png ./build-qt/out/rmt song.rmt
+    RMT_QT_COMMANDS=0xE100 RMT_QT_DIALOG=new.png ./build-qt/out/ritmo song.rmt
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=shot.png RMT_QT_GRAB_MS=5000 \
     RMT_QT_COMMANDS=32856 RMT_QT_FILEDIALOG=rmt/imports/axel_f.mod \
-    RMT_QT_DIALOG=import.png ./build-qt/out/rmt      # import.png, import-2.png
+    RMT_QT_DIALOG=import.png ./build-qt/out/ritmo      # import.png, import-2.png
 ```
 
 `ID_FILE_NEW` = `0xE100`, `ID_FILE_OPEN` = `0xE101`, `ID_FILE_SAVE_AS` = `0xE104`, `ID_FILE_IMPORT` =
@@ -230,7 +230,7 @@ programmatically and exits 0 if every action has a registered handler, 1 otherwi
 
 ```bash
 QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_GRAB_MS=20000 RMT_QT_MENU_TEST=1 \
-    ./build-qt/out/rmt
+    ./build-qt/out/ritmo
 # RMT_QT_MENU_TEST: triggered 162 menu actions
 # RMT_QT_MENU_TEST: PASS
 ```
@@ -238,7 +238,7 @@ QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=1 RMT_QT_GRAB_MS=20000 RMT_QT_MENU_TEST=1 
 The menu and the keys are defined in `src/Rmt.rc` only (`IDR_MAINFRAME MENU` and
 `IDR_MAINFRAME ACCELERATORS`): CMake turns them into tables at configure time
 (`cmake/GenerateRcTables.cmake`) and the frontend builds its menu bar and its
-shortcuts from them. Scripts: `rmt /SCRIPT:<file>` ([doc/rmt_scripting.md](doc/rmt_scripting.md)),
+shortcuts from them. Scripts: `ritmo /SCRIPT:<file>` ([doc/rmt_scripting.md](doc/rmt_scripting.md)),
 checked by `scripts/test-scripting.sh`, like the menu test on every push by the
 workflow `.github/workflows/test.yml`. `scripts/make-docs.sh` regenerates the command
 table, the note keys and the HTML manual (`doc/rmt_en.md`) from the program.
@@ -305,7 +305,7 @@ cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build . --config Release
 ```
 
-Output: `out\Rmt.exe`
+Output: `out\Ritmo.exe`
 
 On Windows `RMT_USE_QT` is OFF by default and the MFC GUI is built.
 `-DRMT_USE_QT=ON` selects the Qt6 frontend there too, but that is not tested
@@ -340,7 +340,7 @@ Output in `build-mingw-core/out/`:
 | File | Content |
 |------|---------|
 | `RmtCoreTest.exe` | the RMT engine (Song, Tracks, Instruments, C6502, Pokey, IO, SAP/ASM/WAV export) + the GUI-shared drawing code, without MFC |
-| `Rmt.exe` | audio backend test (`main-portaudio.cpp`) |
+| `Ritmo.exe` | audio backend test (`main-portaudio.cpp`) |
 | `RmtMidiTest.exe` | MIDI backend test (`main-midi.cpp`) |
 
 Notes:
@@ -521,10 +521,10 @@ Check that all prerequisites are installed and in PATH.
 
 ## Output Artifacts
 
-- **Linux / POSIX (Qt6, official):** `build-qt/out/rmt`, with `resources/` next to
+- **Linux / POSIX (Qt6, official):** `build-qt/out/ritmo`, with `resources/` next to
   it
-- **Windows, MSVC:** `build-msvc/out/Rmt.exe` (the full MFC tracker)
-- **MinGW:** `build-mingw-core/out/RmtCoreTest.exe`, `Rmt.exe` (audio test),
+- **Windows, MSVC:** `build-msvc/out/Ritmo.exe` (the full MFC tracker)
+- **MinGW:** `build-mingw-core/out/RmtCoreTest.exe`, `Ritmo.exe` (audio test),
   `RmtMidiTest.exe` - engine and backends only, no tracker GUI (see above)
 
 All output binaries are in `out/` subdirectory of the build folder.
@@ -543,11 +543,11 @@ are only the artifacts, no release:
 
 | Workflow | Runner | Toolchain and libraries | Package |
 |----------|--------|-------------------------|---------|
-| `.github/workflows/build-linux.yml` | `ubuntu-latest`, container `ubuntu:20.04` (glibc 2.31, as Debian 11) | GCC 10, `portaudio19-dev`, `librtmidi-dev` (ALSA) of Ubuntu 20.04, the official Qt 6.8.3 (`aqtinstall` in a Python 3.9 venv; Ubuntu 20.04 has no Qt6) | `RMT-Linux-x86_64.AppImage` (`linuxdeploy` + Qt plugin): runs on Debian 11 / Ubuntu 20.04 and newer, the build checks that no file in it needs a glibc after 2.31 |
-| `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt6-base`, `portaudio`, `rtmidi` (WinMM) | `RMT-Windows-x64.zip`: `Rmt.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
-| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | Apple Clang, the official Qt 6.8.3 `clang_64` (universal) for both. arm64: Homebrew `portaudio`, `rtmidi` (CoreMIDI). x86_64: PortAudio 19.7.0 and RtMidi 6.0.0 built from source for x86_64 (Homebrew no longer installs on Intel). Minimum macOS 12, as Qt 6.8 | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Macs, or Apple Silicon through Rosetta 2): `RMT.app` with the Qt frameworks and the libraries inside (`macdeployqt`, checked with the load commands of `otool -l`) |
+| `.github/workflows/build-linux.yml` | `ubuntu-latest`, container `ubuntu:20.04` (glibc 2.31, as Debian 11) | GCC 10, `portaudio19-dev`, `librtmidi-dev` (ALSA) of Ubuntu 20.04, the official Qt 6.8.3 (`aqtinstall` in a Python 3.9 venv; Ubuntu 20.04 has no Qt6) | `Ritmo-Linux-x86_64.AppImage` (`linuxdeploy` + Qt plugin): runs on Debian 11 / Ubuntu 20.04 and newer, the build checks that no file in it needs a glibc after 2.31 |
+| `.github/workflows/build-windows.yml` | `windows-2022` | MSYS2 MINGW64: GCC, `qt6-base`, `portaudio`, `rtmidi` (WinMM) | `Ritmo-Windows-x64.zip`: `Ritmo.exe`, `resources/`, the Qt and MinGW DLLs (`windeployqt` + `ldd`) |
+| `.github/workflows/build-macos.yml` | `macos-14` (Apple Silicon) | Apple Clang, the official Qt 6.8.3 `clang_64` (universal) for both. arm64: Homebrew `portaudio`, `rtmidi` (CoreMIDI). x86_64: PortAudio 19.7.0 and RtMidi 6.0.0 built from source for x86_64 (Homebrew no longer installs on Intel). Minimum macOS 12, as Qt 6.8 | `RMT-macOS-arm64.dmg` (native) and `RMT-macOS-x86_64.dmg` (Intel Macs, or Apple Silicon through Rosetta 2): `Ritmo.app` with the Qt frameworks and the libraries inside (`macdeployqt`, checked with the load commands of `otool -l`) |
 
-`RMT.app` needs nothing installed. It is signed ad hoc, not notarized, so
+`Ritmo.app` needs nothing installed. It is signed ad hoc, not notarized, so
 macOS asks to open it with right click → Open the first time. Its
 `resources/` are in `Contents/MacOS`, next to the program (as in `out/`);
 the configuration is in the user's preferences, so a new DMG keeps it.
@@ -557,7 +557,7 @@ AppImage locally in the same system:
 
 ```bash
 docker run --rm -v "$PWD":/src -w /src ubuntu:20.04 scripts/build-appimage.sh
-# build-appimage/RMT-Linux-x86_64.AppImage
+# build-appimage/Ritmo-Linux-x86_64.AppImage
 ```
 
 On the runners there is no sound card: the smoke tests print "cannot open the
@@ -593,7 +593,7 @@ MinGW-w64 GCC 10 (posix threads), cross-compiled on Linux, CMake 3.27:
 
 | Configuration | Result |
 |---------------|--------|
-| `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` | ✅ `RmtCoreTest.exe`, `Rmt.exe`, `RmtMidiTest.exe` build (not run: needs Windows or Wine) |
+| `-DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON` | ✅ `RmtCoreTest.exe`, `Ritmo.exe`, `RmtMidiTest.exe` build (not run: needs Windows or Wine) |
 | default (full MFC GUI) | ❌ 18 MFC files: `afxwin.h` not available with MinGW |
 | `-DRMT_USE_QT=ON` | ❌ no Qt6 for MinGW installed (the MSYS2 build on GitHub has it) |
 

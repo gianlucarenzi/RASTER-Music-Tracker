@@ -1,10 +1,10 @@
 ﻿************************************************************************
 
-RASTER Music Tracker - RMT
-==========================
+RITMO (RASTER Music Tracker - RMT)
+==================================
 
 - https://github.com/raster-atari-org/RASTER-Music-Tracker
-- Radek Sterba, Raster/C.P.U. (2002-2009)
+- Radek Sterba, Raster/C.P.U. (2002-2009), R.I.P.
 - Vin Samuel, VinsCool (2021-2024)
 - Peter Dell, JAC! (2024-2026).
 
@@ -18,8 +18,16 @@ Changes in RMT 2.00 (Planned)
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
 Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
+- The program is renamed RITMO ("RITMO Is a Tracker for Music On Atari"): the executable
+  is `ritmo` (`Ritmo.exe` on Windows), the packages are `Ritmo-*`, the configuration is
+  `ritmo.ini` / `ritmo.conf` (registry key, plist). The settings of RMT (`rmt.conf`,
+  `rmt.ini` next to the program) are taken over when there are none of RITMO yet.
+  The `.rmt` / `.rmw` files, the RMT drivers and the `RMT_*` environment variables
+  keep their names.
+- Built-in 6502: the stable undocumented opcodes (LAX, SAX, SLO, RLA, SRE, RRA, DCP, ISC,
+  ANC, ALR, ARR, AXS, SBC $EB, the multi-byte NOPs) for the RMT drivers that use them.
 - Scripting from the command line, as in the Windows program and the Java port of
-  RMT 1.36: `rmt /SCRIPT:<file>` runs a script (open, save, export in the eight
+  RMT 1.36: `ritmo /SCRIPT:<file>` runs a script (open, save, export in the eight
   formats with the dialogs' options, set ntsc/driver/overwrite/output, midi,
   dump actions, dump notekeys, echo) without showing the window and exits with its code;
   see doc/rmt_scripting.md and scripts/test-scripting.sh. The export dialogs
