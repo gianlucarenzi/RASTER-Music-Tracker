@@ -17,7 +17,7 @@ ritmo /SCRIPT:build.rmtscript
 `-script:<file>` and `--script=<file>` are accepted too. The program starts
 without showing its window and exits with the script's exit code. The
 configuration (`rmt.ini` and `tuning.ini`, kept in the user's settings -
-`~/.config/raster-atari.org/ritmo.conf` on Linux) is read as for the window, so the
+`~/.config/ritmo-atari.org/ritmo.conf` on Linux) is read as for the window, so the
 tuning shapes the exports exactly as in the tracker; it is not written back.
 
 - **Linux:** no display is needed - without `QT_QPA_PLATFORM` set, a script

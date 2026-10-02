@@ -136,7 +136,7 @@ jobs:
           <plist version="1.0">
           <dict>
             <key>CFBundleExecutable</key><string>ritmo</string>
-            <key>CFBundleIdentifier</key><string>org.raster-atari.ritmo</string>
+            <key>CFBundleIdentifier</key><string>org.ritmo-atari.ritmo</string>
             <key>CFBundleName</key><string>Ritmo</string>
             <key>CFBundleDisplayName</key><string>RITMO</string>
             <key>CFBundlePackageType</key><string>APPL</string>

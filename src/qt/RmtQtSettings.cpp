@@ -5,10 +5,10 @@
 // key of QSettings, in the group named after the file ("ritmo", "tuning"). The
 // settings belong to the user on the host system, not to the program folder,
 // so an update or a new installation of RITMO keeps them:
-//   Linux    ~/.config/raster-atari.org/ritmo.conf ($XDG_CONFIG_HOME)
-//   Windows  registry, HKEY_CURRENT_USER\Software\raster-atari.org\ritmo
-//   macOS    ~/Library/Preferences/org.raster-atari.ritmo.plist
-// With nothing saved yet, the settings of RMT (the same places with "rmt" in
+//   Linux    ~/.config/ritmo-atari.org/ritmo.conf ($XDG_CONFIG_HOME)
+//   Windows  registry, HKEY_CURRENT_USER\Software\ritmo-atari.org\ritmo
+//   macOS    ~/Library/Preferences/org.ritmo-atari.ritmo.plist
+// With nothing saved yet, the settings of RMT (organization raster-atari.org, "rmt" in
 // place of "ritmo", group "rmt" for the configuration) and then a ritmo.ini /
 // rmt.ini / tuning.ini next to the program (the earlier versions kept them
 // there) are taken over once.
@@ -30,7 +30,7 @@
 
 static QSettings& Settings()
 {
-    static QSettings settings(QSettings::NativeFormat, QSettings::UserScope, "raster-atari.org", "ritmo");
+    static QSettings settings(QSettings::NativeFormat, QSettings::UserScope, "ritmo-atari.org", "ritmo");
     return settings;
 }
 

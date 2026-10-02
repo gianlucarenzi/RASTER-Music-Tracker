@@ -89,9 +89,9 @@ These packages are the last ones with the name RMT (`RMT-*`, `Rmt.exe`, `rmt`);
 the next releases are named `Ritmo-*` with the executable `ritmo` / `Ritmo.exe`.
 
 Everything the program needs is inside each package. The configuration is
-kept in `~/.config/raster-atari.org/ritmo.conf` on Linux, in the registry
-(`HKEY_CURRENT_USER\Software\raster-atari.org\ritmo`) on Windows and in
-`~/Library/Preferences/org.raster-atari.ritmo.plist` on macOS.
+kept in `~/.config/ritmo-atari.org/ritmo.conf` on Linux, in the registry
+(`HKEY_CURRENT_USER\Software\ritmo-atari.org\ritmo`) on Windows and in
+`~/Library/Preferences/org.ritmo-atari.ritmo.plist` on macOS.
 
 The original Windows (MFC) versions of RMT are still available from the
 upstream project:

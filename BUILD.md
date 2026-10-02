@@ -66,9 +66,9 @@ updating or reinstalling RMT keeps them:
 
 | System | Where |
 |--------|-------|
-| Linux | `~/.config/raster-atari.org/ritmo.conf` (`$XDG_CONFIG_HOME`) |
-| Windows | registry, `HKEY_CURRENT_USER\Software\raster-atari.org\rmt` |
-| macOS | `~/Library/Preferences/org.raster-atari.rmt.plist` |
+| Linux | `~/.config/ritmo-atari.org/ritmo.conf` (`$XDG_CONFIG_HOME`) |
+| Windows | registry, `HKEY_CURRENT_USER\Software\ritmo-atari.org\ritmo` |
+| macOS | `~/Library/Preferences/org.ritmo-atari.ritmo.plist` |
 
 The first start with nothing saved takes over the `rmt.ini` / `tuning.ini`
 of an earlier version next to the program, if there are any, else it saves
