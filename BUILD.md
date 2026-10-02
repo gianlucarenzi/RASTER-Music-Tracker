@@ -413,14 +413,13 @@ accepts and clang supports from version 16): that is not a style problem.
 ## Versioning
 
 The version string baked into the binary is derived **at CMake configure time**
-from the nearest git tag. A single source of truth; no hardcoded version
+from the git tag of the commit, or from `RMT_BASE_VERSION`. A single source of truth; no hardcoded version
 strings in C++ source files.
 
 | Situation | Version shown |
 |-----------|--------------|
-| On an exact tag `v2.0-rc1` | `2.0-rc1` |
-| Commits after that tag | `2.0-rc1+dev` |
-| No tag reachable | `2.0-dev` |
+| On an exact tag `v2.3-rc1` | `2.3-rc1` |
+| Any other commit | `RMT_BASE_VERSION`, e.g. `2.3` |
 
 `RMT_BASE_VERSION` in `CMakeLists.txt` is the numeric `MAJOR.MINOR` used by
 the release scripts. The generated header `RmtVersion.h` (build directory)
@@ -455,7 +454,8 @@ The script refuses to run when the notes file is missing or not committed.
 
 After a release, update `RMT_BASE_VERSION` in `CMakeLists.txt` to the next
 development target (e.g. `"2.2"`) so subsequent RC tags follow the new series.
-The last release is `v2.2`; `RMT_BASE_VERSION` is `"2.3"`.
+The last release is `v2.2.1`; `RMT_BASE_VERSION` is `"2.3"`, the version in development.
+A commit without a tag reports exactly that, `2.3`; a tagged one reports its tag.
 
 ---
 

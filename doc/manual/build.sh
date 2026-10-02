@@ -12,9 +12,9 @@ if [ "${1:-}" = "--screenshots" ]; then
 fi
 mkdir -p generated
 
-# the version of the manual: the nearest tag of the repository
-VERSION=$(git describe --tags --match 'v[0-9]*' 2>/dev/null | sed 's/^v//' || true)
-VERSION=${VERSION:-development}
+# the version of the manual: the tag when the commit is tagged, else RMT_BASE_VERSION of CMakeLists.txt
+VERSION=$(git describe --tags --match 'v[0-9]*' --exact-match 2>/dev/null | sed 's/^v//' || true)
+VERSION=${VERSION:-$(grep -m1 -oP 'set\(RMT_BASE_VERSION\s+"\K[^"]+' ../../CMakeLists.txt)}
 DATE=$(date +"%B %Y")
 cat >generated/version.tex <<TEX
 \\newcommand{\\RitmoVersion}{${VERSION//_/\\_}}

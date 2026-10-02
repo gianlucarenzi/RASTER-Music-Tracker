@@ -3,15 +3,15 @@ cmake_minimum_required(VERSION 3.25)
 # Project definition
 project(
     Rmt
-    VERSION 2.0.0
+    VERSION 2.3.0
     DESCRIPTION "RITMO - Atari XL/XE music tracker, based on RASTER Music Tracker"
     LANGUAGES CXX C
 )
 
 # ---------------------------------------------------------------------------
-# Version string: derived from the nearest git tag (v2.0-rc1, v2.1, …).
-# RMT_BASE_VERSION is the numeric major.minor used by scripts/push.sh.
-# RMT_VERSION_FULL is the human-readable string baked into the binary.
+# Version string: the git tag when the commit is tagged (v2.3, v2.4-rc1, …), else the
+# RMT_BASE_VERSION, the numeric major.minor of the version in development (also used by
+# scripts/push.sh). RMT_VERSION_FULL is the human-readable string baked into the binary.
 # ---------------------------------------------------------------------------
 set(RMT_BASE_VERSION "2.3")
 
@@ -28,23 +28,10 @@ if(Git_FOUND)
     if(_RMT_EXACT_TAG)
         string(REGEX REPLACE "^v" "" RMT_VERSION_FULL "${_RMT_EXACT_TAG}")
     else()
-        # Between tags: nearest tag + "+dev"
-        execute_process(
-            COMMAND "${GIT_EXECUTABLE}" describe --tags --match "v[0-9]*" --abbrev=0
-            OUTPUT_VARIABLE _RMT_NEAREST_TAG
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            ERROR_QUIET
-            WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
-        )
-        if(_RMT_NEAREST_TAG)
-            string(REGEX REPLACE "^v" "" _RMT_NEAREST_TAG "${_RMT_NEAREST_TAG}")
-            set(RMT_VERSION_FULL "${_RMT_NEAREST_TAG}+dev")
-        else()
-            set(RMT_VERSION_FULL "${RMT_BASE_VERSION}-dev")
-        endif()
+        set(RMT_VERSION_FULL "${RMT_BASE_VERSION}")
     endif()
 else()
-    set(RMT_VERSION_FULL "${RMT_BASE_VERSION}-dev")
+    set(RMT_VERSION_FULL "${RMT_BASE_VERSION}")
 endif()
 
 message(STATUS "RMT version: ${RMT_VERSION_FULL}")
