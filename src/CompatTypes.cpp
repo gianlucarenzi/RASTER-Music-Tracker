@@ -1,6 +1,6 @@
-// MfcTypes.cpp
+// CompatTypes.cpp
 //
-// Out-of-line pieces of the MfcTypes.h shim: only compiled when building
+// Out-of-line pieces of the CompatTypes.h shim: only compiled when building
 // without real MFC (see PlatformTypes.h / RmtCoreTest CMake target).
 
 #include "PlatformTypes.h"
@@ -79,7 +79,7 @@ CString CRmtApp::GetVersionAndBuild() const
 }
 
 // ---------------------------------------------------------------------------
-// CBitmap / CDC - software drawing (see MfcTypes.h)
+// CBitmap / CDC - software drawing (see CompatTypes.h)
 // ---------------------------------------------------------------------------
 
 static uint32_t rd32(const unsigned char* p) { return p[0] | (p[1] << 8) | (p[2] << 16) | ((uint32_t)p[3] << 24); }

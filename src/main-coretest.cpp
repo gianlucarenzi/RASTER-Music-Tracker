@@ -31,7 +31,7 @@ extern TTuningSettings g_tuning;
 extern TTuningRatios g_tuningRatios;
 
 // --screenshot: draw the main screen like CRmtView::DrawAll() into the
-// software CDC of MfcTypes.h and write it as a PPM image
+// software CDC of CompatTypes.h and write it as a PPM image
 static int Screenshot(const char* out, int w, int h, const char* song)
 {
     CBitmap gfxBitmap;

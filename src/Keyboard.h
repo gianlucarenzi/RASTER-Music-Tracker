@@ -1,7 +1,7 @@
 #pragma once
 
 // Virtual keys of the digits and letters, which Windows does not define. The Qt
-// builds define them as macros in MfcTypes.h.
+// builds define them as macros in CompatTypes.h.
 #ifndef VK_A
 static constexpr int VK_0 = '0';
 static constexpr int VK_1 = '1';

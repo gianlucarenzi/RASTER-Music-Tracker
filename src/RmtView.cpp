@@ -32,9 +32,6 @@
 #include "ScriptRunner.h"
 #include "Shell.h"
 #include "Tuning.h"
-#ifdef RMT_HAS_MFC
-#include "Rmt.h" // outside MFC, CRmtApp/g_app come from MfcTypes.h
-#endif
 
 
 // Activate MFC memory leak detection.
@@ -729,7 +726,7 @@ void CRmtView::WriteRMTConfig()
 
 // The keyboard layout of a first start (no ritmo.ini): the keyboard language of
 // the system - German QWERTZ, French AZERTY, else QWERTY. The Qt frontend asks
-// Qt's input method (qt/RmtQtSettings.cpp); the MFC build the thread's input locale.
+// Qt's input method (qt/RmtQtSettings.cpp).
 #ifdef RMT_QT_GUI
 KeyboardLayout RmtDefaultKeyboardLayout(); // qt/RmtQtSettings.cpp
 #endif
@@ -737,11 +734,6 @@ static KeyboardLayout DefaultKeyboardLayout()
 {
 #ifdef RMT_QT_GUI
     return RmtDefaultKeyboardLayout();
-#elif defined(RMT_HAS_MFC) && defined(_WIN32)
-    WORD language = PRIMARYLANGID(LOWORD((DWORD_PTR)GetKeyboardLayout(0)));
-    if (language == LANG_GERMAN) return KeyboardLayout::QWERTZ;
-    if (language == LANG_FRENCH) return KeyboardLayout::AZERTY;
-    return KeyboardLayout::QWERTY;
 #else
     return KeyboardLayout::QWERTY;
 #endif
@@ -2423,22 +2415,6 @@ BOOL CRmtView::OnUpdatePokeyCommand(CCmdUI* pCmdUI)
     return TRUE;
 }
 
-#ifdef RMT_HAS_MFC
-// The 47 items have no message map entries of their own: routed here before the view's map.
-BOOL CRmtView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
-{
-    if (CPokeyController::IsCommand(nID)) {
-        if (nCode == CN_COMMAND) {
-            if (pHandlerInfo == NULL) OnPokeyCommand(nID);
-            return TRUE;
-        }
-        if (nCode == CN_UPDATE_COMMAND_UI && pHandlerInfo == NULL) {
-            return OnUpdatePokeyCommand((CCmdUI*)pExtra);
-        }
-    }
-    return CView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-}
-#endif
 
 // File / Properties (Alt+Enter): the facts of the song and of its module
 void CRmtView::OnFileProperties()

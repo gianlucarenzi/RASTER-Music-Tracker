@@ -1,7 +1,4 @@
 #include "StdAfx.h"
-#ifdef RMT_HAS_MFC
-#include "Rmt.h"
-#endif
 #include "RmtDoc.h"
 
 #ifdef _DEBUG

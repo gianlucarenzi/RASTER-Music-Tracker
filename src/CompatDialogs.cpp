@@ -1,4 +1,4 @@
-// MfcDialogStubs.cpp
+// CompatDialogs.cpp
 //
 // The RMT engine is not as cleanly separated from the MFC dialog layer as
 // one might hope: a handful of engine files (Song.cpp, IO_Song.cpp,
@@ -14,7 +14,7 @@
 // This file provides the minimum set of out-of-line definitions
 // (constructor + declared virtuals) needed to link those classes into the
 // RmtCoreTest binary, exactly mirroring the "always cancelled" behaviour
-// CDialog::DoModal() already has in MfcTypes.h. None of this is reachable
+// CDialog::DoModal() already has in CompatTypes.h. None of this is reachable
 // from main-coretest.cpp; it only needs to exist for the link to succeed.
 // It intentionally duplicates none of the real dialogs' business logic.
 //

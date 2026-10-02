@@ -112,7 +112,7 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
 - Release scripts added: scripts/push.sh auto-increments v2.0-rcN and pushes
   branch + tag; scripts/release.sh creates a plain v2.X release tag. (2026-09-28)
 - Fixed the Qt frontend using 100% of all CPU cores. (2026-09-28)
-  The song timer (MfcAudio.cpp, timeSetEvent) re-created from its own tick
+  The song timer (CompatAudio.cpp, timeSetEvent) re-created from its own tick
   could start its callback while the previous one was still running, whenever
   the timer fell behind by more than one tick: CSongTimer then kept two live
   timers, their number doubled at every stall, and CSong::TimerRoutine() ran
@@ -189,7 +189,7 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
 - WAV export fixed (it always failed outside Windows, and wrote no sound
   with apokeysnd.dll or the built-in POKEY). (2026-09-29)
   - The non-MFC build writes the WAV file with std::ofstream; the mmio*()
-    API it used is Windows only (MfcTypes.h had always-failing stubs).
+    API it used is Windows only (CompatTypes.h had always-failing stubs).
   - RenderSoundV2() only rendered with sa_pokey.dll; it now renders with the
     APOKEYSND driver too (apokeysnd.dll and the built-in POKEY).
   - Stereo songs: the 2nd POKEY is the first half of a stereo stream frame;

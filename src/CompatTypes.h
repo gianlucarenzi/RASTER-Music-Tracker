@@ -1,4 +1,4 @@
-// MfcTypes.h
+// CompatTypes.h
 //
 // Minimal, non-MFC replacement for the small subset of MFC/Windows-SDK
 // types and free functions that the RMT engine (Song/Tracks/Instruments/
@@ -445,7 +445,7 @@ public:
         return a.compare(b);
     }
 
-    // Loads a fixed, small resource-string table (see MfcTypes.cpp) instead
+    // Loads a fixed, small resource-string table (see CompatTypes.cpp) instead
     // of a real Windows .rc string table.
     BOOL LoadString(UINT id);
 
@@ -1405,7 +1405,7 @@ private:
 typedef void(CALLBACK* LPTIMECALLBACK)(UINT, UINT, DWORD_PTR, DWORD_PTR, DWORD_PTR);
 #define TIME_PERIODIC 1
 #define TIME_ONESHOT  0
-// multimedia timers on a thread (MfcAudio.cpp)
+// multimedia timers on a thread (CompatAudio.cpp)
 UINT timeSetEvent(UINT delay, UINT resolution, LPTIMECALLBACK callback, DWORD_PTR user, UINT flags);
 UINT timeKillEvent(UINT id);
 
@@ -1450,7 +1450,7 @@ struct DSBCAPS {
 #define DSBLOCK_FROMWRITECURSOR     0x00000001
 #define DSBPLAY_LOOPING             0x00000001
 
-// DirectSound outside Windows (MfcAudio.cpp): a secondary buffer is a ring
+// DirectSound outside Windows (CompatAudio.cpp): a secondary buffer is a ring
 // that PortAudio plays (when available and g_rmtAudioOutput is true), with
 // real play/write cursors, so PokeyRenderer.cpp streams to it exactly as to
 // DirectSound. Otherwise the buffer "plays" instantly: the cursors follow the

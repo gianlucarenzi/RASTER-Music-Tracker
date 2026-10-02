@@ -66,27 +66,6 @@ if(RMT_BUILD_CORE_ONLY)
 endif()
 
 
-# Qt native GUI frontend (Qt6, or Qt 5.15): the official build on Linux/POSIX
-# (default ON there).
-# Windows keeps the MFC GUI by default; -DRMT_USE_QT=ON selects Qt there too.
-if(WINDOWS_PLATFORM)
-    option(RMT_USE_QT "Build the Qt native GUI frontend instead of MFC" OFF)
-else()
-    option(RMT_USE_QT "Build the Qt native GUI frontend (official build on this platform)" ON)
-endif()
-
-# Check if MFC is available
-if(NOT WINDOWS_PLATFORM AND NOT CMAKE_CROSSCOMPILING AND NOT RMT_BUILD_CORE_ONLY AND NOT RMT_USE_QT)
-    message(FATAL_ERROR
-        "The MFC GUI (RMT_USE_QT=OFF) can only be built on Windows with MSVC.\n"
-        "\n"
-        "To build on this system:\n"
-        "  - Build the Qt frontend, the official build here: cmake -DRMT_USE_QT=ON (the default)\n"
-        "  - Or build core only: cmake -DRMT_BUILD_CORE_ONLY=ON (for testing)\n"
-        "See BUILD.md.\n"
-    )
-endif()
-
 # Set C++ standard globally
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -145,7 +124,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/out)
 # and the other files RMT loads from <program folder>/resources
 file(COPY ${PROJECT_SOURCE_DIR}/rmt/resources DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 
-# Generate version header from git tag (used by MfcTypes.cpp and Qt frontend)
+# Generate version header from git tag (used by CompatTypes.cpp and the Qt frontend)
 configure_file(
     "${PROJECT_SOURCE_DIR}/src/RmtVersion.h.in"
     "${CMAKE_BINARY_DIR}/RmtVersion.h"

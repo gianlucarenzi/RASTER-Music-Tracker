@@ -138,7 +138,7 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
 - ✅ playback with sound: the song timer (`timeSetEvent`, a thread; a timer
   re-created from its own tick keeps the deadline, so the tempo does not
   drift) runs `CSong::TimerRoutine()`, and the DirectSound buffer the sound
-  code streams to is played by PortAudio with real cursors (`MfcAudio.cpp`,
+  code streams to is played by PortAudio with real cursors (`CompatAudio.cpp`,
   `RMT_HAVE_PORTAUDIO`). A re-created timer waits for the tick that created
   it to return, and a timer more than 200 ms late restarts from now instead
   of catching up: before, a stall of more than one tick (window move, load,
@@ -259,7 +259,7 @@ with the Unpatched driver when the driver is Patch16.
 ### How it works
 
 The tracker GUI is the MFC code itself (`RmtView.cpp`, `RmtDoc.cpp` and the
-GUI-shared drawing code) compiled against `src/MfcTypes.h`, a small
+GUI-shared drawing code) compiled against `src/CompatTypes.h`, a small
 replacement of the MFC classes it uses: a software device context (`CDC`,
 `CBitmap`, bitmaps of `src/res` compiled in by `cmake/EmbedResources.cmake`),
 message maps that build a real command table, and `CWnd`/`CView` whose window

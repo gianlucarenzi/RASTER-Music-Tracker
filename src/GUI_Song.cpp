@@ -23,10 +23,7 @@
 #include "Keyboard2NoteMapping.h"
 #include "ChannelControl.h"
 
-#ifdef RMT_HAS_MFC
-#include "Rmt.h"
-#endif
-// Note: outside the real-MFC build, CRmtApp/g_app come from MfcTypes.h
+// Note: outside the real-MFC build, CRmtApp/g_app come from CompatTypes.h
 // (a tiny non-MFC stand-in with the same GetVersionAndBuild() method),
 // since Rmt.h is real-MFC-only (it hard-requires <afxwin.h> to already be
 // included).

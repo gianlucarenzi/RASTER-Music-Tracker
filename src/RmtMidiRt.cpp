@@ -5,7 +5,7 @@
 // Linux), and each message goes to CSong::MidiEvent() packed like the
 // dwParam1 of a MIM_DATA message, from the RtMidi thread, as the MidiInProc()
 // callback of RmtMidi.cpp does from the winmm one. midiInGetNumDevs() and
-// midiInGetDevCaps() (MfcTypes.h) list the same ports for the configuration
+// midiInGetDevCaps() (CompatTypes.h) list the same ports for the configuration
 // code, which finds the device by its name. Without RtMidi (RTMIDI_AVAILABLE
 // not defined) there are no devices.
 

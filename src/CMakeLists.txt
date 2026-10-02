@@ -3,7 +3,7 @@
 # Platform and dependency detection
 message(STATUS "Configuring RMT dependencies...")
 
-# Bitmaps of res/ compiled into the builds without MFC (MfcTypes.h CBitmap)
+# Bitmaps of res/ compiled into the program (CompatTypes.h CBitmap)
 include(${PROJECT_SOURCE_DIR}/cmake/EmbedResources.cmake)
 set(RMT_EMBEDDED_RESOURCES ${CMAKE_CURRENT_BINARY_DIR}/RmtEmbeddedResources.cpp)
 rmt_embed_resources(${RMT_EMBEDDED_RESOURCES}
@@ -19,23 +19,6 @@ include(${PROJECT_SOURCE_DIR}/cmake/GenerateRcTables.cmake)
 set(RMT_PROMPTS ${CMAKE_CURRENT_BINARY_DIR}/RmtPrompts.cpp ${CMAKE_CURRENT_BINARY_DIR}/RmtMenuTables.cpp)
 rmt_generate_prompts(${CMAKE_CURRENT_BINARY_DIR}/RmtPrompts.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Rmt.rc ${CMAKE_CURRENT_SOURCE_DIR}/resource.h)
 rmt_generate_menus(${CMAKE_CURRENT_BINARY_DIR}/RmtMenuTables.cpp ${CMAKE_CURRENT_SOURCE_DIR}/Rmt.rc)
-
-# Check if MFC is available (MSVC only; the Qt frontend never uses it)
-if(MSVC AND NOT RMT_USE_QT)
-    message(STATUS "MSVC detected, MFC will be linked")
-    set(MFC_AVAILABLE TRUE)
-else()
-    # MFC is Windows/MSVC only
-    if(CMAKE_CROSSCOMPILING AND NOT MSVC)
-        message(WARNING "Cross-compiling to Windows without MSVC - MFC will not be available")
-        message(STATUS "For production builds, use MSVC on Windows or build the Qt frontend (-DRMT_USE_QT=ON)")
-    elseif(WIN32)
-        message(WARNING "Building on Windows without MSVC - MFC may not be available")
-    else()
-        message(STATUS "Non-Windows platform - MFC not required (the Qt frontend is the official GUI)")
-    endif()
-    set(MFC_AVAILABLE FALSE)
-endif()
 
 # Check for Windows audio libraries
 if(WIN32)
@@ -61,12 +44,12 @@ if(RMT_BUILD_CORE_ONLY)
     message(STATUS "Building core components only (no UI)")
     
     set(RMT_SOURCES
-        # Audio Backend (Phase 2) - cross-platform, no MFC
+        # Audio Backend (Phase 2) - cross-platform
         AudioBackend.cpp
         DirectSoundAudio.cpp
         PortAudioBackend.cpp
         
-        # MIDI Backend (Phase 2) - cross-platform, no MFC
+        # MIDI Backend (Phase 2) - cross-platform
         MidiBackend.cpp
         WindowsMidiBackend.cpp
         RtMidiBackend.cpp
@@ -89,25 +72,18 @@ if(RMT_BUILD_CORE_ONLY)
 else()
     # Full build with UI.
     #
-    # Sources are split by role (Fase 1 of the MFC -> Qt migration plan):
+    # Sources are split by role:
     #   - RMT_CORE_SOURCES:       the engine, no GUI dependency at all.
-    #   - RMT_GUI_SHARED_SOURCES: "quasi-decoupled" rendering code that draws
-    #                             on g_mem_dc/g_gfx_dc (CDC* under MFC,
-    #                             CompatDC* under Qt once Fase 2 lands) -
-    #                             compiled into BOTH the MFC and the Qt build.
-    #   - RMT_GUI_MFC_SOURCES:    genuine CWinApp/CFrameWnd/CDocument/CView/
-    #                             CDialog MFC code, plus RmtMidi.cpp (legacy
-    #                             Win32 MIDI, not yet merged into MidiBackend -
-    #                             see Fase 9) and the WASAP cluster used only
-    #                             by RmtTest.cpp. Windows/MFC only.
-    #   - RMT_GUI_QT_SOURCES:     the new Qt frontend. Empty until Fase 3+.
+    #   - RMT_GUI_SHARED_SOURCES: the rendering code that draws on
+    #                             g_mem_dc/g_gfx_dc (CompatDC*, see CompatTypes.h).
+    #   - RMT_GUI_QT_SOURCES:     the Qt frontend and the tracker view/document.
     set(RMT_CORE_SOURCES
-        # Audio Backend (Phase 2) - cross-platform, no MFC
+        # Audio Backend (Phase 2) - cross-platform
         AudioBackend.cpp
         DirectSoundAudio.cpp
         PortAudioBackend.cpp
 
-        # MIDI Backend (Phase 2) - cross-platform, no MFC
+        # MIDI Backend (Phase 2) - cross-platform
         MidiBackend.cpp
         WindowsMidiBackend.cpp
         RtMidiBackend.cpp
@@ -176,36 +152,8 @@ else()
         Global.cpp
     )
 
-    set(RMT_GUI_MFC_SOURCES
-        AboutDialog.cpp
-        OptionsDialog.cpp
-        effectsdlg.cpp
-        exportdlgs.cpp
-        filenewdlg.cpp
-        FilePathDlg.cpp
-        importdlgs.cpp
-        MainFrm.cpp
-        RmtCommandLineInfo.cpp
-        Rmt.cpp
-        RmtDoc.cpp
-        RmtMidi.cpp
-        RmtTest.cpp
-        RmtView.cpp
-        SAPFileExportDialog.cpp
-        StdAfx.cpp
-        TuningDialog.cpp
-
-        # WASAP cluster: used only by RmtTest.cpp (raw WndProc/CreateDialog,
-        # not just MFC types), no other engine file references it.
-        asap.c
-        asap-patch.cpp
-        astil.c
-        info_dlg.c
-        wasap.c
-    )
-
-    # The Qt frontend: the MFC view/document (RmtView.cpp, RmtDoc.cpp)
-    # compiled against MfcTypes.h, hosted by a Qt main window (qt/).
+    # The Qt frontend: the tracker view/document (RmtView.cpp, RmtDoc.cpp)
+    # compiled against CompatTypes.h, hosted by a Qt main window (qt/).
     set(RMT_GUI_QT_SOURCES
         qt/main-qt.cpp
         qt/RmtQtFrontend.cpp
@@ -219,15 +167,8 @@ else()
         RmtDoc.cpp
     )
 
-    if(RMT_USE_QT)
-        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES} ${RMT_PROMPTS})
-        if(NOT MFC_AVAILABLE)
-            # Non-MFC type shim (Fase 0)
-            list(APPEND RMT_SOURCES MfcTypes.cpp MfcAudio.cpp MfcDialogStubs.cpp RmtMidiRt.cpp ${RMT_EMBEDDED_RESOURCES})
-        endif()
-    else()
-        set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_MFC_SOURCES} ${RMT_PROMPTS})
-    endif()
+    set(RMT_SOURCES ${RMT_CORE_SOURCES} ${RMT_GUI_SHARED_SOURCES} ${RMT_GUI_QT_SOURCES} ${RMT_PROMPTS}
+        CompatTypes.cpp CompatAudio.cpp CompatDialogs.cpp RmtMidiRt.cpp ${RMT_EMBEDDED_RESOURCES})
 
 set(RMT_HEADERS
     # Audio Backend (Phase 2)
@@ -240,7 +181,6 @@ set(RMT_HEADERS
     WindowsMidiBackend.h
     RtMidiBackend.h
     
-    AboutDialog.h
     ASMFileBuilder.h
     ASMFile.h
     ASMFileExporter.h
@@ -256,7 +196,6 @@ set(RMT_HEADERS
     EffectsDlg.h
     ExportDlgs.h
     FileNewDlg.h
-    FilePathDlg.h
     Fraction.h
     General.h
     Global.h
@@ -281,12 +220,9 @@ set(RMT_HEADERS
     PokeyRenderer.h
     PokeyStream.h
     Resource.h
-    RmtCommandLineInfo.h
-    Rmt.h
     RmtDoc.h
     RmtFile.h
     RmtMidi.h
-    RmtTest.h
     RmtView.h
     RuntimeException.h
     Script.h
@@ -318,11 +254,6 @@ set(RMT_HEADERS
     VUPlayer.h
     WaveFile.h
     WaveFileExporter.h
-    asap.h
-    asap-patch.h
-    astil.h
-    info_dlg.h
-    wasap.h
 )
 endif()
 
@@ -342,43 +273,38 @@ if(WIN32)
 endif()
 
 # Search for optional libraries BEFORE creating executable
-# PortAudio cross-platform audio library: every build without MFC (the MFC
-# one plays with DirectSound)
-if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
-    find_package(PortAudio QUIET)
-    # A CMake package of PortAudio (MSYS2, vcpkg) gives an imported target
-    # and no PortAudio_LIBRARIES: link what there is
-    set(RMT_PORTAUDIO_LINK ${PortAudio_LIBRARIES})
-    foreach(_pa PortAudio::portaudio PortAudio::PortAudio portaudio)
-        if(TARGET ${_pa})
-            set(RMT_PORTAUDIO_LINK ${_pa})
-            break()
-        endif()
-    endforeach()
-    if(NOT PortAudio_FOUND)
-        find_library(PORTAUDIO_LIB portaudio QUIET)
-        # its header may not be in a default include folder (Homebrew, MSYS2)
-        find_path(PORTAUDIO_INCLUDE portaudio.h QUIET)
+# PortAudio cross-platform audio library
+find_package(PortAudio QUIET)
+# A CMake package of PortAudio (MSYS2, vcpkg) gives an imported target
+# and no PortAudio_LIBRARIES: link what there is
+set(RMT_PORTAUDIO_LINK ${PortAudio_LIBRARIES})
+foreach(_pa PortAudio::portaudio PortAudio::PortAudio portaudio)
+    if(TARGET ${_pa})
+        set(RMT_PORTAUDIO_LINK ${_pa})
+        break()
+    endif()
+endforeach()
+if(NOT PortAudio_FOUND)
+    find_library(PORTAUDIO_LIB portaudio QUIET)
+    # its header may not be in a default include folder (Homebrew, MSYS2)
+    find_path(PORTAUDIO_INCLUDE portaudio.h QUIET)
+endif()
+
+# RtMidi cross-platform MIDI library: MIDI IN
+# (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS; RmtMidiRt.cpp)
+# Try pkg-config first; not when cross-compiling, it would find the
+# library of the host
+if(NOT CMAKE_CROSSCOMPILING)
+    find_package(PkgConfig QUIET)
+    if(PkgConfig_FOUND)
+        pkg_check_modules(RTMIDI QUIET rtmidi)
     endif()
 endif()
 
-# RtMidi cross-platform MIDI library: MIDI IN of every build without MFC
-# (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS; RmtMidiRt.cpp)
-if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
-    # Try pkg-config first; not when cross-compiling, it would find the
-    # library of the host
-    if(NOT CMAKE_CROSSCOMPILING)
-        find_package(PkgConfig QUIET)
-        if(PkgConfig_FOUND)
-            pkg_check_modules(RTMIDI QUIET rtmidi)
-        endif()
-    endif()
-
-    # If pkg-config didn't find it, try manual search
-    if(NOT RTMIDI_FOUND)
-        find_library(RTMIDI_LIB rtmidi QUIET)
-        find_path(RTMIDI_INCLUDE RtMidi.h PATH_SUFFIXES rtmidi QUIET)
-    endif()
+# If pkg-config didn't find it, try manual search
+if(NOT RTMIDI_FOUND)
+    find_library(RTMIDI_LIB rtmidi QUIET)
+    find_path(RTMIDI_INCLUDE RtMidi.h PATH_SUFFIXES rtmidi QUIET)
 endif()
 
 # Windows without PortAudio headers (e.g. MinGW cross-compile): drop the
@@ -394,9 +320,9 @@ if(WIN32 AND NOT PortAudio_FOUND AND NOT PORTAUDIO_LIB)
     endif()
 endif()
 
-# Qt native GUI frontend (Fase 1+ of the MFC -> Qt migration): Qt6, or Qt 5.15
-# where Qt6 is not installed. -DRMT_QT_MAJOR=5 forces Qt5.
-if(RMT_USE_QT)
+# Qt native GUI frontend: Qt6, or Qt 5.15 where Qt6 is not installed.
+# -DRMT_QT_MAJOR=5 forces Qt5.
+if(NOT RMT_BUILD_CORE_ONLY)
     set(RMT_QT_MAJOR "" CACHE STRING "Qt major version of the frontend (6 or 5; empty: Qt6, else Qt5)")
     if(RMT_QT_MAJOR)
         find_package(QT NAMES Qt${RMT_QT_MAJOR} REQUIRED COMPONENTS Core)
@@ -411,7 +337,7 @@ if(RMT_USE_QT)
     message(STATUS "Qt frontend: Qt ${QT_VERSION}")
 endif()
 
-# std::thread (song timer of MfcAudio.cpp, backends)
+# std::thread (song timer of CompatAudio.cpp, backends)
 find_package(Threads REQUIRED)
 
 # Create executable
@@ -430,12 +356,6 @@ endif()
 
 # Preprocessor definitions
 target_compile_definitions(Rmt PRIVATE ${RMT_DEFINES})
-if(MFC_AVAILABLE)
-    # Tells PlatformTypes.h (included by the engine + GUI-shared sources) to
-    # resolve to real <afxwin.h> instead of the non-MFC MfcTypes.h shim.
-    # Without this, the MSVC/MFC build would silently take the wrong branch.
-    target_compile_definitions(Rmt PRIVATE RMT_HAS_MFC)
-endif()
 
 # Include directories
 target_include_directories(Rmt PRIVATE
@@ -444,7 +364,7 @@ target_include_directories(Rmt PRIVATE
 )
 
 # Qt native GUI frontend
-if(RMT_USE_QT)
+if(NOT RMT_BUILD_CORE_ONLY)
     set_target_properties(Rmt PROPERTIES AUTOMOC ON AUTORCC ON AUTOUIC OFF)
     target_link_libraries(Rmt PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::PrintSupport)
     target_compile_definitions(Rmt PRIVATE RMT_QT_GUI=1)
@@ -473,42 +393,38 @@ if(WIN32)
     endif()
 endif()
 
-# Link PortAudio library (search was done earlier). Builds without MFC play
-# the DirectSound buffer of the sound code with it (MfcAudio.cpp)
-if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
-    if(PortAudio_FOUND)
-        target_link_libraries(Rmt PRIVATE ${RMT_PORTAUDIO_LINK})
-        target_include_directories(Rmt PRIVATE ${PortAudio_INCLUDE_DIRS})
-    elseif(PORTAUDIO_LIB)
-        target_link_libraries(Rmt PRIVATE ${PORTAUDIO_LIB})
-        if(PORTAUDIO_INCLUDE)
-            target_include_directories(Rmt PRIVATE ${PORTAUDIO_INCLUDE})
-        endif()
-    else()
-        message(WARNING "PortAudio not found - audio functionality may be limited")
+# Link PortAudio library (search was done earlier). It plays the DirectSound
+# buffer of the sound code (CompatAudio.cpp)
+if(PortAudio_FOUND)
+    target_link_libraries(Rmt PRIVATE ${RMT_PORTAUDIO_LINK})
+    target_include_directories(Rmt PRIVATE ${PortAudio_INCLUDE_DIRS})
+elseif(PORTAUDIO_LIB)
+    target_link_libraries(Rmt PRIVATE ${PORTAUDIO_LIB})
+    if(PORTAUDIO_INCLUDE)
+        target_include_directories(Rmt PRIVATE ${PORTAUDIO_INCLUDE})
     endif()
-    if((PortAudio_FOUND OR PORTAUDIO_LIB) AND NOT MFC_AVAILABLE)
-        target_compile_definitions(Rmt PRIVATE RMT_HAVE_PORTAUDIO)
-    endif()
+else()
+    message(WARNING "PortAudio not found - audio functionality may be limited")
+endif()
+if((PortAudio_FOUND OR PORTAUDIO_LIB) AND NOT RMT_BUILD_CORE_ONLY)
+    target_compile_definitions(Rmt PRIVATE RMT_HAVE_PORTAUDIO)
 endif()
 
 # Link RtMidi library (search was done earlier)
-if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
-    if(RTMIDI_FOUND)
-        target_link_libraries(Rmt PRIVATE ${RTMIDI_LINK_LIBRARIES})   # full paths (not only in the default folders)
-        target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE_DIRS})
-        target_compile_definitions(Rmt PRIVATE RTMIDI_AVAILABLE=1)
-        target_compile_options(Rmt PRIVATE ${RTMIDI_CFLAGS})
-        message(STATUS "Found RtMidi via pkg-config: ${RTMIDI_LINK_LIBRARIES}")
-    elseif(RTMIDI_LIB AND RTMIDI_INCLUDE)
-        target_link_libraries(Rmt PRIVATE ${RTMIDI_LIB})
-        target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE})
-        target_compile_definitions(Rmt PRIVATE RTMIDI_AVAILABLE=1)
-        message(STATUS "Found RtMidi: ${RTMIDI_LIB}")
-    else()
-        message(WARNING "RtMidi not found - MIDI functionality will be disabled")
-        message(STATUS "To install: sudo apt install librtmidi-dev")
-    endif()
+if(RTMIDI_FOUND)
+    target_link_libraries(Rmt PRIVATE ${RTMIDI_LINK_LIBRARIES})   # full paths (not only in the default folders)
+    target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE_DIRS})
+    target_compile_definitions(Rmt PRIVATE RTMIDI_AVAILABLE=1)
+    target_compile_options(Rmt PRIVATE ${RTMIDI_CFLAGS})
+    message(STATUS "Found RtMidi via pkg-config: ${RTMIDI_LINK_LIBRARIES}")
+elseif(RTMIDI_LIB AND RTMIDI_INCLUDE)
+    target_link_libraries(Rmt PRIVATE ${RTMIDI_LIB})
+    target_include_directories(Rmt PRIVATE ${RTMIDI_INCLUDE})
+    target_compile_definitions(Rmt PRIVATE RTMIDI_AVAILABLE=1)
+    message(STATUS "Found RtMidi: ${RTMIDI_LIB}")
+else()
+    message(WARNING "RtMidi not found - MIDI functionality will be disabled")
+    message(STATUS "To install: sudo apt install librtmidi-dev")
 endif()
 
 # Platform-specific compiler flags
@@ -534,7 +450,7 @@ set_target_properties(Rmt PROPERTIES
 )
 
 if(NOT WIN32)
-    if(RMT_USE_QT)
+    if(NOT RMT_BUILD_CORE_ONLY)
         set_target_properties(Rmt PROPERTIES OUTPUT_NAME "ritmo")    # the Qt tracker
     else()
         set_target_properties(Rmt PROPERTIES OUTPUT_NAME "Ritmo.exe")
@@ -617,26 +533,22 @@ if(RMT_BUILD_CORE_ONLY)
 endif()
 
 # ---------------------------------------------------------------------------
-# RmtCoreTest (Fase 0 of the MFC -> Qt migration plan)
+# RmtCoreTest
 #
 # Compiles the *real* RMT engine (Song/Tracks/Instruments/C6502/Pokey/IO_*/
 # ASM*/SAPFile*/...) plus the "GUI-shared" rendering files (GUI_Song.cpp,
 # GUI_Instruments.cpp, GuiHelpers.cpp, TracksControl.cpp, ChannelControl.cpp,
-# Global.cpp) outside of MFC, on plain GCC/Linux - something that has never
-# been done before (previously RMT_BUILD_CORE_ONLY only compiled the new
-# audio/MIDI backends, not the engine itself). It intentionally excludes the
-# genuine MFC GUI files (Rmt.cpp, MainFrm.cpp, RmtDoc.cpp, RmtView.cpp,
-# RmtCommandLineInfo.cpp, RmtMidi.cpp, StdAfx.cpp) and every real CDialog
-# implementation (AboutDialog.cpp, OptionsDialog.cpp, effectsdlg.cpp,
-# exportdlgs.cpp, filenewdlg.cpp, FilePathDlg.cpp, importdlgs.cpp,
-# SAPFileExportDialog.cpp, TuningDialog.cpp) - those stay MFC-only, unmodified.
+# Global.cpp) without the Qt frontend, on plain GCC/Linux: the smoke test of the
+# engine. It leaves out the Qt frontend (qt/), the view and the document
+# (RmtView.cpp, RmtDoc.cpp); the dialogs of the engine are the data-only
+# classes of CompatDialogs.cpp.
 #
 # Usage:
 #   cmake -B build-core-linux -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
 #   cmake --build build-core-linux
-option(RMT_CORE_TEST "Build RmtCoreTest: compile the RMT engine + GUI-shared sources without MFC (Fase 0 smoke test)" OFF)
+option(RMT_CORE_TEST "Build RmtCoreTest: compile the RMT engine + GUI-shared sources without Qt (smoke test)" OFF)
 if(RMT_CORE_TEST)
-    message(STATUS "Building RmtCoreTest (engine + GUI-shared sources, no MFC, no Qt yet)")
+    message(STATUS "Building RmtCoreTest (engine + GUI-shared sources, no Qt)")
 
     set(RMT_ENGINE_SOURCES
         # ---- engine (no GUI) ----
@@ -699,40 +611,27 @@ if(RMT_CORE_TEST)
         Global.cpp
     )
 
-    if(NOT MFC_AVAILABLE)
-        list(APPEND RMT_ENGINE_SOURCES ${RMT_EMBEDDED_RESOURCES})
-        # MfcTypes.h/MfcTypes.cpp/MfcDialogStubs.cpp are the non-MFC type
-        # shim (Fase 0): only meaningful - and only safe to compile - when
-        # NOT building against real MFC (they define e.g. CString::LoadString()
-        # and CEffectsDlg::CEffectsDlg(), which would clash with the real MFC
-        # implementations otherwise).
-        list(APPEND RMT_ENGINE_SOURCES
-            MfcTypes.cpp
-            MfcAudio.cpp
-            MfcDialogStubs.cpp
-            RmtMidiRt.cpp
-        )
-    endif()
+    list(APPEND RMT_ENGINE_SOURCES
+        ${RMT_EMBEDDED_RESOURCES}
+        CompatTypes.cpp
+        CompatAudio.cpp
+        CompatDialogs.cpp
+        RmtMidiRt.cpp
+    )
 
     add_executable(RmtCoreTest ${RMT_ENGINE_SOURCES} main-coretest.cpp)
     target_link_libraries(RmtCoreTest PRIVATE Threads::Threads)
 
     target_compile_definitions(RmtCoreTest PRIVATE ${RMT_DEFINES})
-    if(MFC_AVAILABLE)
-        target_compile_definitions(RmtCoreTest PRIVATE RMT_HAS_MFC)
-    endif()
-
     target_include_directories(RmtCoreTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR})
 
-    if(RMT_BUILD_CORE_ONLY OR NOT MFC_AVAILABLE)
-        if(PortAudio_FOUND)
-            target_link_libraries(RmtCoreTest PRIVATE ${RMT_PORTAUDIO_LINK})
-            target_include_directories(RmtCoreTest PRIVATE ${PortAudio_INCLUDE_DIRS})
-        elseif(PORTAUDIO_LIB)
-            target_link_libraries(RmtCoreTest PRIVATE ${PORTAUDIO_LIB})
-            if(PORTAUDIO_INCLUDE)
-                target_include_directories(RmtCoreTest PRIVATE ${PORTAUDIO_INCLUDE})
-            endif()
+    if(PortAudio_FOUND)
+        target_link_libraries(RmtCoreTest PRIVATE ${RMT_PORTAUDIO_LINK})
+        target_include_directories(RmtCoreTest PRIVATE ${PortAudio_INCLUDE_DIRS})
+    elseif(PORTAUDIO_LIB)
+        target_link_libraries(RmtCoreTest PRIVATE ${PORTAUDIO_LIB})
+        if(PORTAUDIO_INCLUDE)
+            target_include_directories(RmtCoreTest PRIVATE ${PORTAUDIO_INCLUDE})
         endif()
     endif()
 
@@ -745,19 +644,5 @@ if(RMT_CORE_TEST)
         )
     endif()
 
-    message(STATUS "RmtCoreTest executable configured (engine + GUI-shared, Fase 0 smoke test)")
+    message(STATUS "RmtCoreTest executable configured (engine + GUI-shared, smoke test)")
 endif()
-
-# Build status
-message(STATUS "")
-if(MFC_AVAILABLE)
-    message(STATUS "✓ MFC Available - Full UI build")
-else()
-    message(STATUS "✗ MFC Not Available")
-    if(CMAKE_CROSSCOMPILING)
-        message(STATUS "  This is expected during cross-compilation (Phase 1)")
-        message(STATUS "  Full builds require Windows+MSVC")
-        message(STATUS "  Or build the Qt frontend: cmake -DRMT_USE_QT=ON")
-    endif()
-endif()
-

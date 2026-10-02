@@ -1,5 +1,5 @@
-// MfcAudio.cpp - multimedia timers and DirectSound output for the builds
-// without MFC (see MfcTypes.h)
+// CompatAudio.cpp - multimedia timers and DirectSound output for the builds
+// without MFC (see CompatTypes.h)
 //
 // - timeSetEvent()/timeKillEvent(): one thread per timer. CSongTimer creates
 //   a new timer from inside every tick (CSong::TimerRoutine -> ChangeTimer),
