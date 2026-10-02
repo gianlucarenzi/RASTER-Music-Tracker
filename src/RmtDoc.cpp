@@ -4,7 +4,7 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CRmtDoc
-// NOTE: Not used in RASTER Music Tracker
+// NOTE: Not used in RITMO
 
 IMPLEMENT_DYNCREATE(CRmtDoc, CDocument)
 

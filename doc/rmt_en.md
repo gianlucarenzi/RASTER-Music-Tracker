@@ -1,8 +1,10 @@
-![RASTER Music Tracker (RMT)](rmt.gif)
+![RITMO](logo/ritmo-logo.png)
 
-# RASTER Music Tracker (RMT) - Manual
+# RITMO - Manual
 
-For RMT 1.31.01 and higher by Vin Samuel and Peter Dell, 2021-2026.
+For RITMO, the fork of the RASTER Music Tracker (RMT) 1.35 by Vin Samuel and Peter Dell, 2021-2026.
+The illustrated manual, with screenshots of every window, menu and dialog, is the PDF [ritmo-manual.pdf](manual/ritmo-manual.pdf);
+this page is the reference of the keys and the fields.
 
 For RMT 1.28, see the [RMT 1.28 Manual](rmt_en_128.html) by Radek Štěrba, RASTER/C.P.U. 2002-2009.
 

@@ -1,6 +1,6 @@
-# RMT Scripting
+# RITMO Scripting
 
-RASTER Music Tracker can run a script file from the command line: open a song,
+RITMO can run a script file from the command line: open a song,
 set what the export dialogs would ask, export in any format, save. This is
 meant for batch files, build scripts and CI, where the SAP, XEX, WAV and ASM
 files of a song are produced from its `.rmt` source reproducibly, and for

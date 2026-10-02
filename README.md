@@ -56,24 +56,26 @@ program itself). The reference documents are also in `doc/` as Markdown.
 
 *High Tide* by Born/LaResistance, a stereo song (8 tracks), playing on Linux:
 
-![RMT playing a stereo song on Linux](doc/screenshots/rmt-playing-linux.png)
+![RITMO playing a stereo song on Linux](doc/screenshots/ritmo-playing-linux.png)
 
 The instrument editor:
 
-![The instrument editor](doc/screenshots/rmt-instrument-editor.png)
+![The instrument editor](doc/screenshots/ritmo-instrument-editor.png)
 
-The Windows version, from the v2.0 zip, playing *gem'x* by Raster (here run
-under Wine on Linux):
+The Windows version, built by GitHub Actions (the picture is taken by the start-up test of the
+package, which runs without a display):
 
-![RMT for Windows playing a song](doc/screenshots/rmt-windows-wine.png)
+![RITMO on Windows](doc/screenshots/ritmo-windows.png)
 
-A dialog of RMT rewritten in Qt (song columns' order) and the Apple Silicon
-version on macOS, built by GitHub Actions:
+A dialog of RITMO (song columns' order) and the Apple Silicon version on macOS, also built
+by GitHub Actions:
 
 <p>
-  <img src="doc/screenshots/rmt-qt-dialog.png" alt="A Qt dialog: song columns' order" width="45%">
-  <img src="doc/screenshots/rmt-macos-arm64.png" alt="RMT on macOS (Apple Silicon)" width="52%">
+  <img src="doc/screenshots/ritmo-qt-dialog.png" alt="A dialog: song columns' order" width="45%">
+  <img src="doc/screenshots/ritmo-macos-arm64.png" alt="RITMO on macOS (Apple Silicon)" width="52%">
 </p>
+
+More pictures of the windows, the menus and the dialogs are in the [manual](doc/manual/ritmo-manual.pdf).
 
 
 ### Please try it and tell me what you think!

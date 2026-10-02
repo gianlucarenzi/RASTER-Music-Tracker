@@ -1,13 +1,16 @@
-﻿# RASTER Music Tracker - RMT
+﻿# RITMO - RASTER Music Tracker
 
 ### About
 
-RASTER Music Tracker (short RMT) is a cross-platform tool for making Atari XL/XE music on a Windows PC.
+RITMO is a cross-platform tool (Linux, Windows, macOS) for making Atari XL/XE music. It is a fork of the RASTER Music Tracker (short RMT),
+renamed so that it cannot be confused with the original, and written with Qt instead of the Windows-only MFC.
 RMT uses the Atari XL/XE music routines created by Radek Štěrba from 2002 to 2009.
 It was a small revolution for all Atari musicians and fans.
 
-This fork is the latest development branch of RMT, version 1.35.
+The code is that of the latest development branch of RMT, version 1.35, by Peter Dell (JAC!).
 It is the continuation of the original version 1.28 of RMT by Štěrba and the version 1.34 of RMT by Vin Samuel.
+The sections of this document that are about the Windows version of RMT (the MFC GUI, the DLLs) describe what the original program does; the
+differences of RITMO are noted in the sections ("In RITMO").
 
 This document contains the official technical description of the tracker and its design. For each section, the current status, known issues in RMT version 1.34, work in progress, and planned changes for the upcoming version **RMT 2.0** are described. The known issues include not only those affecting end users but also those impacting code maintainers.
 
@@ -50,6 +53,11 @@ The Atari 8-bit emulation consists of two parts
 
 ### Current Situation
 
+**In RITMO** the emulation is built in: the 6502 is `src/emu/Cpu6502.cpp` (NMOS 6502, documented and stable undocumented opcodes, cycle
+counted) and the POKEY is `src/emu/PokeySound.cpp` (one or two chips, 44100 Hz). Both are derived from the emulation of `rmtplay` and
+are used when the DLLs below are not there, which is the case on Linux and macOS. On Windows the DLLs, when present, are tried first, as in RMT.
+The Atari binaries of the tracker drivers are the `.obx` files of `resources/drivers`.
+
 The Pokey sound emulation and Atari 6502 processor emulation aren't built-in components of RMT. If the sound output is needed, the external dynamic DLL libraries with the following functions are required.  If you run RMT without this way described DLLs ( `sa_c6502.dll`, `apokeysnd.dll` or `sa_pokey.dll`), RMT will work, but there won't be any Pokey sound output and Atari sound routines won't be executed.
 
 #### CPU Emulation
@@ -81,7 +89,10 @@ or in `apokeysnd.dll` from [ASAP](http://asap.sourceforge.net/apokeysnd.dll) by 
 
 ### Known Issues
 
-Issues are tracked on the GitHub issue tracker:
+Issues of RITMO are tracked on the GitHub issue tracker of the fork:
+https://github.com/gianlucarenzi/RITMO-Music-Tracker/issues
+
+Issues of the original RMT are tracked here:
 https://github.com/raster-atari-org/RASTER-Music-Tracker/issues
 
 The following general maintainer issues are already known:
@@ -91,7 +102,7 @@ The following general maintainer issues are already known:
 
 ### Future Plans
 
-- Replace the usage of the external DLLs (for which maintenance is either unclear, or nor guaranteed/officially supported) by the C-version of ASAP by Fox. There is not reason why a different engine should be used in the tracker that is used during the replay.
+- Replace the usage of the external DLLs (for which maintenance is either unclear, or nor guaranteed/officially supported) by the C-version of ASAP by Fox. (RITMO has replaced them by its built-in emulation, see Current Situation.) There is not reason why a different engine should be used in the tracker that is used during the replay.
 - The Atari binary code for the different patches of the player code are currently included in the C-code as source code. This makes it hard to replace them and check/update/version their content. Instead all Atari binary code should be 
 	- present as source code
 	- compatible as part of the build

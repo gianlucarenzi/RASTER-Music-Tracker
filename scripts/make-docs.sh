@@ -35,7 +35,7 @@ pre { background: #f0f0f0; padding: 0.5em; overflow-x: auto; }
 img { max-width: 100%; }
 </style>
 STYLE
-    pandoc -f gfm -t html5 -s --metadata title="RASTER Music Tracker (RMT) - Manual" -H "$WORK/style.html" "$WORK/rmt_en.md" -o doc/rmt_en.html
+    pandoc -f gfm -t html5 -s --metadata title="RITMO - Manual" -H "$WORK/style.html" "$WORK/rmt_en.md" -o doc/rmt_en.html
     echo "Wrote doc/rmt_en.html"
 else
     echo "pandoc not found: doc/rmt_en.html not regenerated"

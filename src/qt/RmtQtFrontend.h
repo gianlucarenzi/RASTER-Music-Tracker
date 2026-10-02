@@ -1,4 +1,4 @@
-// RmtQtFrontend.h - Qt6 frontend of RASTER Music Tracker
+// RmtQtFrontend.h - Qt frontend of RITMO
 //
 // The tracker GUI is CRmtView, CMainFrame and CRmtDoc, compiled against the
 // CompatTypes.h layer: RmtQtBridge (RmtQtFrontend.cpp) implements IRmtHost for

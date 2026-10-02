@@ -24,7 +24,7 @@ TEX
 # the reference documents of doc/ as LaTeX
 python3 md2tex.py ../rmt_en.md generated/reference.tex --shift 1 --from-heading "Menus, Toolbars and Keys" --to-heading "MIDI Input" --drop-rows "Menu Pokey / Channel"
 python3 md2tex.py ../rmt_tracker_drivers.md generated/drivers.tex --shift 2
-python3 md2tex.py ../rmt_scripting.md generated/scripting.tex --shift 1 --from-heading "RMT Scripting"
+python3 md2tex.py ../rmt_scripting.md generated/scripting.tex --shift 1 --from-heading "RITMO Scripting"
 python3 md2tex.py ../rmt_format.md generated/format.tex --shift 1 --from-heading 'RMT Module Format Version "1"' --to-heading 'RMT Module Format Version "2" (DRAFT 2026-01-06)'
 cp ../midi.txt generated/midi.txt
 
