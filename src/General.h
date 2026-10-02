@@ -45,7 +45,8 @@ enum class KeyboardLayout : int {
 #define VK_PAGE_UP   33
 #define VK_PAGE_DOWN 34
 
-#define CONFIG_FILENAME "rmt.ini"
+#define CONFIG_FILENAME "ritmo.ini"
+#define CONFIG_FILENAME_RMT "rmt.ini" // the name before RITMO: read when there is no CONFIG_FILENAME yet
 #define TUNING_FILENAME "tuning.ini"
 
 // This macro was shamelessly stolen from this stackoverflow post: https://stackoverflow.com/a/42450151

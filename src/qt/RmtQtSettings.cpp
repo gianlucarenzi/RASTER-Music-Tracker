@@ -1,15 +1,17 @@
 // RmtQtSettings.cpp - the configuration of the Qt frontend in QSettings
 //
 // CRmtView (RmtView.cpp) reads and writes the configuration and the tuning
-// as the "NAME = value" lines of rmt.ini / tuning.ini; here each line is a
-// key of QSettings, in the group named after the file ("rmt", "tuning"). The
+// as the "NAME = value" lines of ritmo.ini / tuning.ini; here each line is a
+// key of QSettings, in the group named after the file ("ritmo", "tuning"). The
 // settings belong to the user on the host system, not to the program folder,
-// so an update or a new installation of RMT keeps them:
-//   Linux    ~/.config/raster-atari.org/rmt.conf ($XDG_CONFIG_HOME)
-//   Windows  registry, HKEY_CURRENT_USER\Software\raster-atari.org\rmt
-//   macOS    ~/Library/Preferences/org.raster-atari.rmt.plist
-// With nothing saved yet, an rmt.ini / tuning.ini next to the program (the
-// earlier versions kept them there) is taken over once.
+// so an update or a new installation of RITMO keeps them:
+//   Linux    ~/.config/raster-atari.org/ritmo.conf ($XDG_CONFIG_HOME)
+//   Windows  registry, HKEY_CURRENT_USER\Software\raster-atari.org\ritmo
+//   macOS    ~/Library/Preferences/org.raster-atari.ritmo.plist
+// With nothing saved yet, the settings of RMT (the same places with "rmt" in
+// place of "ritmo", group "rmt" for the configuration) and then a ritmo.ini /
+// rmt.ini / tuning.ini next to the program (the earlier versions kept them
+// there) are taken over once.
 
 #include "StdAfx.h"
 #include "Global.h"
@@ -20,12 +22,20 @@
 #include <QLocale>
 #include <QSettings>
 
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
 #include <string>
 
 static QSettings& Settings()
+{
+    static QSettings settings(QSettings::NativeFormat, QSettings::UserScope, "raster-atari.org", "ritmo");
+    return settings;
+}
+
+// The settings of RMT, before the name RITMO
+static QSettings& SettingsRmt()
 {
     static QSettings settings(QSettings::NativeFormat, QSettings::UserScope, "raster-atari.org", "rmt");
     return settings;
@@ -36,27 +46,40 @@ static QString Group(const char* fileName)
     return QFileInfo(QString::fromLocal8Bit(fileName)).completeBaseName();
 }
 
-bool RmtLoadConfigText(const char* fileName, std::string& text)
+// The keys of a group as "NAME = value" lines; false if the group is empty
+static bool ReadGroup(QSettings& settings, const QString& group, std::string& text)
 {
-    QSettings& settings = Settings();
-    settings.beginGroup(Group(fileName));
+    settings.beginGroup(group);
     const QStringList keys = settings.childKeys();
     std::ostringstream lines;
     for (const QString& key : keys)
         lines << key.toLocal8Bit().constData() << " = " << settings.value(key).toString().toLocal8Bit().constData() << "\n";
     settings.endGroup();
-    if (!keys.isEmpty()) {
-        text = lines.str();
-        return true;
-    }
+    if (keys.isEmpty()) return false;
+    text = lines.str();
+    return true;
+}
 
-    // First start: the file of an earlier version, if there is one
+static bool ReadFile(const char* fileName, std::string& text)
+{
     std::ifstream in(GetResourceFilePath(std::filesystem::path(""), fileName));
     if (!in) return false;
     std::ostringstream all;
     all << in.rdbuf();
     text = all.str();
     return true;
+}
+
+bool RmtLoadConfigText(const char* fileName, std::string& text)
+{
+    if (ReadGroup(Settings(), Group(fileName), text)) return true;
+
+    // First start with RITMO: the settings of RMT, then the file of an earlier version
+    const bool isConfig = strcmp(fileName, CONFIG_FILENAME) == 0;
+    const char* oldName = isConfig ? CONFIG_FILENAME_RMT : fileName;
+    if (ReadGroup(SettingsRmt(), Group(oldName), text)) return true;
+    if (ReadFile(fileName, text)) return true;
+    return isConfig && ReadFile(CONFIG_FILENAME_RMT, text);
 }
 
 bool RmtSaveConfigText(const char* fileName, const std::string& text)
@@ -86,7 +109,7 @@ CString RmtConfigTextLocation(const char* fileName)
     return CString((Settings().fileName() + " [" + Group(fileName) + "]").toLocal8Bit().constData());
 }
 
-// The layout RMT starts with when nothing is saved yet: the language of the
+// The layout RITMO starts with when nothing is saved yet: the language of the
 // keyboard (Qt's input method), German QWERTZ, French AZERTY, else QWERTY.
 KeyboardLayout RmtDefaultKeyboardLayout()
 {

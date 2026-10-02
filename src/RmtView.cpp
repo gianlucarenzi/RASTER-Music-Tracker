@@ -470,6 +470,8 @@ CString RmtConfigTextLocation(const char* fileName);
 static bool RmtLoadConfigText(const char* fileName, std::string& text)
 {
     std::ifstream in(GetResourceFilePath(std::filesystem::path(""), fileName));
+    if (!in && strcmp(fileName, CONFIG_FILENAME) == 0) // the file of RMT, before RITMO
+        in.open(GetResourceFilePath(std::filesystem::path(""), CONFIG_FILENAME_RMT));
     if (!in) return false;
     std::ostringstream all;
     all << in.rdbuf();
@@ -725,7 +727,7 @@ void CRmtView::WriteRMTConfig()
         MessageBox("Could not create: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nThe RMT configuration won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
 }
 
-// The keyboard layout of a first start (no rmt.ini): the keyboard language of
+// The keyboard layout of a first start (no ritmo.ini): the keyboard language of
 // the system - German QWERTZ, French AZERTY, else QWERTY. The Qt frontend asks
 // Qt's input method (qt/RmtQtSettings.cpp); the MFC build the thread's input locale.
 #ifdef RMT_QT_GUI

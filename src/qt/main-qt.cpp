@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 
     if (!scriptFile.isEmpty()) {
         // The window exists (the session needs it) but stays hidden, unless RMT_SCRIPT_SHOW_WINDOW=1 shows what the
-        // script does. The configuration (rmt.ini, tuning.ini) is read as for the window; it is not written back.
+        // script does. The configuration (ritmo.ini, tuning.ini) is read as for the window; it is not written back.
         if (showScriptWindow) {
             window.show();
         }

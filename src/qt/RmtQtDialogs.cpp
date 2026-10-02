@@ -854,7 +854,7 @@ static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
     auto* keyboard = new QGroupBox("Keyboard");
     auto* keyboardLayout = new QVBoxLayout(keyboard);
     auto* layoutCombo = new QComboBox;
-    // Shown QWERTY, QWERTZ, AZERTY; the item data is the KeyboardLayout number kept in rmt.ini
+    // Shown QWERTY, QWERTZ, AZERTY; the item data is the KeyboardLayout number kept in ritmo.ini
     layoutCombo->addItem("QWERTY Layout", (int)KeyboardLayout::QWERTY);
     layoutCombo->addItem("QWERTZ Layout", (int)KeyboardLayout::QWERTZ);
     layoutCombo->addItem("AZERTY Layout", (int)KeyboardLayout::AZERTY);
