@@ -613,7 +613,7 @@ void CRmtView::WriteRMTConfig()
 
     ou << "\n# GENERAL\n"
        << std::endl;
-    ou << "SCALEPERCENTAGE = " << g_scaling_percentage << std::endl;
+    ou << "SCALEPERCENTAGE = " << (g_scalingToKeep ? g_scalingToKeep : g_scaling_percentage) << std::endl; // not the one of --scale
     ou << "TRACKLINEPRIMARYHIGHLIGHT = " << g_trackLinePrimaryHighlight << std::endl;
     ou << "TRACKLINESECONDARYHIGHLIGHT = " << g_trackLineSecondaryHighlight << std::endl;
     ou << "TRACKLINEALTNUMBERING = " << g_tracklinealtnumbering << std::endl;
@@ -667,6 +667,7 @@ void CRmtView::WriteRMTConfig()
 // the system - German QWERTZ, French AZERTY, else QWERTY. The Qt frontend asks
 // Qt's input method (qt/RmtQtSettings.cpp).
 KeyboardLayout RmtDefaultKeyboardLayout(); // qt/RmtQtSettings.cpp
+int RmtDefaultScalingPercentage();         // qt/RmtQtSettings.cpp
 static KeyboardLayout DefaultKeyboardLayout()
 {
     return RmtDefaultKeyboardLayout();
@@ -674,7 +675,7 @@ static KeyboardLayout DefaultKeyboardLayout()
 
 void CRmtView::ResetRMTConfig()
 {
-    g_scaling_percentage = 100;        // RMT interface scaling (in percentage)
+    g_scaling_percentage = RmtDefaultScalingPercentage(); // RMT interface scaling (in percentage): on a first start from the size of the screen
     g_trackLinePrimaryHighlight = 8;   // Primary line highlighted every x lines
     g_trackLineSecondaryHighlight = 4; // Secondary line highlighted every x lines
     g_tracklinealtnumbering = 0;       // Alternative way of line numbering in tracks
@@ -869,6 +870,7 @@ void CRmtView::OnViewConfiguration()
         // GENERAL
         if (g_scaling_percentage != dlg.m_scaling_percentage) {
             g_scaling_percentage = dlg.m_scaling_percentage;
+            g_scalingToKeep = 0; // what the user chose is what is saved
             m_width = m_height = 0;
             Resize(); // Necessary to scale everything without manually resizing the window first
         }

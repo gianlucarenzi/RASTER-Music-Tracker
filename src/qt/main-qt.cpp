@@ -5,6 +5,8 @@
 
 #include "StdAfx.h"
 #include "Global.h"
+#include "RmtQtScreen.h"
+#include "RmtQtSettings.h"
 #include "Song.h"
 #include "Atari.h"
 #include "AtariTrackerDriver.h"
@@ -21,6 +23,7 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMenuBar>
+#include <QScreen>
 #include <QTimer>
 
 #include <filesystem>
@@ -47,6 +50,76 @@ static QString ScriptFileFromCommandLine(int argc, char** argv)
     return QString();
 }
 
+// ritmo --scale=<100..300> (also /scale:<n> and -scale:<n>): the interface size of this session, in percent, whatever the
+// settings say and without changing them. 0 when the command line has none.
+static int ScaleFromCommandLine(int argc, char** argv)
+{
+    static const char* prefixes[] = { "/scale:", "-scale:", "--scale=" };
+    for (int i = 1; i < argc; i++) {
+        const QString arg = QString::fromLocal8Bit(argv[i]);
+        for (const char* prefix : prefixes) {
+            if (arg.startsWith(QLatin1String(prefix), Qt::CaseInsensitive)) {
+                bool ok = false;
+                const int percent = arg.mid((int)strlen(prefix)).toInt(&ok);
+                return ok ? std::clamp(percent, 100, 300) : 0;
+            }
+        }
+    }
+    return 0;
+}
+
+// The song of the command line: the first argument that is not one of the options above
+static QString SongFromCommandLine(int argc, char** argv)
+{
+    static const char* options[] = { "/script:", "-script:", "--script=", "/scale:", "-scale:", "--scale=" };
+    for (int i = 1; i < argc; i++) {
+        const QString arg = QString::fromLocal8Bit(argv[i]);
+        bool isOption = false;
+        for (const char* prefix : options) {
+            if (arg.startsWith(QLatin1String(prefix), Qt::CaseInsensitive)) isOption = true;
+        }
+        if (!isOption) return arg;
+    }
+    return QString();
+}
+
+// What the screen has for a window, in logical pixels. The platform without a screen (offscreen: the tests, the
+// scripts, the screenshots) is not limited.
+static bool ScreenArea(QRect& area)
+{
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if (!screen || QGuiApplication::platformName() == QLatin1String("offscreen")) return false;
+    area = screen->availableGeometry();
+    return true;
+}
+
+// The size and the position of the last session, within the screen that there is now
+static bool RestoreWindow(RmtMainWindow& window)
+{
+    const QByteArray saved = RmtLoadWindowGeometry();
+    if (saved.isEmpty() || !window.restoreGeometry(saved)) return false;
+    QRect area;
+    if (ScreenArea(area)) {
+        int w = window.width(), h = window.height();
+        RmtFitToScreen(w, h, area.width(), area.height());
+        if (w != window.width() || h != window.height()) window.resize(w, h);
+    }
+    return true;
+}
+
+// The window of a first start: 1366x768, the screen of a small laptop, at the interface size (200 % on a screen that
+// has the room for it), within what the screen has, in the middle of it
+static void DefaultWindow(RmtMainWindow& window, int scalingPercent)
+{
+    int w = RMT_DEFAULT_WINDOW_WIDTH * scalingPercent / 100;
+    int h = RMT_DEFAULT_WINDOW_HEIGHT * scalingPercent / 100;
+    QRect area;
+    const bool limited = ScreenArea(area);
+    if (limited) RmtFitToScreen(w, h, area.width(), area.height());
+    window.resize(w, h);
+    if (limited) window.move(std::max(area.left(), area.center().x() - w / 2), std::max(area.top(), area.center().y() - (h + RMT_WINDOW_DECORATION_HEIGHT) / 2));
+}
+
 int main(int argc, char** argv)
 {
     const QString scriptFile = ScriptFileFromCommandLine(argc, argv);
@@ -59,7 +132,7 @@ int main(int argc, char** argv)
 #endif
     // Qt6 scales by the fractional desktop DPI (Xft.dpi 106 -> 1.1), which
     // blurs the pixel-exact bitmaps; round it down to a whole factor like Qt5
-    // did (1.5 -> 1, not 2: the 1280x800 window must still fit the screen).
+    // did (1.5 -> 1, not 2: the window must still fit the screen).
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
 #endif
@@ -86,7 +159,10 @@ int main(int argc, char** argv)
     g_Song.ClearSong(8);
 
     RmtMainWindow window;
-    window.resize(1280, 800);
+    const int scaleOverride = ScaleFromCommandLine(argc, argv);
+    // the size of the last session, else the default one (set again below, once the interface size is known)
+    const bool windowRestored = scriptFile.isEmpty() && RestoreWindow(window);
+    if (!windowRestored) DefaultWindow(window, scaleOverride ? scaleOverride : 100);
 
     if (!scriptFile.isEmpty()) {
         // The window exists (the session needs it) but stays hidden, unless RMT_SCRIPT_SHOW_WINDOW=1 shows what the
@@ -172,7 +248,10 @@ int main(int argc, char** argv)
         });
     }
 
-    window.Start(argc > 1 ? QString::fromLocal8Bit(argv[1]) : QString());
+    window.Start(SongFromCommandLine(argc, argv));
+    if (scaleOverride) window.OverrideScaling(scaleOverride); // this session only
+    // a first start: the window of the interface size that the first start chose
+    if (!windowRestored && !scaleOverride && g_scaling_percentage > 100) DefaultWindow(window, g_scaling_percentage);
 
     // RMT_QT_MENU_TEST: trigger every menu action (except exit) and verify
     // all have registered handlers (no "has no handler" debug warning).

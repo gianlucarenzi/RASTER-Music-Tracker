@@ -162,6 +162,8 @@ else()
         qt/RmtQtDialogs.cpp
         qt/RmtQtSettings.cpp
         qt/ritmo.qrc
+        qt/RmtQtScreen.h
+        qt/RmtQtSettings.h
         qt/RmtQtDialogs.h
         qt/QtMainFrame.cpp
         RmtView.cpp

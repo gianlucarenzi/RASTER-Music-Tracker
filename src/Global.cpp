@@ -22,6 +22,7 @@ int g_width = 0;
 int g_height = 0;
 int g_tracklines = 8;
 int g_scaling_percentage = 100;
+int g_scalingToKeep = 0;
 
 
 int g_notesperoctave = 12; // by default there are 12 notes per octave TODO: Today missing in CSong

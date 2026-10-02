@@ -10,6 +10,7 @@
 #include "Song.h"
 
 #include "RmtQtFrontend.h"
+#include "RmtQtSettings.h"
 #include "ScriptMessages.h"
 #include "ActionTable.h"
 #include "PokeyController.h"
@@ -1052,6 +1053,17 @@ RmtMainWindow::~RmtMainWindow()
     g_rmtHost = nullptr;
 }
 
+void RmtMainWindow::OverrideScaling(int percent)
+{
+    if (percent < 100 || percent > 300 || percent == g_scaling_percentage) return;
+    if (!g_scalingToKeep) g_scalingToKeep = g_scaling_percentage;
+    g_scaling_percentage = percent;
+    m_bridge->m_view.m_width = m_bridge->m_view.m_height = 0;
+    m_bridge->m_view.Resize(); // scales everything without resizing the window first
+    SCREENUPDATE;
+    centralWidget()->update();
+}
+
 void RmtMainWindow::Start(const QString& songFile)
 {
     g_statusBar = &m_bridge->m_frame.m_wndStatusBar;
@@ -1068,6 +1080,7 @@ void RmtMainWindow::closeEvent(QCloseEvent* e)
     // CMainFrame::OnClose(): quit only once CRmtView::OnWantExit() said so
     // (unsaved changes, configuration saved), else ask it (File/Exit)
     if (g_closeApplication || !m_bridge->m_started) {
+        if (m_bridge->m_started) RmtSaveWindowGeometry(saveGeometry()); // size and position for the next start
         e->accept();
         return;
     }

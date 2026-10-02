@@ -27,6 +27,7 @@ extern int g_width;
 extern int g_height;
 extern int g_tracklines;
 extern int g_scaling_percentage;
+extern int g_scalingToKeep; // the interface size of the settings while --scale makes another one the session's, else 0
 
 extern int g_notesperoctave;
 

@@ -46,6 +46,9 @@ public:
     // CView::OnInitialUpdate() and the file given on the command line
     void Start(const QString& songFile);
 
+    // The interface size of this session only (--scale): the configuration keeps the one of the options
+    void OverrideScaling(int percent);
+
     // The toolbars are shown and hidden by the View menu (g_view), not by
     // the right-click menu of QMainWindow
     QMenu* createPopupMenu() override { return nullptr; }

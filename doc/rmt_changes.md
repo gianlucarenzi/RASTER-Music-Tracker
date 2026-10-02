@@ -18,6 +18,9 @@ Changes in RMT 2.00 (Planned)
 - Always export in all formats (RMT, stripped RMT, XEX, LZSS, VU-Player...), which were set to "active" in the song settings, with one key stroke without further user input at that point. Because the LZSS compression needs to be done only once in this case, saving in all formats comes at practically no cost. Exported files will be placed in a folder named ".exports" and will be named in the format "-VU-Player_V1.xex".
 
 Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
+- The window adapts to the screen: it opens at 1366x768 (the screen of a small laptop, where the whole stereo song screen fits), reduced to
+  the screen when that is smaller; the first start chooses the interface size (100, 200 or 300 %) from the size of the screen; the size and the
+  position of the window are kept for the next start; `--scale=N` (100-300) sets the interface size of one session without changing the settings.
 - The MFC build (Windows, MSVC) is removed: RITMO is Qt only. Gone are the MFC windows
   and dialogs (Rmt.cpp, MainFrm.cpp, the *dlg.cpp files), the WASAP test cluster, the Visual
   Studio project and solution and the `RMT_USE_QT` option; the compatibility layer is now

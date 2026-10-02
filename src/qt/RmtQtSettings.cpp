@@ -15,11 +15,14 @@
 
 #include "StdAfx.h"
 #include "Global.h"
+#include "RmtQtScreen.h"
 
 #include <QFileInfo>
 #include <QGuiApplication>
 #include <QInputMethod>
+#include <QByteArray>
 #include <QLocale>
+#include <QScreen>
 #include <QSettings>
 
 #include <cstring>
@@ -125,4 +128,34 @@ KeyboardLayout RmtDefaultKeyboardLayout()
     default:
         return KeyboardLayout::QWERTY;
     }
+}
+
+// The interface size of a first start, from the size of the screen (RmtQtScreen.h). The platform
+// without a screen of its own (offscreen: the tests, the scripts, the screenshots) keeps 100 %.
+int RmtDefaultScalingPercentage()
+{
+    QScreen* screen = QGuiApplication::primaryScreen();
+    if (!screen || QGuiApplication::platformName() == QLatin1String("offscreen")) return 100;
+    const QRect area = screen->availableGeometry();
+    return RmtScalingForScreen(area.width(), area.height());
+}
+
+// The size and the position of the window, kept for the next start (the group "window" is not the one
+// of the configuration, which is written again from the text of CRmtView)
+QByteArray RmtLoadWindowGeometry()
+{
+    QSettings& settings = Settings();
+    settings.beginGroup("window");
+    const QByteArray geometry = settings.value("geometry").toByteArray();
+    settings.endGroup();
+    return geometry;
+}
+
+void RmtSaveWindowGeometry(const QByteArray& geometry)
+{
+    QSettings& settings = Settings();
+    settings.beginGroup("window");
+    settings.setValue("geometry", geometry);
+    settings.endGroup();
+    settings.sync();
 }

@@ -43,6 +43,22 @@ With the option \texttt{/SCRIPT:} the program runs a script without showing its 
 ritmo /SCRIPT:build.rmtscript
 \end{lstlisting}
 
+With \texttt{--scale=}\emph{n} (also \texttt{/scale:}\emph{n}), from 100 to 300, the program starts with that interface size
+(section~\ref{sec:window}) for this session only: the settings are not changed.
+\begin{lstlisting}
+ritmo --scale=200 mysong.rmt
+\end{lstlisting}
+
+\section{The window}\label{sec:window}
+
+The window is made for a laptop with a 1366$\times$768 screen: that is its size the first time the program starts (reduced to what the screen has, if
+the screen is smaller), and the whole screen of a stereo song fits in it. After that the program remembers the size and the position of the window
+and opens it the same way next time (if the screen is smaller than before, the window is reduced to fit).
+
+The \emph{interface size} (section~\ref{sec:options}) is chosen the first time too, from the size of the screen: 100\,\% on the screens up to Full HD,
+200\,\% on a screen of 2560$\times$1440, 300\,\% on a 4K screen with no scaling of the system. Only whole multiples are chosen, so that the pixels of the
+tracker stay square. The choice can be changed in the \menu{Options} dialog, and the settings taken over from \RMT{} keep the size they had.
+
 \section{Sound}
 
 The sound goes out through PortAudio, to the default output device of the system. If the output cannot be opened
