@@ -1,0 +1,2 @@
+// The icon of Ritmo.exe (Windows): the first icon of the file is the one the Explorer shows
+IDI_RITMO ICON "res/ritmo.ico"

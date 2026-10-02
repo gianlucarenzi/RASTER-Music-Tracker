@@ -17,6 +17,7 @@
 
 #include <QApplication>
 #include <QDir>
+#include <QIcon>
 #include <QKeyEvent>
 #include <QMenuBar>
 #include <QTimer>
@@ -63,6 +64,10 @@ int main(int argc, char** argv)
 #endif
     QApplication app(argc, argv);
     QApplication::setApplicationName("RITMO");
+    QIcon icon; // the icon of the windows (and of the task bar), see res/ritmo-icon.png
+    icon.addFile(":/ritmo-icon-32.png");
+    icon.addFile(":/ritmo-icon.png");
+    QApplication::setWindowIcon(icon);
 
     SetProgramFolderPath(CString((QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator()).toLocal8Bit().constData()));
 

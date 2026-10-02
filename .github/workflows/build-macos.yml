@@ -127,7 +127,7 @@ jobs:
           cp build/out/ritmo $APP/Contents/MacOS/ritmo
           cp -R build/out/resources $APP/Contents/MacOS/
           ICON=
-          if sips -s format icns src/res/Rmt.ico --out $APP/Contents/Resources/Ritmo.icns >/dev/null 2>&1; then
+          if sips -s format icns src/res/ritmo-icon-512.png --out $APP/Contents/Resources/Ritmo.icns >/dev/null 2>&1; then
             ICON="<key>CFBundleIconFile</key><string>Ritmo</string>"
           fi
           cat > $APP/Contents/Info.plist <<PLIST

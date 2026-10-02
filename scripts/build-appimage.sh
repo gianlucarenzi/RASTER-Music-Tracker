@@ -82,8 +82,8 @@ Icon=ritmo
 Categories=AudioVideo;Audio;Music;
 Terminal=false
 DESKTOP
-# the 32x32 icon of the program, enlarged without smoothing (pixel art)
-convert "src/res/Rmt.ico[0]" -filter point -resize 256x256 "$WORK/ritmo.png"
+# the 256x256 icon of the program (src/res/ritmo-icon.png)
+cp src/res/ritmo-icon.png "$WORK/ritmo.png"
 
 # --- AppImage ----------------------------------------------------------------
 

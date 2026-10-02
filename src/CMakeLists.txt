@@ -161,6 +161,7 @@ else()
         qt/RmtQtKeys.cpp
         qt/RmtQtDialogs.cpp
         qt/RmtQtSettings.cpp
+        qt/ritmo.qrc
         qt/RmtQtDialogs.h
         qt/QtMainFrame.cpp
         RmtView.cpp
@@ -339,6 +340,12 @@ endif()
 
 # std::thread (song timer of CompatAudio.cpp, backends)
 find_package(Threads REQUIRED)
+
+# The icon of Ritmo.exe: a resource file, compiled by windres with MinGW
+if(WIN32 AND NOT RMT_BUILD_CORE_ONLY)
+    enable_language(RC)
+    list(APPEND RMT_SOURCES ritmo-icon.rc)
+endif()
 
 # Create executable
 add_executable(Rmt WIN32 ${RMT_SOURCES})

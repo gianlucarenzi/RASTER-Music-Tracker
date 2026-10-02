@@ -25,6 +25,7 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QGuiApplication>
+#include <QIcon>
 #include <QImage>
 #include <QKeyEvent>
 #include <QMenu>
@@ -32,6 +33,7 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPixmap>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QPageSetupDialog>
@@ -333,8 +335,15 @@ public:
         switch (id) {
             case ID_APP_ABOUT:
             case ID_HELP_ABOUT_APP:
-                if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB"))
-                    QMessageBox::about(m_win, "About RITMO", AboutText(QString::fromLocal8Bit(g_app.GetVersionAndBuild().GetString())));
+                if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB")) {
+                    QMessageBox box(m_win);
+                    box.setWindowTitle("About RITMO");
+                    box.setTextFormat(Qt::RichText);
+                    box.setText(AboutText(QString::fromLocal8Bit(g_app.GetVersionAndBuild().GetString())));
+                    // the icon of the program, enlarged without smoothing (pixel art)
+                    box.setIconPixmap(QPixmap(":/ritmo-icon.png").scaled(128, 128, Qt::KeepAspectRatio, Qt::FastTransformation));
+                    box.exec();
+                }
                 break;
             case ID_APP_EXIT:
                 m_win->close();
