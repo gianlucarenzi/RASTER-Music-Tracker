@@ -3,8 +3,9 @@ name: Build RITMO on Windows
 # The Qt6 frontend built with MSYS2 / MinGW-w64 (GCC, like the Linux build):
 # Qt6, PortAudio (sound) and RtMidi (MIDI IN through WinMM) are MSYS2
 # packages. The result is a folder with Ritmo.exe, its resources and all the
-# DLLs it needs, zipped; a tag v* builds it and publishes it as a release
-# asset.
+# DLLs it needs, zipped, and an installer made with Inno Setup
+# (scripts/ritmo.iss); a tag v* builds them and publishes them as release
+# assets.
 
 on:
   push:
@@ -80,17 +81,38 @@ jobs:
         shell: pwsh
         run: Compress-Archive -Path dist/Ritmo -DestinationPath Ritmo-Windows-x64.zip -Force
 
+      - name: Create the installer (Inno Setup)
+        shell: pwsh
+        run: |
+          # the version of the program, as the build wrote it
+          $version = (Select-String -Path build/RmtVersion.h -Pattern 'RMT_VERSION_FULL\s+"([^"]+)"').Matches[0].Groups[1].Value
+          Write-Host "Version: $version"
+          $iscc = @("C:\Program Files (x86)\Inno Setup 6\ISCC.exe", "C:\Program Files\Inno Setup 6\ISCC.exe") |
+              Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $iscc) {
+              choco install innosetup -y --no-progress
+              $iscc = @("C:\Program Files (x86)\Inno Setup 6\ISCC.exe", "C:\Program Files\Inno Setup 6\ISCC.exe") |
+                  Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+          if (-not $iscc) { throw "ISCC.exe (Inno Setup) not found" }
+          & $iscc "/DAppVersion=$version" "/DSourceDir=$PWD\dist\Ritmo" "/O$PWD" scripts\ritmo.iss
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed" }
+          Get-Item Ritmo-Windows-x64-Setup.exe
+
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
           name: Ritmo-Windows-x64
           path: |
             Ritmo-Windows-x64.zip
+            Ritmo-Windows-x64-Setup.exe
             ritmo-windows.png
 
       - name: Create release and upload asset
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v3
         with:
-          files: Ritmo-Windows-x64.zip
+          files: |
+            Ritmo-Windows-x64.zip
+            Ritmo-Windows-x64-Setup.exe
           prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh

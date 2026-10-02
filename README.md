@@ -104,7 +104,8 @@ different from the Windows version you know?
 | macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
 
 These packages are the last ones with the name RMT (`RMT-*`, `Rmt.exe`, `rmt`);
-the next releases are named `Ritmo-*` with the executable `ritmo` / `Ritmo.exe`.
+the next releases are named `Ritmo-*` with the executable `ritmo` / `Ritmo.exe`, and for Windows there is also
+an installer, `Ritmo-Windows-x64-Setup.exe` (Start menu entry, optional desktop icon and `.rmt` file type).
 
 Everything the program needs is inside each package. The configuration is
 kept in `~/.config/ritmo-atari.org/ritmo.conf` on Linux, in the registry
