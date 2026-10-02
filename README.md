@@ -44,6 +44,14 @@ Songs, instruments and tracks are the same files as in RMT 1.3x: you can
 move your work between the Windows version and this one.
 
 
+### Documentation
+
+The [**RITMO User Manual (PDF)**](doc/manual/ritmo-manual.pdf), with screenshots of the windows, the menus and the
+dialogs, explains the program from the first song to the scripting and the export formats. It is written in
+LaTeX and built by `doc/manual/build.sh` (XeLaTeX and pandoc; `--screenshots` takes the screenshots from the
+program itself). The reference documents are also in `doc/` as Markdown.
+
+
 ### Screenshots
 
 *High Tide* by Born/LaResistance, a stereo song (8 tracks), playing on Linux:

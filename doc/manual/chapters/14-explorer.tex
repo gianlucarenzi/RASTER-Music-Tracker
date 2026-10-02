@@ -1,0 +1,35 @@
+\chapter{The Pokey explorer}\label{ch:explorer}
+
+The explorer is a mode to study the sound of the POKEY. \menu{Pokey $\rightarrow$ Activate Pokey Explorer Mode}
+(\key{CONTROL+SHIFT+F5}) stops the tracker's player routine and lets the keys write the registers of the chip directly, so that you can hear
+the effect of each divisor, distortion and \texttt{AUDCTL} bit. The mode is left with the edit/jam toggle (\key{CONTROL+SPACE}).
+
+\shot{window-explorer}{The Pokey explorer mode, with the registers of the chip on the screen.}{0.98}
+
+With \menu{View $\rightarrow$ Pokey Chip Registers} on, three rows under the dumps of the registers detail one channel: its \texttt{AUDF} and
+\texttt{AUDC} bytes, the first divisor of \texttt{AUDF + MODOFFSET} from 3 up (\texttt{MODULO}), the coarse divisor of the pitch formula (28 at
+64\,kHz, 114 at 15\,kHz, 1 at 1.79\,MHz and for joined channels), the free divisor, the modulo offset (1, 4 at 1.79\,MHz, 7 for joined channels)
+and the resulting pitch.
+
+\section{The keys}
+
+The keys are the physical positions of the QWERTY layout (on QWERTZ and AZERTY they are the keys at the same positions).
+
+\begin{center}
+\begin{tabular}{@{}lp{10.5cm}@{}}
+\toprule
+Key & Function \\ \midrule
+\key{ENTER} / \key{BACKSPACE} & next / previous channel (0--3) \\
+\key{+} / \key{-} & divisor $+0.1$ / $-0.1$; with \key{SHIFT} $+1.0$ / $-1.0$ (from 1.0 to 10000.0) \\
+\key{1} \key{3} \key{5} \key{7} & \texttt{AUDF0} to \texttt{AUDF3} $+1$; with \key{SHIFT} $+\$10$ \\
+\key{Q} \key{E} \key{T} \key{U} & \texttt{AUDF0} to \texttt{AUDF3} $-1$; with \key{SHIFT} $-\$10$ \\
+\key{2} \key{4} \key{6} \key{8} & \texttt{AUDC0} to \texttt{AUDC3} $+1$; with \key{SHIFT} $+\$10$ \\
+\key{W} \key{R} \key{Y} \key{I} & \texttt{AUDC0} to \texttt{AUDC3} $-1$; with \key{SHIFT} $-\$10$ \\
+\key{C} \key{G} \key{F} \key{K} \key{J} \key{D} \key{A} \key{P} & toggle the bits 0 to 7 of \texttt{AUDCTL}: the 15\,kHz clock, the two high pass filters, the
+  two 16-bit joins, the two 1.79\,MHz clocks and the 9-bit poly counter \\
+\key{M} & toggle the two-tone bits of \texttt{SKCTL} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The \menu{Pokey} menu has the same operations as menu items, which work in the explorer mode only.

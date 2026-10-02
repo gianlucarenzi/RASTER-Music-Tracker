@@ -1,0 +1,49 @@
+\chapter{MIDI input}\label{ch:midi}
+
+\RITMO{} plays and records notes from a MIDI keyboard. The input device is chosen in \menu{Tools $\rightarrow$ Options} (the MIDI
+group); the button \menu{Toggle MIDI on/off} of the toolbar switches the input on and off while a device is set. The device is a port
+of the system: on Linux the ports of the ALSA sequencer (a USB keyboard or a virtual port), on Windows WinMM, on macOS CoreMIDI.
+
+\section{Options}
+
+\begin{center}
+\begin{tabular}{@{}lp{10.2cm}@{}}
+\toprule
+Option & Meaning \\ \midrule
+MIDI IN device & the input device, or \emph{none} \\
+Touch response & the key velocity becomes the volume of the note: \texttt{Atari Volume Offset + velocity / 8}, limited to 1--15. Without it the
+  current volume (as for the typed notes) is used \\
+Atari volume offset & added to the volume of the velocity, from 0 to 15 \\
+Record note off & a released key (a note off, or a note on with velocity 0) deletes the note it played and writes volume 0. Without it releases are
+  ignored \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{The MIDI channels}
+
+\begin{center}
+\begin{tabular}{@{}lp{10.5cm}@{}}
+\toprule
+Channel & Function \\ \midrule
+1 & Records notes at the cursor, like the note keys: the MIDI note 36 is the lowest note of the tracker (\texttt{C-1}), the note is written with the
+  active instrument, the cursor moves down by the note spacing, and the note is played. While the song plays with follow mode, a note in the
+  first half of a line is written on the next line (quantized). Outside the tracks area, in a jam mode or with \key{SHIFT} or \key{CONTROL} held down, the note is only
+  played. Recording needs the window to have the focus \\
+2--9 & Live play on the channels \texttt{L1}--\texttt{L4} and \texttt{R1}--\texttt{R4} (6--9 repeat \texttt{L1}--\texttt{L4} on a mono song): never
+  recorded, and independent of the focus. The velocity is the volume (velocity / 8); a program change sets the instrument of the channel;
+  the controller 123 (all notes off) stops its note and the controller 121 (reset all controllers) restarts the player routine \\
+11--15 & a program change chooses the active instrument \\
+10 and 16 & an experimental assignment of controllers, kept from the original program, with the \texttt{POKEY explorer} (chapter~\ref{ch:explorer}) on
+  channel 16 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A system reset message (\texttt{FF}) restarts the player routine and forgets the notes held on the channels 2 to 16. The implementation chart of
+the MIDI messages is in appendix~\ref{app:midi}.
+
+\section{Scripts}
+
+A script can send MIDI messages to the program with the \texttt{midi} command, which is how the recording can be tested without a keyboard
+(chapter~\ref{ch:scripting}).

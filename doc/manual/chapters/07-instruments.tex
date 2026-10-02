@@ -1,0 +1,68 @@
+\chapter{Instruments}\label{ch:instruments}
+
+An instrument says how a note sounds from the moment it starts: how its volume changes with time, which distortion the POKEY
+uses, whether the pitch moves. In \texttt{INSTRUMENT EDIT} (\key{F3}) the instrument with the number in the info area is shown and
+edited (figure~\ref{fig:window-instruments}); \key{SHIFT+LEFT} and \key{SHIFT+RIGHT} choose another one, from \texttt{\$00} to
+\texttt{\$3F}.
+
+\section{The parts of an instrument}
+
+\begin{description}[style=nextline,leftmargin=1.2cm]
+  \item[\texttt{NAME}] The name, up to 32 characters.
+  \item[Envelope] A sequence of steps, one for each frame, from 1 to 32. Each step has the volume (\texttt{VOLUME L}, and
+        \texttt{VOLUME R} for the right channels of a stereo song), the \texttt{DISTORTION} (the POKEY distortion of the step,
+        an even value from 0 to E), a \texttt{COMMAND} with its parameters \texttt{X} and \texttt{Y}, and the flags
+        \texttt{AUTOFILTER} and \texttt{PORTAMENTO}.
+        \begin{itemize}
+          \item \texttt{ENVELOPE LENGTH}: the number of steps; \texttt{ENVELOPE GOTO}: the step to jump to when the end is reached.
+          \item \texttt{FADEOUT}: a volume slide that starts when the end of the envelope is reached for the first time
+                (\texttt{\$00} no slide, \texttt{\$FF} the fastest), down to the volume \texttt{VOL MIN}.
+        \end{itemize}
+  \item[Table of notes / frequencies] Up to 32 values added to the note or to the frequency, one for each \texttt{TABLE SPEED}
+        frames: arpeggios, pitch bends, drums. \texttt{TABLE TYPE} chooses between notes (in semitones) and frequencies;
+        \texttt{TABLE MODE} between adding to the base note (\texttt{SET}) and adding to the last result (\texttt{ADD}).
+        \texttt{TABLE LENGTH} and \texttt{TABLE GOTO} work as in the envelope.
+  \item[Effects] \texttt{DELAY} (the number of frames before the effects start), \texttt{VIBRATO} (three levels) and
+        \texttt{FREQSHIFT} (a frequency shift for each frame).
+  \item[\texttt{AUDCTL}] The bits of the POKEY control register the instrument sets: the 15\,kHz base clock, the two high
+        pass filters, the joined 16-bit channels, the 1.79\,MHz clocks and the 9-bit polynomial counter.
+\end{description}
+
+The fields, their ranges and the meaning of the envelope commands and of the distortions are in the reference tables of
+appendix~\ref{app:reference}.
+
+\section{Editing}
+
+The cursor moves with the arrow keys and \key{TAB}, which jumps between the groups of parameters. The values are typed in hexadecimal
+(\key{0}--\key{F}) or changed with \key{CONTROL+arrow}. In the tables and the envelope, \key{INSERT} adds a step,
+\key{SHIFT+INSERT} duplicates one, \key{DELETE} removes one and \key{SPACE} clears one; \key{HOME} and \key{END} go to the start and to
+the end, and \key{CONTROL+HOME} and \key{CONTROL+END} set the loop and the length.
+
+The volume envelope can be drawn with the mouse: the left button sets the volume of a step, the right one sets it to zero.
+\key{SHIFT+CONTROL+UP} and \key{DOWN} move all the steps at once; \key{SHIFT+CONTROL+numblock +} and \key{-} change the volumes of the left and
+right envelopes.
+
+\begin{tip}
+Press \key{SHIFT+ENTER} on a note of a track to pick up its instrument and listen to it, and \key{SHIFT} plus a note key while the
+instrument is on the screen to hear the changes as you make them.
+\end{tip}
+
+\section{Instrument files and the \menu{Instrument} menu}
+
+The \menu{Instrument} menu has the commands to copy, paste, cut and delete the instrument, to paste only a part of it (only the
+volume envelopes, only the parameters, only the table\ldots), to show information about the instrument (where it is used), to change all its occurrences in the songs to another number, to renumber all the instruments, to clear the unused
+ones, to \emph{load} an instrument from a file and to \emph{save} it as an \texttt{.rti} file.
+The \texttt{instruments} folder of the program has files to start from.
+
+\section{The distortions}
+
+The \texttt{DISTORTION} of an envelope step makes the character of the sound. The values are
+\texttt{0} and \texttt{8} (white noise), \texttt{2} (square-ish tones), \texttt{4} (pure by default, and a table of its own in the
+patched drivers), \texttt{6} and \texttt{C} (buzzy bass tones), \texttt{A} (pure tones) and \texttt{E} (gritty bass tones). The
+exact POKEY registers behind each are in the table of appendix~\ref{app:reference}, and some of the tracker drivers
+(chapter~\ref{ch:drivers}) give some of them a different sound.
+
+\section{The instrument active help}
+
+\menu{View $\rightarrow$ Instrument Active Help} shows, below the instrument, a description of the value under the cursor in the
+envelope: what the distortion or the command is, and the effect of its parameters.

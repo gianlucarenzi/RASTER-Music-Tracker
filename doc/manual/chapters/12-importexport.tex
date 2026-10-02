@@ -1,0 +1,98 @@
+\chapter{Import and export}\label{ch:importexport}
+
+\section{Importing}
+
+\menu{File $\rightarrow$ Import\ldots} reads a ProTracker module (\texttt{.mod}) or a TMC song (\texttt{.tmc}, \texttt{.tm8}) and
+makes a song of it. After the file is chosen the dialog of figure~\ref{fig:dialog-import} asks how to convert a module.
+
+\dialog{dialog-import}{Importing a ProTracker module.}{11cm}
+
+\begin{itemize}
+  \item The \emph{type of RMT module}: \texttt{RMT4} (the four channels of the module on the four tracks) or \texttt{RMT8}
+        (the channels spread on the two POKEYs, in the order 1, 4 / 2, 3).
+  \item The treatment of the \emph{notes} (shift the octave down if the tuning of the song is too high, replace the portamento
+        effects by calculated notes), of the \emph{volumes}, and the \emph{size optimizations} that are made while importing (wise loops, cutting
+        the unused parts of the tracks).
+\end{itemize}
+
+When the conversion is done a dialog reports how many tracks, instruments and song lines the song has, and what the optimizations did.
+Check the box and press \menu{OK}: the song is loaded, but it still needs your work. The instruments are rough: look at their envelopes and
+distortions (drums, basses\ldots) and correct the tunings of the original samples.
+
+\dialog{dialog-import-2}{The result of the import.}{9cm}
+
+\section{Exporting}
+
+\menu{File $\rightarrow$ Export} writes the song in a format for the Atari. The file dialog chooses the name and the format; most of the
+formats then show a dialog of options. Every format is written from the data of the song as the tracker plays it.
+
+\begin{center}
+\begin{tabular}{@{}p{4.2cm}p{9.6cm}@{}}
+\toprule
+Format & Use \\ \midrule
+RMT stripped song file (\texttt{.rmt}) & the module without the names and the unused tracks and instruments, to link in a program that uses
+  the RMT player routine \\
+ASM simple notation (\texttt{.asm}) & the notes as assembler data, for your own player \\
+SAP-R data stream (\texttt{.sapr}) & the register writes of the POKEY, frame by frame \\
+Compressed SAP-R (\texttt{.lzss}) & the same, compressed, for the LZSS player \\
+SAP file + LZSS driver (\texttt{.sap}) & a file the Atari players (ASAP, the plug-ins of many players, ASMA) play directly \\
+XEX Atari executable (\texttt{.xex}) & a program for the Atari that plays the song when it is started \\
+Relocatable ASM for RMTPlayer (\texttt{.asm}) & the module as source with labels, to be placed in memory by your program \\
+WAV audio file (\texttt{.wav}) & the sound as a 16-bit, 44.1\,kHz, stereo file, the song played once up to its loop \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{RMT stripped}
+
+\dialog{dialog-export-stripped-rmt}{The export of an RMT stripped file.}{10cm}
+
+The \emph{from address} is where the module will be in the memory of the Atari; the program shows the range it takes. The
+options are \emph{SFX support} (keep the unused tracks and instruments, for sound effects played by the game),
+\emph{GlobalVolumeFade} (a variable the program can use to fade the music) and \emph{No songline start} (the song always starts from
+song line 0). The text box lists the \emph{RMT FEATures} the song uses: if a game uses only this song, these definitions can be pasted into
+the player routine source (\texttt{rmt\_feat.a65}), which then assembles to a smaller and faster routine
+(this is described in the file \texttt{optimization.txt} that comes with the program).
+
+\subsection{ASM simple notation}
+
+\dialog{dialog-export-simple-asm}{The export of the notes as assembler data.}{8cm}
+
+Choose what to export (the tracks, or the whole song by song columns), how the note is written (the index \texttt{\$00}--\texttt{\$3C}, or the
+frequency according to the distortion of the instrument), how the duration is written (notes only, with the special value
+\texttt{XXX} in empty beats, or pairs of note and duration, in either order) and the prefix of the labels (empty for none).
+
+\subsection{SAP, SAP-R and LZSS}
+
+\dialog{dialog-export-sap}{The export of a SAP file.}{8cm}
+
+A SAP file has a header with the name, the author and the date, which the dialog fills with those of the song. The field
+\emph{Subsongs} lists, in hexadecimal, the song line each subsong starts from: \texttt{00} for one tune, \texttt{00 10} for two. SAP-R is the stream of
+the POKEY registers; LZSS compresses it, and the SAP file contains it with the player routine of the VU-Player.
+
+\subsection{XEX}
+
+\dialog{dialog-export-xex}{The export of an Atari executable.}{10cm}
+
+The program an XEX file contains shows a text on the Atari screen while it plays: up to five lines of 40 characters (the fifth shown
+instead of the fourth when the \key{SHIFT} key of the Atari is held down). Below, the \emph{rasterbar} shows the CPU usage of the player
+in colour, \emph{shuffle} changes its colours, and the box \emph{Automatically adjust playback speed}, with the line that says that the speed will be
+adjusted to 50\,Hz on both PAL and NTSC systems, turns the adjustment of the speed on. The preview shows
+the text as the Atari will draw it.
+
+\subsection{Relocatable ASM}
+
+\dialog{dialog-export-reloc-asm}{The export of a relocatable module.}{10cm}
+
+The module is written as byte definitions with labels (the one of the start of the song data, and optionally separate labels for the
+instruments, the tracks and the song lines, which can be placed in different places of memory). The text box shows the size of each
+part and the order of the modules.
+
+\subsection{WAV}
+
+The WAV export has no options: it plays the song with the built-in emulation and writes the sound.
+
+\section{Exporting from the command line}
+
+All the formats can be exported from a script, with no window, so that the files of a release are made from the \texttt{.rmt}
+source (chapter~\ref{ch:scripting}).

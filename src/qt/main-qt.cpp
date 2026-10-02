@@ -19,6 +19,7 @@
 #include <QDir>
 #include <QIcon>
 #include <QKeyEvent>
+#include <QMenu>
 #include <QMenuBar>
 #include <QTimer>
 
@@ -113,6 +114,7 @@ int main(int argc, char** argv)
     // (with QT_QPA_PLATFORM=offscreen it runs without a display; the delay is
     // RMT_QT_GRAB_MS);
     // RMT_QT_KEYS="108,108,106" first presses those keys (Linux evdev codes);
+    // RMT_QT_MENU_GRAB=prefix also saves the menus as images;
     // RMT_QT_COMMANDS="0xE101,0xE104" then triggers the menu actions of those
     // command IDs, or sends them as WM_COMMAND when they have no menu item
     // (file dialogs are answered by RMT_QT_FILEDIALOG)
@@ -152,6 +154,20 @@ int main(int argc, char** argv)
         int grabMs = qEnvironmentVariableIsSet("RMT_QT_GRAB_MS") ? qEnvironmentVariableIntValue("RMT_QT_GRAB_MS") : 1000;
         QTimer::singleShot(grabMs, &window, [&window, grab] {
             window.grab().save(grab);
+            // RMT_QT_MENU_GRAB=prefix: every top level menu as prefix-<title>.png
+            // (the screenshots of the manual)
+            QString menuGrab = qEnvironmentVariable("RMT_QT_MENU_GRAB");
+            if (!menuGrab.isEmpty()) {
+                for (QAction* top : window.menuBar()->actions()) {
+                    QMenu* menu = top->menu();
+                    if (!menu) continue;
+                    QString name = top->text().remove('&');
+                    menu->popup(QPoint(0, 0)); // shown, so the keys and the greyed items are drawn
+                    QCoreApplication::processEvents();
+                    menu->grab().save(menuGrab + "-" + name + ".png");
+                    menu->close();
+                }
+            }
             QCoreApplication::exit(0);
         });
     }

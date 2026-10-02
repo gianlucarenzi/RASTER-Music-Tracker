@@ -1,0 +1,70 @@
+\chapter{Installing and starting}\label{ch:install}
+
+\section{The packages}
+
+Everything the program needs is inside each package: the tracker drivers and the other files it
+loads at run time are in the \texttt{resources} folder next to the program.
+
+\begin{center}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{4.6cm}>{\raggedright\arraybackslash}p{6.2cm}@{}}
+\toprule
+System & Package & How to start it \\ \midrule
+Linux x86\_64 (Debian 11, Ubuntu 20.04 and newer) & \texttt{Ritmo-Linux-\allowbreak x86\_64.AppImage} &
+  make it executable (\texttt{chmod +x}) and run it \\
+Windows 64 bit & \texttt{Ritmo-Windows-x64.zip} &
+  unzip it anywhere and run \texttt{Ritmo.exe} (the program is not signed: Windows may ask to confirm) \\
+macOS 12 or later, Apple Silicon or Intel & \texttt{Ritmo-macOS-arm64.dmg}, \texttt{Ritmo-macOS-x86\_64.dmg} &
+  drag \texttt{Ritmo.app} to Applications; the first time open it with the right button and
+  \menu{Open} (the program is not signed) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\RITMO{} can also be built from the source with CMake and Qt (appendix~\ref{app:building}).
+
+\begin{note}
+The packages of the versions up to 2.2.1 were called \texttt{RMT-*} and the program \texttt{rmt}
+(\texttt{Rmt.exe}). From the next releases the packages are \texttt{Ritmo-*} and the program
+\texttt{ritmo} (\texttt{Ritmo.exe}).
+\end{note}
+
+\section{Starting the program}
+
+Start \RITMO{} like any other program. The first start opens the window with an empty song.
+The program accepts a song on the command line, which is opened at the start:
+\begin{lstlisting}
+ritmo mysong.rmt
+\end{lstlisting}
+
+With the option \texttt{/SCRIPT:} the program runs a script without showing its window
+(chapter~\ref{ch:scripting}):
+\begin{lstlisting}
+ritmo /SCRIPT:build.rmtscript
+\end{lstlisting}
+
+\section{Sound}
+
+The sound goes out through PortAudio, to the default output device of the system. If the output cannot be opened
+the program prints a message and goes on without sound, so that songs can still be edited. The
+\emph{hardware soundbuffer} option of the configuration (section~\ref{sec:options}) and the
+\texttt{RMT\_AUDIO\_BUFFER\_MS} environment variable (the size of the buffer in milliseconds) are for the sound
+output of the system that needs a different buffer.
+
+\section{Where the settings are kept}
+
+The configuration and the tuning belong to the user, not to the program folder, so that an update
+or a new installation keeps them:
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Linux & \texttt{\textasciitilde/.config/ritmo-atari.org/ritmo.conf} (\texttt{\$XDG\_CONFIG\_HOME}) \\
+Windows & the registry, \texttt{HKEY\_CURRENT\_USER\textbackslash Software\textbackslash ritmo-atari.org\textbackslash ritmo} \\
+macOS & \texttt{\textasciitilde/Library/Preferences/org.ritmo-atari.ritmo.plist} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+At the first start, if there are no settings of \RITMO{} yet, the settings of \RMT{} are taken over: those
+saved by it in the same places with the name \texttt{rmt}, or an \texttt{rmt.ini} and a
+\texttt{tuning.ini} next to the program.

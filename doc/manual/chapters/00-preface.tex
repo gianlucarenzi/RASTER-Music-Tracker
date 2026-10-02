@@ -1,0 +1,41 @@
+\chapter*{About this manual}
+\addcontentsline{toc}{chapter}{About this manual}
+
+This manual describes \RITMO{}, a music tracker for the POKEY sound chip of the Atari XL/XE
+8-bit computers. \RITMO{} (\emph{\RITMO{} Is a Tracker for Music On Atari}) is a fork of the
+RASTER Music Tracker (\RMT{}), and runs on Linux, Windows and macOS.
+
+It is written for two kinds of reader: the musician who wants to compose, and the Atari
+programmer who wants to use the result in a demo or a game. Chapters~\ref{ch:intro} to
+\ref{ch:tutorial} introduce the program and walk through a first song; the next ones describe
+every part of the window, the menus, the dialogs, the import and export formats, MIDI input
+and the scripting; the appendices are the complete reference of the keys, the fields and the
+file format.
+
+\section*{Conventions}
+
+\begin{itemize}
+  \item Keys are written like \key{CONTROL+S} or \key{F5}. \key{CONTROL} is the \key{Ctrl} key
+        (on macOS the \key{Control} key, not \key{Command}).
+  \item A menu item is written \menu{File $\rightarrow$ Open\ldots}.
+  \item Hexadecimal numbers have a \texttt{\$} in front: \texttt{\$3F} is 63. The tracker shows
+        its numbers in hexadecimal: line numbers, instruments, volumes.
+  \item The names of the fields of the screen are written as the program writes them, in capital
+        letters: \texttt{VOLUME}, \texttt{TABLE LENGTH}.
+  \item The screenshots are taken from the program itself, by the script
+        \texttt{doc/manual/make-screenshots.sh}, with the default settings of a first start.
+\end{itemize}
+
+\begin{note}[RMT and RITMO in the reference]
+The reference tables are converted from the documents of the original \RMT{}, and still call the program \RMT{} in places. \RMT{} is also the name of
+the file format and of the player routines: an \emph{RMT module} and the \emph{RMT drivers} keep their names in \RITMO{}.
+\end{note}
+
+\begin{note}[Where the reference tables come from]
+The tables of the menu commands, of the note keys, of the scripting commands and of the tracker
+drivers (appendix~\ref{app:reference} and chapters~\ref{ch:drivers} and~\ref{ch:scripting}) are
+converted from the Markdown documents in the \texttt{doc/} folder of the program, and the menu and note key
+tables of those are written by the program itself (the \texttt{dump actions} and
+\texttt{dump notekeys} script commands). They are always the state of the version this manual
+is built from.
+\end{note}

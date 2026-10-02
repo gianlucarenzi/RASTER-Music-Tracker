@@ -1,0 +1,33 @@
+\chapter{Building from the source}\label{app:building}
+
+\RITMO{} is built with CMake and Qt. The full instructions are in the file \texttt{BUILD.md} of the source; here is the short version.
+
+\section{Linux}
+
+\begin{lstlisting}
+sudo apt install cmake qt6-base-dev portaudio19-dev librtmidi-dev
+cmake -B build-qt -DCMAKE_BUILD_TYPE=Release
+cmake --build build-qt -j
+./build-qt/out/ritmo song.rmt
+\end{lstlisting}
+
+The program is \texttt{build-qt/out/ritmo}, with the \texttt{resources} folder next to it. \texttt{-DRMT\_QT\_MAJOR=5} builds with
+Qt~5.15 instead of Qt~6.
+
+\section{Windows and macOS}
+
+Windows is built with MSYS2 (MinGW64: GCC, Qt~6, PortAudio, RtMidi) and macOS with the Apple compiler and the Qt of the official installer. The
+GitHub workflows of the repository (\texttt{.github/workflows}) build the packages of both, and the AppImage for Linux
+(\texttt{scripts/build-appimage.sh}), and are the best description of the steps.
+
+\section{Core only and tests}
+
+\texttt{-DRMT\_BUILD\_CORE\_ONLY=ON} builds the engine and the audio and MIDI backends without Qt, and with \texttt{-DRMT\_CORE\_TEST=ON}
+the \texttt{RmtCoreTest} program, a smoke test of the engine. The \texttt{scripts/test-scripting.sh} script runs the reference scripts.
+
+\section{Test hooks}
+
+For tests and documentation the program can run without a display (\texttt{QT\_QPA\_PLATFORM=offscreen}). The environment variables
+\texttt{RMT\_QT\_GRAB} (save the window and quit), \texttt{RMT\_QT\_KEYS}, \texttt{RMT\_QT\_COMMANDS}, \texttt{RMT\_QT\_FILEDIALOG},
+\texttt{RMT\_QT\_DIALOG} and \texttt{RMT\_QT\_MENU\_GRAB} (the menus as images) press keys, run menu commands, answer the dialogs and save them. The
+screenshots of this manual were taken that way, by \texttt{doc/manual/make-screenshots.sh}.

@@ -1,0 +1,78 @@
+\chapter{The song}\label{ch:song}
+
+\section{Song lines}
+
+The song area (the \texttt{SONG EDIT} part, \key{F4}) lists the song lines. Each column is a channel, and the number in a cell is the
+track the channel plays on that line. The keys:
+
+\begin{itemize}
+  \item \key{0}--\key{F}, \key{CONTROL+LEFT}, \key{CONTROL+RIGHT} and \key{BACKSPACE} change the track number of the cell.
+  \item \key{CONTROL+T} puts a new empty track in the cell, \key{CONTROL+D} makes a copy of the track and puts it in its place
+        (the program asks when the track was used only once), \key{CONTROL+J} prepares a whole line of empty tracks.
+  \item \key{INSERT}, \key{DELETE} (\key{CONTROL+I}, \key{CONTROL+U}) insert and delete song lines. The
+        \texttt{GO TO LINE} values that point past the change are adjusted by the program.
+  \item \key{CONTROL+K} inserts a copy or a clone of song lines, in the dialog of figure~\ref{fig:dialog-copy-lines}.
+  \item \key{CONTROL+G} makes the line a \texttt{GO TO LINE}: the song continues from another song line, which loops it.
+  \item \key{HOME} and \key{END}, \key{SHIFT+PAGE UP} and \key{SHIFT+PAGE DOWN} move to the start or the end of the song and
+        between the subsongs.
+\end{itemize}
+
+\dialog{dialog-copy-lines}{Insert a copy or a clone of song lines.}{6.5cm}
+
+\section{Subsongs}
+
+A song may contain more than one tune: each subsong starts from a song line. The keys \key{SHIFT+PAGE UP} and
+\key{SHIFT+PAGE DOWN} move between them, and the SAP export (chapter~\ref{ch:importexport}) lists them in its \emph{Subsongs} field: the
+hexadecimal numbers of the song lines that start the subsongs, the first of which is the default one.
+
+\section{Bookmarks}
+
+\key{F8} sets a bookmark at the cursor and \key{CONTROL+F8} clears it. \key{SHIFT+F7} plays from the bookmark, a way to
+listen to the same passage again and again while you work on it.
+
+\section{The info area}
+
+The \texttt{INFO EDIT} part (\key{SHIFT+F4}) edits the data of the song itself.
+
+\begin{center}
+\begin{tabular}{@{}lp{10cm}@{}}
+\toprule
+Field & Meaning \\ \midrule
+\texttt{NAME} & the name of the song and of the author, up to 64 characters \\
+\texttt{MUSIC SPEED: AA/MM/S} & \texttt{AA} is the current speed of the song, \texttt{MM} the main speed, which the song uses when it
+   is played from the beginning (both from \texttt{\$01} to \texttt{\$FF}); \texttt{S} is the engine speed, from 1 to 8: how many times the
+   player routine is called in each frame. A speed above 4 is not supported by the exported formats \\
+\texttt{MAXTRACKLENGTH} & the maximal length of the tracks \\
+\texttt{MONO / STEREO} & the number of tracks: 4 or 8 \\
+\texttt{PAL / NTSC} & the video system, 50 or 60 frames per second \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The values are changed with the hexadecimal keys, or \key{CONTROL+arrow}. \key{TAB} and \key{LEFT}/\key{RIGHT} move between the
+fields, \key{SHIFT+TAB} goes to the name and \key{ENTER} returns to the part you came from.
+
+\section{Changing the kind of song}
+
+The commands of the \menu{Song} menu that change the whole song open dialogs of their own.
+
+\begin{itemize}
+  \item \menu{Switch song between 4 or 8 channels\ldots} changes a mono song to stereo and the other way round.
+        The data of the channels that disappear is lost, and the dialog says so.
+  \item \menu{Song columns' order change/copy/clear\ldots} (figure~\ref{fig:dialog-columns}) reorders the columns of the song, copies
+        one into another, turns a mono column into a stereo one or clears a column, for the song lines in a range.
+  \item \menu{Change maximal length of tracks\ldots} (figure~\ref{fig:dialog-max-length}) changes the maximal length of the tracks.
+  \item \menu{All size optimizations\ldots} runs the optimizations that make the song smaller: searching wise loops in all the
+        tracks, clearing the unused ones, \ldots (section~\ref{sec:optimize}).
+\end{itemize}
+
+\dialog{dialog-columns}{The order of the columns of the song.}{8cm}
+\dialog{dialog-max-length}{The maximal length of the tracks.}{7cm}
+
+\section{Optimizing the size}\label{sec:optimize}
+
+The Atari has little memory, so a song should be small. The program has the tools to make it so:
+the \emph{wise loops} (a track that repeats a phrase is stored once), the clearing of the tracks and the instruments that
+are not used in the song, the removal of duplicated tracks (the song is adjusted to the one left), and the
+\emph{cleanup} commands of the \menu{Track} and \menu{Instrument} menus. The export for programmers (\emph{RMT stripped}) shows the
+features used by the song, which lets a player routine be made smaller still (chapter~\ref{ch:importexport}).

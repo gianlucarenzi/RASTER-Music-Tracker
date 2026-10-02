@@ -1,0 +1,84 @@
+\chapter{Editing tracks}\label{ch:tracks}
+
+The tracks are edited in the \texttt{TRACK EDIT} part (\key{F2}). The complete list of keys of the part is in
+appendix~\ref{app:reference}; this chapter explains what they do.
+
+\section{The cursor}
+
+The arrow keys, \key{TAB} and \key{SHIFT+TAB}, \key{PAGE UP} and \key{PAGE DOWN} move the cursor in the tracks. The columns of each
+track are, from the left: the note, the instrument, the volume and the speed. The key you type goes to the column under the cursor.
+
+\begin{center}
+\begin{tabular}{@{}lp{10.5cm}@{}}
+\toprule
+Column & What you type \\ \midrule
+Note (\texttt{NNN}) & a note key; \key{numblock 1}--\key{6} change the octave of the note under the cursor; \key{BACKSPACE} deletes the note and the instrument \\
+Instrument (\texttt{TT}) & \key{0}--\key{F}, from \texttt{\$00} to \texttt{\$3F}. If the note column of the line is empty the column behaves like a
+  note column: you can type a note there \\
+Volume (\texttt{vV}) & \key{0}--\key{F}. A volume can be written alone, with no note \\
+Speed (\texttt{FSS}) & \key{0}--\key{F}: a new speed for the song from this line on, from \texttt{\$01} to \texttt{\$FF} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+If the \emph{respect volume} mode (\key{F11}) is on, a note typed on a line that has a volume does not replace the volume.
+
+\section{The length of a track}
+
+A track is as long as its \emph{end line}: \key{CONTROL+END} sets or clears it. \key{HOME} and \key{END} go to the start and
+the end of the track; \key{CONTROL+HOME} sets the start of a \emph{wise loop}, the line the track goes back to when it
+reaches its end, so that a repeated phrase is written once. The header of the track shows both numbers
+(chapter~\ref{ch:window}).
+
+\key{INSERT} and \key{DELETE} (or \key{CONTROL+I} and \key{CONTROL+U}) insert and delete lines in the track.
+
+\section{Playing while editing}
+
+\begin{itemize}
+  \item \key{ENTER} plays the note at the cursor, \key{SHIFT+ENTER} plays it and makes its instrument and volume the active ones
+        (a quick way to ``pick up'' a sound from a song), and \key{CONTROL+ENTER} plays all the notes of the line.
+  \item \key{SHIFT+tonekey} plays a note with the active instrument and volume on the current channel, without writing it, and
+        \key{SHIFT+CONTROL+tonekey} plays it on both stereo channels.
+  \item \key{F9} switches the current channel off and on, \key{CONTROL+F9} plays it alone, \key{CONTROL+1}--\key{8} toggle
+        the channels one by one.
+\end{itemize}
+
+\section{Blocks}
+
+A \emph{block} is a selection of lines in a track.
+
+\begin{enumerate}
+  \item Select with \key{SHIFT+UP}, \key{SHIFT+DOWN}, \key{SHIFT+HOME} and \key{SHIFT+END}; \key{CONTROL+A} selects all the data of the
+        track. \key{ESC} deselects.
+  \item Copy (\key{CONTROL+C}), cut (\key{CONTROL+X}), paste (\key{CONTROL+V}), merge with the content under the cursor
+        (\key{CONTROL+M}) and exchange the block with the clipboard (\key{CONTROL+E}). With no block the data at the cursor
+        is taken.
+  \item \key{CONTROL+B} restores the block from a backup that is made as soon as the block is started: the way back from a wrong
+        modification.
+\end{enumerate}
+
+The blocks can also be changed with keys, either on every line of the block, or only on the lines with the active instrument
+(\key{SHIFT+CONTROL+A} chooses): \key{CONTROL+F1}/\key{F2} transpose by semitones, \key{CONTROL+F3}/\key{F4} by octaves,
+\key{SHIFT+CONTROL+LEFT}/\key{RIGHT} change the instrument and \key{SHIFT+CONTROL+UP}/\key{DOWN} the volume. The block toolbar has the same
+buttons.
+
+\subsection{The Effects and Tools dialog}
+
+\key{CONTROL+F} (\menu{Block $\rightarrow$ Effects/Tools\ldots}) opens the window of figure~\ref{fig:dialog-block-effects}: a
+choice of effects for all the data of the block, with the fields of the chosen effect. The effects include fading the volume in
+or out between two levels in percent; \menu{Try} applies the effect, \menu{Restore} takes it back, \menu{Play/Stop} plays the
+block while you are adjusting it and \menu{Default} sets the fields to their default values.
+
+\dialog{dialog-block-effects}{The block effects (\key{CONTROL+F}).}{7cm}
+
+\section{Tracks as objects}
+
+The \menu{Track} menu works on a whole track: copy, paste, cut, delete, load a track from a file or save it as a
+text file, ask for information about the current track, \emph{search and build a wise loop} in a track (the program finds the
+repeats and writes them once) or \emph{expand} it again, and the clean-up operations that remove duplicated or unused
+tracks from the song. The operations on all the tracks change the whole song; save it before using them.
+
+\section{Undo}
+
+\key{CONTROL+Z} undoes the last change and \key{CONTROL+Y} does it again. \menu{Edit $\rightarrow$ Clear Undo \& Redo History}
+forgets the changes made so far.

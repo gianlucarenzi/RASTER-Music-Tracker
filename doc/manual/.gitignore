@@ -1,0 +1,6 @@
+# written by build.sh
+generated/
+*.aux
+*.log
+*.toc
+*.out

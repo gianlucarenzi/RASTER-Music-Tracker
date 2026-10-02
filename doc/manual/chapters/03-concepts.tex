@@ -1,0 +1,42 @@
+\chapter{Concepts}\label{ch:concepts}
+
+The words of the tracker have a precise meaning in this manual. Outside of it they are often used interchangeably.
+
+\begin{description}[style=nextline,leftmargin=1.2cm]
+  \item[Song] A piece of music: a sequence of \emph{song lines}. \RITMO{} edits one song at a time; a song can start from
+        different song lines, the \emph{subsongs}.
+  \item[Module] The data structure with the song, its tracks and its instruments, as it is stored in an \texttt{.rmt} file
+        (the \emph{module file}).
+  \item[Track] A logical voice with the notes of a stretch of music, for example eight bars of the bass. It has a number
+        (\texttt{\$00} to \texttt{\$FF}), a length (up to 256 lines) and can be used many times in a song.
+  \item[Song line] A row of the song: it says which track plays on each channel at that moment, or where to
+        \emph{go to}, to loop.
+  \item[Channel] A physical output to create sound. A mono song has four channels, \texttt{L1} to \texttt{L4}, one for each
+        POKEY voice; a stereo song has eight, \texttt{L1}--\texttt{L4} on the left and \texttt{R1}--\texttt{R4} on the right (two POKEYs).
+  \item[Instrument] What makes the sound at the different pitches: a volume envelope, a table of notes or frequencies, a choice of
+        distortion, and effects such as vibrato. An instrument is a number (\texttt{\$00} to \texttt{\$3F}) and a name.
+  \item[Pattern] The notes of a track with their attributes (instrument, volume, speed).
+  \item[Tracker driver] The part of the program that makes the actual sound from the tracker data: a piece of 6502 code that
+        runs on the emulated Atari. Different \emph{versions} of the driver interpret the data in a different way
+        (chapter~\ref{ch:drivers}).
+  \item[Mono / stereo] Mono: the four channels of one POKEY. Stereo: two POKEYs, one for the left and one for the right output.
+\end{description}
+
+\section{Time}
+
+The Atari plays the music once for each video frame: 50 times a second on a PAL system and 60 times on NTSC
+(the \texttt{NTSC} option, section~\ref{sec:options}). A \emph{line} of a track lasts \texttt{S}
+frames, where \texttt{S} is the \emph{speed} of the song (the \texttt{MUSIC SPEED} field). The
+\emph{engine speed} says how many times the player routine is called each frame, for the songs that need a
+finer time. Speeds can change in the middle of a song with the speed column of the tracks.
+
+\section{The sound of the POKEY}
+
+\begin{itemize}
+  \item Each channel has a frequency divider (\texttt{AUDF}), a volume from 0 to 15 and a \emph{distortion}
+        (the \texttt{AUDC} register): pure tone, noise of different kinds, buzzy tones from the polynomial counters.
+  \item The \texttt{AUDCTL} register changes how all the channels work: it chooses the base clock (64\,kHz or 15\,kHz),
+        joins two channels into a 16-bit divider, adds high pass filters, or clocks a channel with 1.79\,MHz.
+        The instruments set these bits (chapter~\ref{ch:instruments}).
+  \item The notes of the tracker go from \texttt{C-1} to \texttt{C-6}: \texttt{\$00} to \texttt{\$3D}.
+\end{itemize}

@@ -1,0 +1,80 @@
+\chapter{Your first song}\label{ch:tutorial}
+
+This chapter makes a short song from nothing, to see how the parts of the program fit together. Every key used here is
+explained in the following chapters.
+
+\section{A new song}
+
+Press \key{CONTROL+N} (\menu{File $\rightarrow$ New}). The dialog of figure~\ref{fig:dialog-new} asks for the
+\emph{maximal length of the tracks} (how many lines a track can have; 64 is a good start) and for the kind of song:
+\texttt{MONO - 4 TRACKS} or \texttt{STEREO - 8 TRACKS}. Choose mono. The current song is discarded, so the dialog warns
+you.
+
+\dialog{dialog-new}{The \menu{New} dialog.}{7cm}
+
+\section{Entering notes}
+
+The cursor is in the first column of the first track, the note column. The keyboard is a piano
+(figure~\ref{fig:notekeys}): the lower row of letters, \key{Z}\,\key{X}\,\key{C}\ldots, plays from \texttt{C-1} and the
+upper row, \key{Q}\,\key{W}\,\key{E}\ldots, from \texttt{C-2}; the keys of the row above each are the sharps
+(\key{S}, \key{D}\ldots and \key{2}, \key{3}\ldots). The exact keys depend on the keyboard layout chosen in the options (QWERTY,
+QWERTZ or AZERTY): the tables of appendix~\ref{app:reference} show every key.
+
+\begin{figure}[H]\centering
+\begin{lstlisting}[frame=single]
+ 1    2    3    4    5    6    7    8    9    0    -    =
+     C#2  D#2       F#2  G#2  A#2       C#3  D#3       F#3
+   Q    W    E    R    T    Y    U    I    O    P    [    ]
+  C-2  D-2  E-2  F-2  G-2  A-2  B-2  C-3  D-3  E-3  F-3  G-3
+     A    S    D    F    G    H    J    K    L    ;    '
+         C#1  D#1       F#1  G#1  A#1       C#2  D#2
+       Z    X    C    V    B    N    M    ,    .    /
+      C-1  D-1  E-1  F-1  G-1  A-1  B-1  C-2  D-2  E-2
+\end{lstlisting}
+\caption{The note keys of the QWERTY layout.}\label{fig:notekeys}
+\end{figure}
+
+Press \key{Z}: the note \texttt{C-1} is written with the active instrument and the volume of the info area, it is played, and
+the cursor moves down by the number of lines of the \emph{note spacing} (the combo of the toolbar, default 1). Press
+\key{X}, \key{C}\ldots to write a scale. \key{SPACE} deletes what is under the cursor, \key{BACKSPACE} deletes the note.
+
+\begin{tip}
+\key{numblock /} and \key{numblock *} lower and raise the octave of the new notes, \key{numblock +} and \key{numblock -}
+change the spacing of the notes. The volume of the new notes is changed with \key{CONTROL+numblock +} and
+\key{CONTROL+numblock -}.
+\end{tip}
+
+\section{Choosing the instrument}
+
+The instrument is the sound of the note. The active instrument is shown in the info area (\texttt{INSTRUMENT 00: \ldots}).
+\key{SHIFT+LEFT} and \key{SHIFT+RIGHT} change it. To see what an instrument is, press \key{F3}: the instrument part of figure~\ref{fig:window-instruments} appears. Chapter~\ref{ch:instruments}
+explains it; the quickest way to get good sounds is to load instruments: \menu{Instrument $\rightarrow$ Load instrument from file\ldots}
+and choose one of the \texttt{.rti} files in the \texttt{instruments} folder of the program.
+
+\section{Playing}
+
+\begin{itemize}
+  \item \key{F5} plays the song from the start, \key{F7} from the cursor, \key{F6} loops the current song line and
+        \key{ESC} stops.
+  \item \key{ENTER} plays the note under the cursor.
+  \item \key{F12} makes the screen follow the playing position.
+\end{itemize}
+
+\section{More tracks and song lines}
+
+The notes of a track belong to a \emph{song line}. To write more music, go to the song area with \key{F4}: each column is a
+channel and each number a track. Press \key{CONTROL+T} to put a new empty track in the current song line and channel, and
+\key{F2} to come back and write in it. \key{CONTROL+D} duplicates the track under the cursor, to change a copy.
+\key{CONTROL+G} makes the current song line a \texttt{GO TO LINE}, which loops the song.
+
+\section{Saving and exporting}
+
+\key{CONTROL+S} saves the song as an \texttt{.rmt} file. To use it on the Atari, \menu{File $\rightarrow$ Export} makes a SAP
+file (to play with the Atari players), an executable \texttt{.xex} that plays the song when started, assembler source, or a WAV file
+(chapter~\ref{ch:importexport}).
+
+\begin{note}
+Test the finished song on the Atari or in an Atari emulator, when you can: \RITMO{} plays it with an exact emulation
+of the player routine, but the way the notes sound depends on the \emph{tracker driver version} (chapter~\ref{ch:drivers}) and on the video
+system, PAL or NTSC.
+\end{note}

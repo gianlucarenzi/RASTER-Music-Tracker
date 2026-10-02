@@ -1,0 +1,68 @@
+\chapter{Introduction}\label{ch:intro}
+
+\section{What \RITMO{} is}
+
+The Atari XL/XE computers make their sound with the POKEY chip: four independent voices
+(sixteen when two chips are used, as in many stereo songs), each with a frequency divider, a
+choice of noise and tone distortions and a volume. A \emph{tracker} is the kind of music editor
+that was born on the Amiga: the music is a grid of numbers, one column for each voice and one
+row for each beat, and the notes are typed with the computer keyboard as on a piano.
+
+\RITMO{} is such a tracker for the POKEY. A song made with it can be played on a real Atari: the
+program produces the same data the player routines of the Atari read, and exports them in
+several formats (a SAP file for the Atari players, an executable \texttt{.xex}, assembler source,
+the compact RMT module for your own program). The sound you hear while composing comes from an
+emulation of the Atari's 6502 processor and of the POKEY chip built into the program, running
+the same player routine, so it is what the Atari will play.
+
+\shot{window-tracks}{The main window of \RITMO{} with a song loaded.}{0.98}
+
+\section{History}
+
+\RITMO{} is a fork of the \emph{RASTER Music Tracker}, \RMT{}. The first version, 1.0, was
+written by Radek \v{S}t\v{e}rba (Raster/C.P.U.) in 2002; his last version is 1.28, of 2009. It was
+a small revolution for the Atari musicians: the first tracker for the POKEY with a
+graphical envelope editor, and the one nearly everybody used. Radek \v{S}t\v{e}rba has since
+passed away; this manual is, among other things, a way to remember his work. R.I.P.
+
+Vin Samuel (\emph{VinsCool}) continued the program from 2021 to 2024, up to the version 1.34: a
+new player routine with more tuning tables, a tuning calculator, an automatic high pass filter,
+the SAP and XEX export and many corrections. Peter Dell (\emph{JAC!}) carries on the original
+project from 2024 (version 1.35 and the planned version 2) and made it possible for this fork
+to exist: everything described here is built on his work.
+
+The \RITMO{} fork keeps the code of the tracker, the file formats and the player routines of
+\RMT{} 1.35, and replaces what tied it to Windows. It is renamed so that it cannot be confused with the original
+\RMT{}, and so that the Windows-only (MFC) parts of the code could be removed.
+
+\section{What is different from \RMT{}}
+
+\begin{itemize}
+  \item The program is written with Qt: it runs natively on Linux, on Windows and on macOS (Intel and
+        Apple Silicon). The look of the tracker screen is the original one, pixel for pixel.
+  \item The 6502 and the POKEY emulations are built in: the \texttt{sa\_c6502.dll} and
+        \texttt{apokeysnd.dll} libraries of the Windows versions are not needed any more.
+  \item The sound goes out through PortAudio, and the MIDI input comes in through RtMidi.
+  \item The configuration is kept per user in the settings of the system, not in an \texttt{.ini}
+        file next to the program. The settings of \RMT{} are taken over at the first start.
+  \item Songs, instruments and tracks are the same files as in \RMT{} 1.3x: you can move your work
+        between the programs. The files keep their extensions, \texttt{.rmt} and the others.
+\end{itemize}
+
+\section{Files used by \RITMO{}}
+
+\begin{center}
+\begin{tabular}{@{}p{3.6cm}p{10.4cm}@{}}
+\toprule
+Extension & Content \\ \midrule
+\texttt{.rmt} & an RMT module: the song, its tracks and its instruments (and, if the song was saved
+                with \menu{Save}, the names of the song and of the instruments) \\
+\texttt{.txt} & the same song as a text file, which can be read and edited with any editor; a single track is saved as a text file too \\
+\texttt{.rmw} & a song work file: an RMT module with the state of the editing \\
+\texttt{.rti} & a single instrument \\
+\texttt{.sap}, \texttt{.sapr}, \texttt{.xex}, \texttt{.asm}, \texttt{.wav}, \texttt{.lzss} & the exported formats (chapter~\ref{ch:importexport}) \\
+\texttt{.mod}, \texttt{.tmc}, \texttt{.tm8} & the formats that can be imported \\
+\texttt{.rmtscript} & a script (chapter~\ref{ch:scripting}) \\
+\bottomrule
+\end{tabular}
+\end{center}

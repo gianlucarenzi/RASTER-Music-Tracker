@@ -1,0 +1,97 @@
+\chapter{The main window}\label{ch:window}
+
+\RITMO{} has one window. Under the menu bar and the toolbars the screen of the tracker is drawn: a fixed picture of
+the song, with its own font and its own colours, the same as in \RMT{}. The parts of the screen are shown in
+figure~\ref{fig:window-tracks} (page~\pageref{fig:window-tracks}) and described here.
+
+\shot{window-playing}{A stereo song (8 tracks) playing: the time counter runs, the song line marker follows the music.}{0.98}
+
+\section{The areas of the screen}
+
+\begin{description}[style=nextline,leftmargin=1.2cm]
+  \item[Info area (top left)] The state of the program and the data of the song, in a few lines.
+    \begin{itemize}
+      \item \texttt{TIME} and \texttt{BPM}: the play time counter (when the counter is enabled in the \menu{View} menu) and the
+            tempo the song speed gives, in beats per minute. \texttt{PAL} / \texttt{NTSC}: the video system the speed is
+            computed for; the number of frames per second of the screen is shown next to it.
+      \item \texttt{HIGHLIGHT}: the two steps of the highlighted lines of the tracks (every 8 lines and every 4 lines in the
+            figure), used to find the beat in the pattern.
+      \item \texttt{NAME}: the name of the song and of its author, up to 64 characters.
+      \item \texttt{MUSIC SPEED: AA/MM/S}: the current speed, the main speed and the engine speed (chapter~\ref{ch:song}).
+            \texttt{MAXTRACKLENGTH}: the maximal length of the tracks of the song. On the same line the kind of song:
+            \texttt{MONO-4-TRACKS} or \texttt{STEREO-8-TRACKS}.
+      \item \texttt{EDIT MODE} (or \texttt{PROVE MODE}, and the other modes of the keyboard), the octave of the new notes
+            (\texttt{OCTAVE 1-2}), the active instrument with its name and the volume of the new notes.
+    \end{itemize}
+  \item[Song area (top right)] The sequence of song lines, one row for each line, with a column for each channel
+    (\texttt{L1}\ldots\texttt{L4}, and \texttt{R1}\ldots\texttt{R4} for a stereo song). Each cell is the number of the track
+    that plays there. The arrow marks the current song line. A line with \texttt{GO TO LINE} sends the song to another line:
+    that is how a song loops.
+  \item[Pokey registers] With \menu{View $\rightarrow$ Pokey Chip Registers} on, the registers of the POKEY (\texttt{\$D200}\ldots), the
+        pitch, volume and distortion of each channel, as the emulated chip has them at that moment.
+  \item[Tracks area (centre)] The tracks of the current song line side by side, one for each channel, with the lines of
+    the pattern scrolling vertically. The header of a track names its channel (\texttt{TRACK L1}) and shows the track number, then
+    its length and the line it loops to (\texttt{00: 20-00} is track \texttt{\$00}, \texttt{\$20} lines long, looping from line
+    \texttt{\$00}). \texttt{EMPTY} marks a track with no notes. The cursor is the highlighted cell.
+  \item[Status bar] The keyboard modes (\texttt{CAP} for the caps lock) and, when it is enabled, the debug display.
+\end{description}
+
+A line of a track has four columns, drawn like
+\begin{center}\texttt{C-4 00 vA F04}\end{center}
+the note, the instrument (hexadecimal), the volume (\texttt{v} and a digit) and the speed command (\texttt{F} and
+the speed). Empty columns are drawn \texttt{---}, \texttt{--}.
+
+\section{The four editing parts}
+
+The keyboard acts on one \emph{part} of the screen at a time. The part is chosen with the function keys, and the cursor of the
+part is the red cell.
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Part & Key & What it edits \\ \midrule
+Tracks (\texttt{TRACK EDIT}) & \key{F2} & the notes of the tracks \\
+Instruments (\texttt{INSTRUMENT EDIT}) & \key{F3} & the instrument: envelope, table, effects \\
+Song (\texttt{SONG EDIT}) & \key{F4} & the sequence of tracks of the song \\
+Info (\texttt{INFO EDIT}) & \key{SHIFT+F4} & the name, the speeds, the kind of song \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\key{ENTER} returns from the song or info part to the tracks or instruments part you came from.
+
+\shot{window-instruments}{The instrument part (\texttt{INSTRUMENT EDIT}) with an instrument loaded.}{0.98}
+
+\shot{window-song}{The song part: the cursor is in the song area.}{0.98}
+
+\shot{window-info}{The info part: the cursor is on the speed field.}{0.98}
+
+\section{Edit mode and prove mode}
+
+The window is in one of two modes, shown in the info area. In \texttt{EDIT MODE} the keys write notes. In
+\texttt{PROVE MODE} (also called \emph{jam} mode) editing is switched off and the note keys only play: you can
+try an instrument or play along with the song without changing it.
+\key{CONTROL+SPACE} (or \menu{Edit $\rightarrow$ Switch Edit Mode}) toggles between them. The instrument and info parts
+behave as in edit mode; hold \key{SHIFT} to play notes while there.
+
+\section{The menus and the toolbars}
+
+The menu bar has the menus \menu{File}, \menu{Edit}, \menu{View}, \menu{Play}, \menu{Channels}, \menu{Song},
+\menu{Instrument}, \menu{Track}, \menu{Block}, \menu{Pokey}, \menu{Tools} and \menu{Help} (chapter~\ref{ch:menus}).
+Under them there are two toolbars: the \emph{main toolbar} (new, open, save, export, the play buttons, the
+edit modes, MIDI on/off\ldots) and the \emph{block toolbar} (transpose, volume, instrument change, play the
+block\ldots). Both can be shown or hidden in the \menu{View} menu, and the choice is kept in the
+configuration; the icons follow the interface size. The buttons have a tip with the name of the command and its key.
+
+\section{The mouse}
+
+The program is made for the keyboard, but the mouse helps.
+
+\begin{itemize}
+  \item In the track area: the \emph{left} button on a track header switches the channel on or off, the \emph{right}
+        button plays the channel alone (solo), a second click puts all the channels back.
+  \item In the volume envelope of the instrument: the left button draws the volume, the right one sets it to zero.
+  \item In the info area, on the fields \texttt{MAXTRACKLENGTH}, \texttt{MONO/STEREO} and \texttt{PAL/NTSC}: a click
+        toggles the field or opens the dialog that changes it, then applies the change to the song.
+  \item The wheel over \texttt{VOLUME} or \texttt{OCTAVE} of the info area changes the volume or the octave of the new notes.
+\end{itemize}

@@ -247,6 +247,10 @@ Checked this way with gemx.rmt: after F5 the time counter shows 5.50 s at
 5.5 s, the sound correlates 0.985 (chroma) and 0.989 (loudness, 10 ms steps)
 with `rmtplay`, with the same delay at the start and at the end (no drift).
 
+`RMT_QT_MENU_GRAB=prefix` saves every top level menu as `prefix-<name>.png` (with the
+screenshot hook). The user manual (`doc/manual`, LaTeX, built to PDF by `doc/manual/build.sh`) takes
+all its screenshots with these hooks: `doc/manual/make-screenshots.sh`.
+
 `RmtCoreTest --screenshot out.ppm [song.rmt]` draws the main screen without Qt;
 `RmtCoreTest --play song.rmt frames regs.txt [out.wav]` plays a song with the
 engine (one `CSong::TimerRoutine()` per frame), writes the POKEY registers of

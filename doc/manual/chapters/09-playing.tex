@@ -1,0 +1,48 @@
+\chapter{Playing and monitoring}\label{ch:playing}
+
+\section{Play commands}
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+Key & Action \\ \midrule
+\key{F5} & play the song from the start \\
+\key{F7} & play from the cursor \\
+\key{SHIFT+F7} & play from the bookmark \\
+\key{F6} & play the current song line in a loop \\
+\key{SHIFT+F6} & play the selected block in a loop \\
+\key{ESC} & stop and silence \\
+\key{F12} & follow mode: the screen follows the playing position \\
+\key{CONTROL+F12} & toggle PAL / NTSC \\
+\key{F11} & respect volume on/off \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The same commands are the buttons of the main toolbar and the entries of the \menu{Play} menu. With the option \emph{Reset the Atari sound
+routines each time ESC is pressed} (on by default) \key{ESC} also starts the player routine again, which clears sounds that hang.
+A song with the AUTOFILTER that is opened while the Patch16 driver is selected makes the program ask whether to play it with the
+original RMT 1.28 driver (chapter~\ref{ch:drivers}).
+
+\section{Channels}
+
+The \menu{Channels} menu and the keys switch the channels on and off to hear a part alone: \key{F9} mutes or unmutes the active
+channel, \key{SHIFT+F9} all the channels, \key{CONTROL+F9} plays the active channel alone (solo) and again unmutes everything,
+\key{CONTROL+1}--\key{8} toggle a channel. The mouse does the same on the track headers (chapter~\ref{ch:window}).
+
+\section{Watching the sound}
+
+\begin{itemize}
+  \item The \emph{play time counter} (\menu{View $\rightarrow$ Play Time Counter}) shows the time and the tempo while the song plays.
+  \item The \emph{volume analyzer} (\menu{View $\rightarrow$ Volume Analyzer}) draws the volume of each channel above the track
+        headers; figure~\ref{fig:window-analyzer} shows it.
+  \item \menu{Pokey $\rightarrow$ Pokey Chip Registers} shows the registers of the POKEY with the pitch, volume and distortion
+        of each channel: the real thing the Atari would do.
+\end{itemize}
+
+\shot{window-analyzer}{The volume analyzer and the registers of the POKEY while a song plays.}{0.98}
+
+\section{Playing from the keyboard}
+
+In prove mode (\key{CONTROL+SPACE}) the note keys only play. In edit mode \key{SHIFT} plus a note key plays without writing. A
+MIDI keyboard does the same and can also record (chapter~\ref{ch:midi}).
