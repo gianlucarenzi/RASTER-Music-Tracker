@@ -3,7 +3,7 @@
 ### About
 
 RITMO (*RITMO Is a Tracker for Music On Atari*) is a tool for making Atari
-XL/XE music for the POKEY sound chip. It is the new name of RASTER Music
+XL/XE music for the POKEY sound chip. It is a fork of RASTER Music
 Tracker (RMT), which uses the Atari XL/XE music routines created by
 Radek Štěrba from 2002 to 2009. It was a small revolution for all Atari
 musicians and fans. *Ritmo* means "rhythm" in Italian, Spanish and Portuguese.
@@ -13,6 +13,12 @@ Windows and macOS** (Intel and Apple Silicon), and not only on Windows.
 (2.0 was built with Qt5, 2.1 moved to Qt6.) The program was called RASTER
 Music Tracker / RMT up to 2.2.1; the file formats (`.rmt`, `.rmw`) and the
 RMT drivers keep their names.
+
+**Why a new name.** RITMO is a fork of the RMT project by Peter Dell (JAC!),
+to whom I am infinitely grateful: everything here stands on his work and on
+that of Radek Štěrba and VinsCool. The name was changed to avoid any possible
+confusion or problem with the original RMT, and to be free to remove the MFC
+(Windows-only) parts of the code over time, which the upstream project keeps.
 
 The heart of the program is **the original RMT code**: the tracker, the
 editor, the Atari 6502 music routines, the POKEY emulation, the file formats,
