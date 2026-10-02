@@ -308,7 +308,7 @@ Prerequisites:
 
 ```bash
 sudo apt install cmake mingw-w64
-cd RASTER-Music-Tracker
+cd RITMO-Music-Tracker
 cmake -B build-mingw-core -DCMAKE_TOOLCHAIN_FILE=mingw-toolchain.cmake \
       -DRMT_BUILD_CORE_ONLY=ON -DRMT_CORE_TEST=ON
 cmake --build build-mingw-core -j

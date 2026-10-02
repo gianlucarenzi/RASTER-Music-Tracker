@@ -9,7 +9,7 @@ set -e
 
 VERSION="${1:?Errore: specificare la versione (es. 2.2.1)}"
 OUTPUT_DIR="${2:-.}"
-REPO="gianlucarenzi/RASTER-Music-Tracker"
+REPO="gianlucarenzi/RITMO-Music-Tracker"
 
 # Normalizza la versione per il tag
 TAG="v${VERSION}"

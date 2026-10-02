@@ -85,7 +85,7 @@ very welcome**: does it start, does it sound right, do your songs load and
 play as in RMT 1.3x, does MIDI work with your keyboard, is anything missing or
 different from the Windows version you know?
 
-- Open an [issue on GitHub](https://github.com/gianlucarenzi/RASTER-Music-Tracker/issues)
+- Open an [issue on GitHub](https://github.com/gianlucarenzi/RITMO-Music-Tracker/issues)
   (bugs, differences from RMT 1.3x, ideas)
 - Please tell which package and system you used (e.g. "AppImage on Debian
   12", "DMG x86_64 on macOS 13"), and attach the song if it is about a song
@@ -93,15 +93,15 @@ different from the Windows version you know?
 
 ### Download
 
-[**RMT 2.2.1**](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/tag/v2.2.1)
-([all releases](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases)):
+[**RMT 2.2.1**](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/tag/v2.2.1)
+([all releases](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases)):
 
 | System | Package | How to start it |
 |--------|---------|-----------------|
-| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2.1/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
-| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2.1/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
-| macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2.1/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
-| macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RASTER-Music-Tracker/releases/download/v2.2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
+| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
+| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
+| macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
+| macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
 
 These packages are the last ones with the name RMT (`RMT-*`, `Rmt.exe`, `rmt`);
 the next releases are named `Ritmo-*` with the executable `ritmo` / `Ritmo.exe`.
@@ -196,7 +196,7 @@ Note that this is as of RMT 1.28 and not accurate for 1.34 and later!
 
 ### Known Issues
 
-Issues of the Qt port are tracked on the [GitHub issue tracker of the port](https://github.com/gianlucarenzi/RASTER-Music-Tracker/issues).
+Issues of the Qt port are tracked on the [GitHub issue tracker of the port](https://github.com/gianlucarenzi/RITMO-Music-Tracker/issues).
 Issues of the original RMT are tracked on the [upstream issue tracker](https://github.com/raster-atari-org/RASTER-Music-Tracker/issues).
 
 
