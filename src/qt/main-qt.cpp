@@ -66,6 +66,7 @@ int main(int argc, char** argv)
     QApplication app(argc, argv);
     QApplication::setApplicationName("RITMO");
     QIcon icon; // the icon of the windows (and of the task bar), see res/ritmo-icon.png
+    icon.addFile(":/ritmo-icon-16.png"); // drawn by hand, the title bar of the windows
     icon.addFile(":/ritmo-icon-32.png");
     icon.addFile(":/ritmo-icon.png");
     QApplication::setWindowIcon(icon);

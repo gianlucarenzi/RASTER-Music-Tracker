@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file alias="ritmo-icon.png">../res/ritmo-icon.png</file>
+        <file alias="ritmo-icon-16.png">../res/ritmo-icon-16.png</file>
         <file alias="ritmo-icon-32.png">../res/ritmo-icon-32.png</file>
     </qresource>
 </RCC>

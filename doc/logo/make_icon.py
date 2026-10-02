@@ -3,8 +3,9 @@
 the raster bars, on a 32x32 grid of units with stepped corners.
 
 Writes ritmo-icon.svg here and, in src/res (the build uses them),
-ritmo-icon.png (256x256), ritmo-icon-512.png, ritmo-icon-32.png and ritmo.ico
-(16, 32, 48, 64, 128 and 256 pixels).
+ritmo-icon.png (256x256), ritmo-icon-512.png, ritmo-icon-32.png, ritmo-icon-16.png and ritmo.ico
+(16, 32, 48, 64, 128 and 256 pixels). The 16x16 icon is drawn by hand below (ART16): at that size
+the letter of the others, enlarged or reduced from the 32x32 grid, would be blurred.
 
     python3 make_icon.py
 """
@@ -73,6 +74,34 @@ for cx, cy in ((0, 0), (N - 1, 0), (0, N - 1), (N - 1, N - 1)):
         grid.pop((cx + sx * dx, cy + sy * dy), None)
 
 
+# The 16x16 icon, pixel by pixel: the letter without an outline (a black one fills the
+# gaps of the letter at this size), the raster bars one for each line, the stripes behind it, the
+# two lines at the top and at the bottom, the stepped corners transparent.
+PAL16 = {
+    ".": None, "n": logo.BG, "a": "#16164a", "b": "#242478", "e": "#3a3a8a",
+    "1": logo.BARS[0], "2": logo.BARS[1], "3": logo.BARS[2], "4": logo.BARS[3],
+    "5": logo.BARS[4], "6": logo.BARS[5], "7": logo.BARS[6], "8": logo.BARS[7],
+}
+ART16 = [
+    ".44444444444444.",
+    "e22222222222222e",
+    "ennnnnnnnnnnnnne",
+    "ennn111111nnnnne",
+    "ennnn11nn11nnnne",
+    "ennnn22nn22nnnne",
+    "eaaaa33aa33aaaae",
+    "ebbbb44444bbbbbe",
+    "ebbbb55b55bbbbbe",
+    "eaaaa66aa66aaaae",
+    "ennnn77nn77nnnne",
+    "ennnn88nn88nnnne",
+    "ennn888nn88nnnne",
+    "ennnnnnnnnnnnnne",
+    "e22222222222222e",
+    ".44444444444444.",
+]
+
+
 def rgba(c):
     return (int(c[1:3], 16), int(c[3:5], 16), int(c[5:7], 16), 255)
 
@@ -90,9 +119,18 @@ RES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "src"
 size(256).save(os.path.join(RES, "ritmo-icon.png"))
 size(512).save(os.path.join(RES, "ritmo-icon-512.png"))
 size(32).save(os.path.join(RES, "ritmo-icon-32.png"))
-# the sizes that are not a multiple of 32 are enlarged from the 32x32 grid by
-# the nearest pixel: 16 and 48 are not perfect, the others are exact
-size(256).save(os.path.join(RES, "ritmo.ico"), sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+icon16 = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+for y, row in enumerate(ART16):
+    assert len(row) == 16
+    for x, ch in enumerate(row):
+        if PAL16[ch]:
+            icon16.putpixel((x, y), rgba(PAL16[ch]))
+icon16.save(os.path.join(RES, "ritmo-icon-16.png"))
+# 32, 64, 128 and 256 are exact multiples of the grid; 48 is made from the 32x32 grid by the nearest pixel; 16 is the one drawn above
+# every size is given, Pillow would make the missing ones from the last image of the list
+frames = {16: icon16, 32: size(32), 48: size(48), 64: size(64), 128: size(128)}
+size(256).save(os.path.join(RES, "ritmo.ico"), sizes=[(n, n) for n in (16, 32, 48, 64, 128, 256)],
+               append_images=list(frames.values()))
 
 out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {N} {N}" width="256" height="256" shape-rendering="crispEdges">',
        "<title>RITMO</title>"]
