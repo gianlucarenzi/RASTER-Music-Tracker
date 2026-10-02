@@ -19,7 +19,8 @@ Changes in RMT 2.00 (Planned)
 
 Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
 - The window adapts to the screen: it opens at 1366x768 (the screen of a small laptop, where the whole stereo song screen fits), reduced to
-  the screen when that is smaller; the first start chooses the interface size (100, 200 or 300 %) from the size of the screen; the size and the
+  the screen when that is smaller (a mono song is shown whole with the POKEY registers; a stereo one needs a window of about 1720 pixels
+  for the registers); the first start chooses the interface size (100, 200 or 300 %) from the size of the screen; the size and the
   position of the window are kept for the next start; `--scale=N` (100-300) sets the interface size of one session without changing the settings.
 - The MFC build (Windows, MSVC) is removed: RITMO is Qt only. Gone are the MFC windows
   and dialogs (Rmt.cpp, MainFrm.cpp, the *dlg.cpp files), the WASAP test cluster, the Visual

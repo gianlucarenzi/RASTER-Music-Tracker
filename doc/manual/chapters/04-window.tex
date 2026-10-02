@@ -28,7 +28,9 @@ figure~\ref{fig:window-tracks} (page~\pageref{fig:window-tracks}) and described 
     that plays there. The arrow marks the current song line. A line with \texttt{GO TO LINE} sends the song to another line:
     that is how a song loops.
   \item[Pokey registers] With \menu{View $\rightarrow$ Pokey Chip Registers} on, the registers of the POKEY (\texttt{\$D200}\ldots), the
-        pitch, volume and distortion of each channel, as the emulated chip has them at that moment.
+        pitch, volume and distortion of each channel, as the emulated chip has them at that moment. They are drawn on the right of the song area,
+        so they need a window about 1250 pixels wide for a mono song (they fit the 1366$\times$768 window) and about 1720 for a stereo one, whose
+        tracks take more room; on a narrower window they are not shown.
   \item[Tracks area (centre)] The tracks of the current song line side by side, one for each channel, with the lines of
     the pattern scrolling vertically. The header of a track names its channel (\texttt{TRACK L1}) and shows the track number, then
     its length and the line it loops to (\texttt{00: 20-00} is track \texttt{\$00}, \texttt{\$20} lines long, looping from line

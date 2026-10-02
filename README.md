@@ -37,6 +37,9 @@ replaces only what tied RMT to Windows:
   (ALSA on Linux, WinMM on Windows, CoreMIDI on macOS)
 - the 6502 and POKEY emulation is built in, no `sa_c6502.dll` /
   `apokeysnd.dll`
+- the window opens at 1366x768 (a small laptop screen, where a mono song is shown whole together with the POKEY registers) or the largest
+  size the screen has, remembers its size and position, and the first start chooses the interface size (100, 200 or 300 %) from the size of
+  the screen; `--scale=N` sets it for one session
 - the configuration is kept per user (QSettings), so it survives updates;
   the settings of RMT (`rmt.conf`, `rmt.ini`) are taken over at the first start
 
