@@ -55,7 +55,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CRmtApp construction
 
-CRmtApp::CRmtApp() : CWinApp("RMT")
+CRmtApp::CRmtApp() : CWinApp("RITMO")
 {
     // Place all significant initialization in InitInstance.
 }
@@ -78,7 +78,7 @@ BOOL CRmtApp::InitInstance()
     // - RMT/Frame: Main window position and size.
     // - RMT/Recent File List: MRU list of files.
     // - RMT/Settings: Not used.
-    SetRegistryKey(_T("RASTER Music Tracker"));
+    SetRegistryKey(_T("RITMO"));
 
     // Initialize the COM library on the current thread and identifies the concurrency model as single-thread apartmen
     CoInitialize(NULL);

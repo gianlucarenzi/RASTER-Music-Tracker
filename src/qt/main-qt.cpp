@@ -62,7 +62,7 @@ int main(int argc, char** argv)
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::RoundPreferFloor);
 #endif
     QApplication app(argc, argv);
-    QApplication::setApplicationName("RASTER Music Tracker");
+    QApplication::setApplicationName("RITMO");
 
     SetProgramFolderPath(CString((QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator()).toLocal8Bit().constData()));
 

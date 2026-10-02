@@ -1247,7 +1247,7 @@ inline CWinApp* AfxGetApp()
 inline CWnd* AfxGetMainWnd() { return g_rmtHost ? (CWnd*)g_rmtHost->GetMainWnd() : nullptr; }
 inline int AfxMessageBox(const char* text, UINT type = MB_OK, UINT = 0)
 {
-    if (g_rmtHost) return g_rmtHost->MessageBox(text, "RMT", type);
+    if (g_rmtHost) return g_rmtHost->MessageBox(text, "RITMO", type);
     std::fprintf(stderr, "[AfxMessageBox] %s\n", text ? text : "");
     (void)type;
     return IDOK;

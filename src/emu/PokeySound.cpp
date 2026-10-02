@@ -211,7 +211,7 @@ void RmtBuiltin_APokeySound_SetMainClock(int hz) { s_pokey.SetMainClock(hz); }
 
 void RmtBuiltin_APokeySound_About(const char** name, const char** author, const char** description)
 {
-    *name = "RMT built-in POKEY";
-    *author = "RASTER Music Tracker";
+    *name = "RITMO built-in POKEY";
+    *author = "RITMO";
     *description = "Cycle based POKEY sound, mono/stereo, 44100 Hz (replaces apokeysnd.dll)";
 }

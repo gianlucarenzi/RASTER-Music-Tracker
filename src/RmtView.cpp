@@ -502,7 +502,7 @@ void CRmtView::ReadRMTConfig()
     std::string text;
     if (!RmtLoadConfigText(CONFIG_FILENAME, text)) {
 #ifndef RMT_QT_GUI // QSettings: nothing saved yet is the first start, not an error
-        MessageBox("Could not find: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nRMT will use the default configuration.\n", "RMT", MB_ICONEXCLAMATION);
+        MessageBox("Could not find: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nRITMO will use the default configuration.\n", "RITMO", MB_ICONEXCLAMATION);
 #endif
         ResetRMTConfig(); // In order to save the default configuration file
         return;
@@ -669,7 +669,7 @@ void CRmtView::WriteRMTConfig()
 {
     std::ostringstream ou;
 
-    ou << "# RMT CONFIGURATION FILE" << std::endl;
+    ou << "# RITMO CONFIGURATION FILE" << std::endl;
     CString version;
     version.LoadString(IDS_RMTVERSION);
     ou << "# " << version << std::endl;
@@ -724,7 +724,7 @@ void CRmtView::WriteRMTConfig()
     ou << "VIEW_DEBUGDISPLAY = " << g_view.debugDisplay << std::endl;
 
     if (!RmtSaveConfigText(CONFIG_FILENAME, ou.str()))
-        MessageBox("Could not create: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nThe RMT configuration won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
+        MessageBox("Could not create: '" + RmtConfigTextLocation(CONFIG_FILENAME) + "'\n\nThe RITMO configuration won't be saved.\n", "RITMO", MB_ICONEXCLAMATION);
 }
 
 // The keyboard layout of a first start (no ritmo.ini): the keyboard language of
@@ -815,7 +815,7 @@ void CRmtView::ReadTuningConfig()
     std::string text;
     if (!RmtLoadConfigText(TUNING_FILENAME, text)) {
 #ifndef RMT_QT_GUI // QSettings: nothing saved yet is the first start, not an error
-        MessageBox("Could not find: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nRMT will use the default Tuning parameters.\n", "RMT", MB_ICONEXCLAMATION);
+        MessageBox("Could not find: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nRITMO will use the default Tuning parameters.\n", "RITMO", MB_ICONEXCLAMATION);
 #endif
         g_Song.ResetTuningVariables();
         WriteTuningConfig(); // In order to save the default Tuning configuration file
@@ -879,7 +879,7 @@ void CRmtView::WriteTuningConfig()
 {
     std::ostringstream os;
 
-    os << "# RMT CONFIGURATION FILE" << std::endl;
+    os << "# RITMO CONFIGURATION FILE" << std::endl;
     CString version;
     version.LoadString(IDS_RMTVERSION);
     os << "# " << version << std::endl;
@@ -908,7 +908,7 @@ void CRmtView::WriteTuningConfig()
     WriteFraction(os, "OCTAVE", g_tuningRatios.OCTAVE);
 
     if (!RmtSaveConfigText(TUNING_FILENAME, os.str()))
-        MessageBox("Could not create: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nThe Tuning parameters won't be saved.\n", "RMT", MB_ICONEXCLAMATION);
+        MessageBox("Could not create: '" + RmtConfigTextLocation(TUNING_FILENAME) + "'\n\nThe Tuning parameters won't be saved.\n", "RITMO", MB_ICONEXCLAMATION);
 }
 
 void CRmtView::OnViewConfiguration()

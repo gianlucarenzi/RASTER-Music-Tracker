@@ -167,6 +167,28 @@ static QKeySequence AcceleratorToQt(const TRmtAccelerator& a)
     return QKeySequence(key | int(AcceleratorModifiers(a)));
 }
 
+// The text of Help > About: the version, then the people of RMT and of RITMO
+static QString AboutText(const QString& version)
+{
+    return "<p><b>RITMO</b> - Atari POKEY music tracker<br>"
+           "<i>RITMO Is a Tracker for Music On Atari</i></p>"
+           "<p>" + version.toHtmlEscaped() + "<br>Qt frontend (Linux, Windows, macOS)</p>"
+           "<p>Based on RASTER Music Tracker, by:<br>"
+           "&nbsp;&nbsp;Radek &Scaron;t&#283;rba (Raster/C.P.U.), 2002-2009 - <b>R.I.P.</b><br>"
+           "&nbsp;&nbsp;Vin Samuel (VinsCool), 2021-2024<br>"
+           "&nbsp;&nbsp;Peter Dell (JAC!), 2024 to present</p>"
+           "<p>With the work of:<br>"
+           "&nbsp;&nbsp;Robert Petruzela (Bob!k/C.P.U.), JirkaS/C.P.U.<br>"
+           "&nbsp;&nbsp;Gianluca Renzi: the Qt port<br>"
+           "&nbsp;&nbsp;DMSC (LZSS), Rensoupp (unrolled LZSS driver), PG (graphics, ideas, beta testing)<br>"
+           "&nbsp;&nbsp;synthpopalooza and OPNA2608 (POKEY tuning), Enderdude, Spring, Ivop, Tatqoo, Miker</p>"
+           "<p>Thanks to: Fox/Taquart (XASM, ASAP), Jaskier/Taquart (TMC, RMT routine optimizations), "
+           "Sack/Cosine, X-ray, Greg and Bewu/Grayscale, Fandal, ZdenekB, KrupkaJ, Pepax, LiSU, Dely, Nils Feske, "
+           "Elan, Wrathchild, Kozyca, Born/LaResistance, Sal Esquivel, Nooly, "
+           "The Chiptune Caf&eacute;, AtariAge, GBAtemp, the Polish Atarians of Atariarea "
+           "and all the 8-bit Atarians all over the world!</p>";
+}
+
 class RmtQtBridge : public IRmtHost {
 public:
     RmtQtBridge(RmtMainWindow* win) : m_win(win) {}
@@ -312,8 +334,7 @@ public:
             case ID_APP_ABOUT:
             case ID_HELP_ABOUT_APP:
                 if (qEnvironmentVariableIsEmpty("RMT_QT_GRAB"))
-                    QMessageBox::about(m_win, "About RMT",
-                                       QString("%1\n\nQt frontend (Linux/POSIX)").arg(g_app.GetVersionAndBuild().GetString()));
+                    QMessageBox::about(m_win, "About RITMO", AboutText(QString::fromLocal8Bit(g_app.GetVersionAndBuild().GetString())));
                 break;
             case ID_APP_EXIT:
                 m_win->close();
@@ -325,7 +346,7 @@ public:
                 g_app.OpenOnlineHelp();
                 break;
             default:
-                qDebug("RMT: command %u has no handler", id);
+                qDebug("RITMO: command %u has no handler", id);
         }
     }
 
@@ -709,7 +730,7 @@ public:
             return (type & 0x0F) == MB_YESNO || (type & 0x0F) == MB_YESNOCANCEL ? IDNO : IDOK;
         }
         QMessageBox box(m_win);
-        box.setWindowTitle(caption ? caption : "RMT");
+        box.setWindowTitle(caption ? caption : "RITMO");
         box.setText(text ? text : "");
         switch (type & 0xF0) {
             case MB_ICONERROR: box.setIcon(QMessageBox::Critical); break;
@@ -1011,7 +1032,7 @@ RmtMainWindow::RmtMainWindow() : m_bridge(new RmtQtBridge(this))
     auto* toolUpdate = new QTimer(this);
     QObject::connect(toolUpdate, &QTimer::timeout, this, [this] { m_bridge->UpdateToolBars(); });
     toolUpdate->start(100);
-    setWindowTitle("RASTER Music Tracker");
+    setWindowTitle("RITMO");
 }
 
 RmtMainWindow::~RmtMainWindow()

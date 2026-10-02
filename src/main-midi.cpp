@@ -12,7 +12,7 @@
 
 int main()
 {
-    std::cout << "=== RASTER Music Tracker - MIDI Backend Test ===" << std::endl;
+    std::cout << "=== RITMO - MIDI Backend Test ===" << std::endl;
     std::cout << std::endl;
 
     // Create MIDI backend (auto-selects platform backend)

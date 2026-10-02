@@ -29,7 +29,7 @@ BOOL CString::LoadString(UINT id)
             m_data = RMT_VERSION_STRING;
             return TRUE;
         case IDS_RMT_AUTHOR:
-            m_data = "by Radek Sterba, (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)";
+            m_data = "based on RASTER Music Tracker by Radek Sterba (R.I.P.), (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)";
             return TRUE;
         case IDS_RMT_REPOSITORY:
             m_data = "https://github.com/raster-atari-org/RASTER-Music-Tracker";

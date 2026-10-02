@@ -792,7 +792,7 @@ static void RunConfigPaths(QWidget* parent)
 static INT_PTR RunConfig(QWidget* parent, COptionsDialog* dlg)
 {
     QDialog dialog(parent);
-    dialog.setWindowTitle("RMT configuration");
+    dialog.setWindowTitle("RITMO configuration");
     auto* layout = new QVBoxLayout(&dialog);
 
     auto addCheck = [](QLayout* to, const char* text, BOOL on) {

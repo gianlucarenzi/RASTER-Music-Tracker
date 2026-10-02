@@ -33,7 +33,7 @@ static std::vector<std::string> InputPortNames()
 {
     std::vector<std::string> names;
     try {
-        RtMidiIn in(RtMidi::UNSPECIFIED, "RMT");
+        RtMidiIn in(RtMidi::UNSPECIFIED, "RITMO");
         unsigned int count = in.getPortCount();
         for (unsigned int i = 0; i < count; i++) {
             std::string name = in.getPortName(i);
@@ -147,7 +147,7 @@ int CRmtMidi::MidiOn()
 #ifdef RTMIDI_AVAILABLE
     RtMidiIn* in = nullptr;
     try {
-        in = new RtMidiIn(RtMidi::UNSPECIFIED, "RMT");
+        in = new RtMidiIn(RtMidi::UNSPECIFIED, "RITMO");
         in->openPort(m_MidiInDeviceId, "MIDI IN");
         in->ignoreTypes(true, true, true); // no SysEx, timing or active sensing
         in->setCallback(MidiInCallback);

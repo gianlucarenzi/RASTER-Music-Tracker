@@ -176,7 +176,7 @@ int main(int argc, char** argv)
         std::filesystem::path dir = ec ? std::filesystem::path(argv[0]).parent_path() : exe.parent_path();
         SetProgramFolderPath(CString((dir.string() + "/").c_str()));
     }
-    std::printf("RmtCoreTest - RASTER Music Tracker engine (non-MFC build)\n");
+    std::printf("RmtCoreTest - RITMO engine (non-MFC build)\n");
     std::printf("Version string: %s\n", g_app.GetVersionAndBuild().GetString());
 
     // Mirror the harmless, non-GUI part of CRmtApp::InitInstance() (Rmt.cpp):

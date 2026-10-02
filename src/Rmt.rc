@@ -243,7 +243,7 @@ END
 
 IDD_CONFIG DIALOGEX 0, 0, 251, 274
 STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "RMT configuration"
+CAPTION "RITMO configuration"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     LTEXT           "Interface size (in %)",IDC_STATIC,14,18,78,8
@@ -751,7 +751,7 @@ END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 343, 152
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About RASTER Music Tracker"
+CAPTION "About RITMO"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,286,131,50,14,WS_GROUP
@@ -1425,7 +1425,7 @@ BEGIN
     BEGIN
         MENUITEM "&Help\tF1",                            ID_HELP_HELP_TOPICS
         MENUITEM "&Online Help\tShift+F1",               ID_HELP_ONLINE_HELP
-        MENUITEM "&About RASTER Music Tracker",          ID_HELP_ABOUT_APP
+        MENUITEM "&About RITMO",          ID_HELP_ABOUT_APP
     END
 END
 
@@ -1502,12 +1502,12 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "RASTER Music Tracker"
+            VALUE "FileDescription", "RITMO - Atari POKEY music tracker"
             VALUE "FileVersion", "1.35.0.0"
-            VALUE "InternalName", "RASTER Music Tracker by Raster/C.P.U., VinsCool and JAC!"
+            VALUE "InternalName", "RITMO, based on RASTER Music Tracker by Raster/C.P.U., VinsCool and JAC!"
             VALUE "LegalCopyright", "Copyright (C) 2002-2009, 2021-2026"
             VALUE "OriginalFilename", "Rmt.exe"
-            VALUE "ProductName", "RASTER Music Tracker"
+            VALUE "ProductName", "RITMO"
             VALUE "ProductVersion", "1.35.0.0"
         END
     END
@@ -1543,13 +1543,13 @@ END
 
 STRINGTABLE
 BEGIN
-    IDR_MAINFRAME           "RMT\n\nRmt\n\n\nRmt.Document\nRmt Document"
+    IDR_MAINFRAME           "RITMO\n\nRmt\n\n\nRmt.Document\nRmt Document"
     IDS_RMT_REPOSITORY      "https://github.com/raster-atari-org/RASTER-Music-Tracker"
 END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_APP_TITLE       "RMT"
+    AFX_IDS_APP_TITLE       "RITMO"
     AFX_IDS_IDLEMESSAGE     " "
 END
 
@@ -1654,8 +1654,8 @@ END
 STRINGTABLE
 BEGIN
     AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
-    IDS_RMT_VERSION         "RASTER Music Tracker 1.35"
-    IDS_RMT_AUTHOR          "by Radek Sterba, (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)"
+    IDS_RMT_VERSION         "RITMO 1.35"
+    IDS_RMT_AUTHOR          "based on RASTER Music Tracker by Radek Sterba (R.I.P.), (c) Raster/C.P.U. (2002-2009), VinsCool (2021-2024), JAC! (2024-2026)"
 END
 
 STRINGTABLE

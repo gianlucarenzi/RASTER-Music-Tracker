@@ -9,7 +9,7 @@
 
 int main()
 {
-    std::cout << "=== RASTER Music Tracker - PortAudio Audio Backend Test ===" << std::endl;
+    std::cout << "=== RITMO - PortAudio Audio Backend Test ===" << std::endl;
 
     // Create a PortAudio backend
     auto backend = AudioBackendFactory::CreatePortAudio();
