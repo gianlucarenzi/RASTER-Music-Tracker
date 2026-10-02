@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="doc/logo/ritmo-logo.png" alt="RITMO - Atari POKEY music tracker" width="720">
+</p>
+
 # RITMO - Atari POKEY music tracker
 
 ### About
@@ -196,6 +200,10 @@ Issues of the original RMT are tracked on the [upstream issue tracker](https://g
 - [Vin Samuel](https://github.com/VinsCool), VinsCool, 2021-2024
 - [Peter Dell](https://www.wudsn.com), JAC!, 2024 to present
 - [Gianluca Renzi](https://github.com/gianlucarenzi), 2026: the Qt port (Linux, Windows, macOS)
+
+The logo and the icon (`doc/logo`, `src/res`) are drawn with the glyphs of the IBM VGA 9x16
+font, "PxPlus IBM VGA 9x16" of [The Ultimate Oldschool PC Font Pack](https://int10h.org/oldschool-pc-fonts/)
+by VileR (CC BY-SA 4.0).
 
 #### Additional Credits
 - New features, bugfixes and improvements for RMT 1.31-1.34 by VinsCool
