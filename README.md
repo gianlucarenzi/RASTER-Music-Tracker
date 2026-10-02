@@ -98,19 +98,19 @@ different from the Windows version you know?
 
 ### Download
 
-[**RMT 2.2.1**](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/tag/v2.2.1)
+[**RITMO 2.3**](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/tag/v2.3)
 ([all releases](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases)):
 
 | System | Package | How to start it |
 |--------|---------|-----------------|
-| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`RMT-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-Linux-x86_64.AppImage) | `chmod +x RMT-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
-| Windows 64 bit | [`RMT-Windows-x64.zip`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-Windows-x64.zip) | unzip it anywhere and run `Rmt.exe` (not signed: Windows may ask to confirm) |
-| macOS 12 or later, Apple Silicon | [`RMT-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-macOS-arm64.dmg) | drag `RMT.app` to Applications; the first time open it with right click → Open (not notarized) |
-| macOS 12 or later, Intel | [`RMT-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.2.1/RMT-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
+| Linux x86_64 (Debian 11, Ubuntu 20.04 and newer) | [`Ritmo-Linux-x86_64.AppImage`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.3/Ritmo-Linux-x86_64.AppImage) | `chmod +x Ritmo-Linux-x86_64.AppImage` and run it (needs `libfuse2`; without it: `--appimage-extract-and-run`) |
+| Windows 64 bit, installer | [`Ritmo-Windows-x64-Setup.exe`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.3/Ritmo-Windows-x64-Setup.exe) | run it (Start menu entry, optional desktop icon and `.rmt` file type; not signed: Windows may ask to confirm) |
+| Windows 64 bit, ZIP | [`Ritmo-Windows-x64.zip`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.3/Ritmo-Windows-x64.zip) | unzip it anywhere and run `Ritmo.exe` |
+| macOS 12 or later, Apple Silicon | [`Ritmo-macOS-arm64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.3/Ritmo-macOS-arm64.dmg) | drag `Ritmo.app` to Applications; the first time open it with right click, then Open (not notarized) |
+| macOS 12 or later, Intel | [`Ritmo-macOS-x86_64.dmg`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.3/Ritmo-macOS-x86_64.dmg) | as above (also runs on Apple Silicon through Rosetta 2) |
+| Manual | [`Ritmo-User-Manual.pdf`](https://github.com/gianlucarenzi/RITMO-Music-Tracker/releases/download/v2.3/Ritmo-User-Manual.pdf) | the user manual (it is also [in the repository](doc/manual/ritmo-manual.pdf)) |
 
-These packages are the last ones with the name RMT (`RMT-*`, `Rmt.exe`, `rmt`);
-the next releases are named `Ritmo-*` with the executable `ritmo` / `Ritmo.exe`, and for Windows there is also
-an installer, `Ritmo-Windows-x64-Setup.exe` (Start menu entry, optional desktop icon and `.rmt` file type).
+The packages up to 2.2.1 were called `RMT-*` (the program `Rmt.exe`, `rmt`); from 2.3 they are `Ritmo-*` with the program `ritmo` / `Ritmo.exe`.
 
 Everything the program needs is inside each package. The configuration is
 kept in `~/.config/ritmo-atari.org/ritmo.conf` on Linux, in the registry

@@ -2,12 +2,12 @@
 
 # Script per scaricare AppImage da una release specifica
 # Uso: ./download-appimage.sh <versione> [directory]
-# Es: ./download-appimage.sh 2.2.1
-# Es: ./download-appimage.sh 2.2.1 ~/Downloads
+# Es: ./download-appimage.sh 2.3
+# Es: ./download-appimage.sh 2.3 ~/Downloads
 
 set -e
 
-VERSION="${1:?Errore: specificare la versione (es. 2.2.1)}"
+VERSION="${1:?Errore: specificare la versione (es. 2.3)}"
 OUTPUT_DIR="${2:-.}"
 REPO="gianlucarenzi/RITMO-Music-Tracker"
 
@@ -36,7 +36,9 @@ if [ -z "$APPIMAGE_FILE" ]; then
 fi
 
 # Determina il nome del file di output
-OUTPUT_FILE="$OUTPUT_DIR/RMT-Linux-x86_64-${VERSION}.AppImage"
+# Ritmo-Linux-... dalla 2.3, RMT-Linux-... fino alla 2.2.1
+PREFIX=$(basename "$APPIMAGE_FILE" | sed 's/-Linux.*//')
+OUTPUT_FILE="$OUTPUT_DIR/${PREFIX}-Linux-x86_64-${VERSION}.AppImage"
 
 # Sposta il file e rendi eseguibile
 mv "$APPIMAGE_FILE" "$OUTPUT_FILE"
