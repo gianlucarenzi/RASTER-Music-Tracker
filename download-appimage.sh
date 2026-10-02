@@ -1,51 +1,53 @@
 #!/bin/bash
 
-# Script per scaricare AppImage da una release specifica
-# Uso: ./download-appimage.sh <versione> [directory]
-# Es: ./download-appimage.sh 2.3
-# Es: ./download-appimage.sh 2.3 ~/Downloads
+# Downloads the AppImage of a release of RITMO
+# Usage: ./download-appimage.sh <version> [directory]
+# E.g.:  ./download-appimage.sh 2.3
+# E.g.:  ./download-appimage.sh 2.3 ~/Downloads
+#
+# Needs the GitHub CLI (gh). The file is saved as Ritmo-Linux-x86_64-<version>.AppImage
+# (RMT-Linux-x86_64-<version>.AppImage for the releases up to 2.2.1, which were called RMT).
 
 set -e
 
-VERSION="${1:?Errore: specificare la versione (es. 2.3)}"
+VERSION="${1:?Error: give the version (e.g. 2.3)}"
 OUTPUT_DIR="${2:-.}"
 REPO="gianlucarenzi/RITMO-Music-Tracker"
 
-# Normalizza la versione per il tag
+# The tag of the release
 TAG="v${VERSION}"
 
-echo "📥 Scaricando AppImage versione $VERSION dal repository $REPO..."
+echo "📥 Downloading the AppImage of version $VERSION from $REPO..."
 echo "   Tag: $TAG"
-echo "   Destinazione: $OUTPUT_DIR"
+echo "   Destination: $OUTPUT_DIR"
 
-# Scarica l'AppImage in una directory temporanea
+# Download the AppImage into a temporary folder
 TEMP_DIR=$(mktemp -d)
 trap "rm -rf $TEMP_DIR" EXIT
 
 if ! gh release download "$TAG" --repo "$REPO" --pattern "*AppImage*" --dir "$TEMP_DIR"; then
-    echo "❌ Errore: impossibile scaricare la versione $VERSION"
-    echo "   Verifica che il tag $TAG esista nel repository"
+    echo "❌ Error: cannot download version $VERSION"
+    echo "   Check that the tag $TAG exists in the repository"
     exit 1
 fi
 
-# Trova il file AppImage scaricato e rinominalo
+# Find the AppImage that was downloaded
 APPIMAGE_FILE=$(ls "$TEMP_DIR"/*.AppImage 2>/dev/null | head -1)
 if [ -z "$APPIMAGE_FILE" ]; then
-    echo "❌ Errore: nessun file AppImage trovato nella release $VERSION"
+    echo "❌ Error: no AppImage file found in release $VERSION"
     exit 1
 fi
 
-# Determina il nome del file di output
-# Ritmo-Linux-... dalla 2.3, RMT-Linux-... fino alla 2.2.1
+# The name of the output file: Ritmo-Linux-... from 2.3, RMT-Linux-... up to 2.2.1
 PREFIX=$(basename "$APPIMAGE_FILE" | sed 's/-Linux.*//')
 OUTPUT_FILE="$OUTPUT_DIR/${PREFIX}-Linux-x86_64-${VERSION}.AppImage"
 
-# Sposta il file e rendi eseguibile
+# Move the file and make it executable
 mv "$APPIMAGE_FILE" "$OUTPUT_FILE"
 chmod +x "$OUTPUT_FILE"
 
-echo "✅ Scaricamento completato!"
+echo "✅ Download complete!"
 echo "   File: $OUTPUT_FILE"
-echo "   Dimensione: $(du -h "$OUTPUT_FILE" | cut -f1)"
+echo "   Size: $(du -h "$OUTPUT_FILE" | cut -f1)"
 echo ""
-echo "   Lancia con: $OUTPUT_FILE"
+echo "   Run it with: $OUTPUT_FILE"
