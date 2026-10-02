@@ -1,8 +1,8 @@
-name: Build RMT on Windows
+name: Build RITMO on Windows
 
 # The Qt6 frontend built with MSYS2 / MinGW-w64 (GCC, like the Linux build):
 # Qt6, PortAudio (sound) and RtMidi (MIDI IN through WinMM) are MSYS2
-# packages. The result is a folder with Rmt.exe, its resources and all the
+# packages. The result is a folder with Ritmo.exe, its resources and all the
 # DLLs it needs, zipped; a tag v* builds it and publishes it as a release
 # asset.
 
@@ -50,21 +50,21 @@ jobs:
 
       - name: Smoke test (offscreen, screenshot of gemx.rmt)
         run: |
-          QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/rmt-windows.png RMT_QT_GRAB_MS=3000 \
-            timeout 120 ./build/out/Rmt.exe rmt/songs/rmt128/raster/gemx.rmt || true
-          test -f rmt-windows.png
+          QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/ritmo-windows.png RMT_QT_GRAB_MS=3000 \
+            timeout 120 ./build/out/Ritmo.exe rmt/songs/rmt128/raster/gemx.rmt || true
+          test -f ritmo-windows.png
 
       - name: Package
         run: |
-          DIST=dist/RMT
+          DIST=dist/Ritmo
           mkdir -p $DIST
-          cp build/out/Rmt.exe $DIST/
+          cp build/out/Ritmo.exe $DIST/
           cp -r build/out/resources $DIST/
           WINDEPLOYQT=$(command -v windeployqt-qt6 || command -v windeployqt6 \
             || ls /mingw64/share/qt6/bin/windeployqt.exe)
           # RMT draws with the raster engine: no software OpenGL (not in MSYS2;
           # ANGLE is gone in Qt6)
-          "$WINDEPLOYQT" --release --no-translations --compiler-runtime --no-opengl-sw $DIST/Rmt.exe
+          "$WINDEPLOYQT" --release --no-translations --compiler-runtime --no-opengl-sw $DIST/Ritmo.exe
           # The MinGW DLLs of the program and of the Qt DLLs and plugins,
           # until nothing new is found
           for pass in 1 2 3 4 5; do
@@ -78,19 +78,19 @@ jobs:
 
       - name: Create ZIP archive
         shell: pwsh
-        run: Compress-Archive -Path dist/RMT -DestinationPath RMT-Windows-x64.zip -Force
+        run: Compress-Archive -Path dist/Ritmo -DestinationPath Ritmo-Windows-x64.zip -Force
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RMT-Windows-x64
+          name: Ritmo-Windows-x64
           path: |
-            RMT-Windows-x64.zip
-            rmt-windows.png
+            Ritmo-Windows-x64.zip
+            ritmo-windows.png
 
       - name: Create release and upload asset
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: RMT-Windows-x64.zip
+          files: Ritmo-Windows-x64.zip
           prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh

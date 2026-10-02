@@ -1,4 +1,4 @@
-name: Build RMT on macOS
+name: Build RITMO on macOS
 
 # The Qt6 frontend built with Apple Clang, twice on an Apple Silicon runner,
 # both with the official Qt 6 (clang_64: universal, arm64 and x86_64):
@@ -7,7 +7,7 @@ name: Build RMT on macOS
 #   longer installs on Intel, so PortAudio and RtMidi are built from their
 #   sources for x86_64
 # PortAudio plays the sound, RtMidi is the MIDI IN (CoreMIDI). The result is
-# RMT.app in a DMG: macdeployqt puts the Qt frameworks and the libraries into
+# Ritmo.app in a DMG: macdeployqt puts the Qt frameworks and the libraries into
 # the bundle, so nothing has to be installed to run it; the bundle is signed
 # ad hoc (not notarized: the first time it is opened with right click ->
 # Open). The program finds its resources/ next to itself (Contents/MacOS),
@@ -111,34 +111,34 @@ jobs:
       - name: Build
         run: |
           cmake --build build --parallel
-          file build/out/rmt
+          file build/out/ritmo
 
       - name: Smoke test (offscreen, screenshot of gemx.rmt)
         run: |
-          QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/rmt-macos-$ARCH.png RMT_QT_GRAB_MS=3000 \
-            $RUN ./build/out/rmt rmt/songs/rmt128/raster/gemx.rmt || true
-          test -f rmt-macos-$ARCH.png
+          QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/ritmo-macos-$ARCH.png RMT_QT_GRAB_MS=3000 \
+            $RUN ./build/out/ritmo rmt/songs/rmt128/raster/gemx.rmt || true
+          test -f ritmo-macos-$ARCH.png
 
-      - name: Make RMT.app
+      - name: Make Ritmo.app
         run: |
-          APP=dist/RMT.app
+          APP=dist/Ritmo.app
           VERSION=$(git describe --tags --match 'v[0-9]*' 2>/dev/null | sed 's/^v//')
           mkdir -p $APP/Contents/MacOS $APP/Contents/Resources
-          cp build/out/rmt $APP/Contents/MacOS/rmt
+          cp build/out/ritmo $APP/Contents/MacOS/ritmo
           cp -R build/out/resources $APP/Contents/MacOS/
           ICON=
-          if sips -s format icns src/res/Rmt.ico --out $APP/Contents/Resources/RMT.icns >/dev/null 2>&1; then
-            ICON="<key>CFBundleIconFile</key><string>RMT</string>"
+          if sips -s format icns src/res/Rmt.ico --out $APP/Contents/Resources/Ritmo.icns >/dev/null 2>&1; then
+            ICON="<key>CFBundleIconFile</key><string>Ritmo</string>"
           fi
           cat > $APP/Contents/Info.plist <<PLIST
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-            <key>CFBundleExecutable</key><string>rmt</string>
-            <key>CFBundleIdentifier</key><string>org.raster-atari.rmt</string>
-            <key>CFBundleName</key><string>RMT</string>
-            <key>CFBundleDisplayName</key><string>RASTER Music Tracker</string>
+            <key>CFBundleExecutable</key><string>ritmo</string>
+            <key>CFBundleIdentifier</key><string>org.raster-atari.ritmo</string>
+            <key>CFBundleName</key><string>Ritmo</string>
+            <key>CFBundleDisplayName</key><string>RITMO</string>
             <key>CFBundlePackageType</key><string>APPL</string>
             <key>CFBundleShortVersionString</key><string>${VERSION}</string>
             <key>CFBundleVersion</key><string>${VERSION}</string>
@@ -159,7 +159,7 @@ jobs:
             time xcrun --find $tool
             time arch -x86_64 /usr/bin/xcrun --find $tool || true
           done
-          otool -L build/out/rmt
+          otool -L build/out/ritmo
           "$QT_PREFIX/bin/macdeployqt" $APP -always-overwrite -no-strip -verbose=2 2>&1 | tee macdeployqt.log
           grep -q 'Destroyed while process' macdeployqt.log && echo "::warning::macdeployqt: a tool did not answer in time"
           if grep -q '^ERROR' macdeployqt.log; then echo "macdeployqt failed"; exit 1; fi
@@ -171,7 +171,7 @@ jobs:
               | grep -E "^(/opt/homebrew|/usr/local|$DEPS)/" | sed "s#^#$f: #"
           done)
           if [ -n "$OUTSIDE" ]; then
-            echo "$OUTSIDE"; echo "RMT.app still uses libraries outside the bundle"; exit 1
+            echo "$OUTSIDE"; echo "Ritmo.app still uses libraries outside the bundle"; exit 1
           fi
           codesign --force --deep --sign - $APP
           codesign --verify --deep --verbose=2 $APP
@@ -179,21 +179,21 @@ jobs:
       - name: Create DMG
         run: |
           mkdir -p dmg
-          cp -R dist/RMT.app dmg/
+          cp -R dist/Ritmo.app dmg/
           ln -s /Applications dmg/Applications
-          hdiutil create -volname "RASTER Music Tracker" -srcfolder dmg -ov -format UDZO RMT-macOS-$ARCH.dmg
+          hdiutil create -volname "RITMO" -srcfolder dmg -ov -format UDZO Ritmo-macOS-$ARCH.dmg
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RMT-macOS-${{ matrix.arch }}
+          name: Ritmo-macOS-${{ matrix.arch }}
           path: |
-            RMT-macOS-${{ matrix.arch }}.dmg
-            rmt-macos-${{ matrix.arch }}.png
+            Ritmo-macOS-${{ matrix.arch }}.dmg
+            ritmo-macos-${{ matrix.arch }}.png
 
       - name: Create release and upload asset
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: RMT-macOS-${{ matrix.arch }}.dmg
+          files: Ritmo-macOS-${{ matrix.arch }}.dmg
           prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh

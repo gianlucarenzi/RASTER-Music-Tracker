@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/build-appimage.sh - build RMT (Qt6 frontend) as an AppImage
+# scripts/build-appimage.sh - build RITMO (Qt6 frontend) as an AppImage
 #
 # Meant for Ubuntu 20.04 (glibc 2.31, the one of Debian 11), so that the
 # AppImage also runs on those systems and on every newer one. Used by
@@ -15,7 +15,7 @@
 #
 # Environment: RMT_APPIMAGE_DEPS=0 skips installing the dependencies (they
 # are there already), WORK is the build folder (default build-appimage/).
-# Output: $WORK/RMT-Linux-x86_64.AppImage and $WORK/rmt-linux.png, the
+# Output: $WORK/Ritmo-Linux-x86_64.AppImage and $WORK/ritmo-linux.png, the
 # offscreen screenshot of the smoke test run of the AppImage itself.
 
 set -euo pipefail
@@ -69,21 +69,21 @@ cmake --build "$WORK/build" --parallel
 APPDIR=$WORK/AppDir
 rm -rf "$APPDIR"
 mkdir -p "$APPDIR/usr/bin"
-cp "$WORK/build/out/rmt" "$APPDIR/usr/bin/"
-cp -r "$WORK/build/out/resources" "$APPDIR/usr/bin/"     # RMT finds them next to itself
+cp "$WORK/build/out/ritmo" "$APPDIR/usr/bin/"
+cp -r "$WORK/build/out/resources" "$APPDIR/usr/bin/"     # RITMO finds them next to itself
 
-cat > "$WORK/rmt.desktop" <<'DESKTOP'
+cat > "$WORK/ritmo.desktop" <<'DESKTOP'
 [Desktop Entry]
 Type=Application
-Name=RASTER Music Tracker
+Name=RITMO
 Comment=Music tracker for the POKEY chip of the Atari XL/XE
-Exec=rmt %f
-Icon=rmt
+Exec=ritmo %f
+Icon=ritmo
 Categories=AudioVideo;Audio;Music;
 Terminal=false
 DESKTOP
 # the 32x32 icon of the program, enlarged without smoothing (pixel art)
-convert "src/res/Rmt.ico[0]" -filter point -resize 256x256 "$WORK/rmt.png"
+convert "src/res/Rmt.ico[0]" -filter point -resize 256x256 "$WORK/ritmo.png"
 
 # --- AppImage ----------------------------------------------------------------
 
@@ -96,10 +96,10 @@ export APPIMAGE_EXTRACT_AND_RUN=1           # no FUSE in containers
 export QMAKE=$QT_DIR/bin/qmake
 export LD_LIBRARY_PATH=$QT_DIR/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export EXTRA_PLATFORM_PLUGINS=libqoffscreen.so  # for the smoke test below
-export OUTPUT=RMT-Linux-x86_64.AppImage
+export OUTPUT=Ritmo-Linux-x86_64.AppImage
 rm -f $OUTPUT
 ./linuxdeploy-x86_64.AppImage --appdir "$APPDIR" \
-    --executable "$APPDIR/usr/bin/rmt" --desktop-file rmt.desktop --icon-file rmt.png \
+    --executable "$APPDIR/usr/bin/ritmo" --desktop-file ritmo.desktop --icon-file ritmo.png \
     --plugin qt --output appimage
 
 # --- checks ------------------------------------------------------------------
@@ -113,8 +113,8 @@ if [ "$(printf '%s\n%s\n' "$NEEDED" "$MAX_GLIBC" | sort -V | tail -1)" != "$MAX_
 fi
 
 # Smoke test of the AppImage itself: gemx.rmt, a screenshot after 3 s
-rm -f rmt-linux.png
-QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/rmt-linux.png RMT_QT_GRAB_MS=3000 XDG_CONFIG_HOME=$PWD/config \
+rm -f ritmo-linux.png
+QT_QPA_PLATFORM=offscreen RMT_QT_GRAB=$PWD/ritmo-linux.png RMT_QT_GRAB_MS=3000 XDG_CONFIG_HOME=$PWD/config \
     timeout 120 ./$OUTPUT "$ROOT/rmt/songs/rmt128/raster/gemx.rmt" || true
-test -f rmt-linux.png
-ls -la $OUTPUT rmt-linux.png
+test -f ritmo-linux.png
+ls -la $OUTPUT ritmo-linux.png

@@ -4,10 +4,10 @@
 #   doc/rmt_action_infos.md   every menu item and toolbar button with its key and description
 #   doc/rmt_note_keys.md      the note keys of the QWERTY, QWERTZ and AZERTY layouts
 #
-#   scripts/make-docs.sh [path/to/rmt]      (default: build-qt/out/rmt)
+#   scripts/make-docs.sh [path/to/ritmo]      (default: build-qt/out/ritmo)
 set -eu
 cd "$(dirname "$0")/.."
-RMT=${1:-build-qt/out/rmt}
+RMT=${1:-build-qt/out/ritmo}
 [ -x "$RMT" ] || { echo "No such program: $RMT" >&2; exit 2; }
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT

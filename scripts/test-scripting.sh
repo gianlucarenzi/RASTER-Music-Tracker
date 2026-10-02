@@ -1,12 +1,12 @@
 #!/bin/bash
-# Runs the reference scripts of test-resources/scripts through "rmt /SCRIPT:",
+# Runs the reference scripts of test-resources/scripts through "ritmo /SCRIPT:",
 # twice each into separate folders: the exit code must be 0, the expected files
 # must exist and both runs must produce byte-identical files (WAV included).
 #
-#   scripts/test-scripting.sh [path/to/rmt]      (default: build-qt/out/rmt)
+#   scripts/test-scripting.sh [path/to/ritmo]      (default: build-qt/out/ritmo)
 set -u
 cd "$(dirname "$0")/.."
-RMT=${1:-build-qt/out/rmt}
+RMT=${1:-build-qt/out/ritmo}
 [ -x "$RMT" ] || { echo "No such program: $RMT" >&2; exit 2; }
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT

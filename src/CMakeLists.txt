@@ -530,14 +530,14 @@ endif()
 
 # Output executable name
 set_target_properties(Rmt PROPERTIES
-    OUTPUT_NAME "Rmt"
+    OUTPUT_NAME "Ritmo"
 )
 
 if(NOT WIN32)
     if(RMT_USE_QT)
-        set_target_properties(Rmt PROPERTIES OUTPUT_NAME "rmt")    # the Qt tracker
+        set_target_properties(Rmt PROPERTIES OUTPUT_NAME "ritmo")    # the Qt tracker
     else()
-        set_target_properties(Rmt PROPERTIES OUTPUT_NAME "Rmt.exe")
+        set_target_properties(Rmt PROPERTIES OUTPUT_NAME "Ritmo.exe")
     endif()
 endif()
 

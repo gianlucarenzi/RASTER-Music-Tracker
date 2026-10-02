@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.25)
 project(
     Rmt
     VERSION 2.0.0
-    DESCRIPTION "RASTER Music Tracker - Atari XL/XE music editor"
+    DESCRIPTION "RITMO - Atari XL/XE music tracker, based on RASTER Music Tracker"
     LANGUAGES CXX C
 )
 

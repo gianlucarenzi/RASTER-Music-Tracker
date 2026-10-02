@@ -1,4 +1,4 @@
-name: Build RMT on Linux
+name: Build RITMO on Linux
 
 # The Qt6 frontend as an AppImage, built in an Ubuntu 20.04 container: its
 # glibc 2.31 is the one of Debian 11, so the AppImage runs there and on every
@@ -42,14 +42,14 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: RMT-Linux-x86_64
+          name: Ritmo-Linux-x86_64
           path: |
-            build-appimage/RMT-Linux-x86_64.AppImage
-            build-appimage/rmt-linux.png
+            build-appimage/Ritmo-Linux-x86_64.AppImage
+            build-appimage/ritmo-linux.png
 
       - name: Create release and upload asset
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: build-appimage/RMT-Linux-x86_64.AppImage
+          files: build-appimage/Ritmo-Linux-x86_64.AppImage
           prerelease: ${{ contains(github.ref_name, '-rc') }}   # v2.0-rcN of scripts/push.sh
