@@ -132,8 +132,8 @@ handlers (implemented by `QtCCmdUI`, triggered on `QMenu::aboutToShow`).
   instruments, tracks loading, tuning (`IDD_TUNING`, Test now / Reset), and the
   octave, volume and instrument popups of the info line; all the dialogs of
   the tracker are in Qt
-- ✅ 6502 and POKEY emulation built in (`src/emu`), used when `sa_c6502.dll` /
-  `apokeysnd.dll` are not there (always outside Windows): the tracker driver
+- ✅ 6502 and POKEY emulation built in (`src/emu`), the only one on every platform (no
+  `sa_c6502.dll` / `apokeysnd.dll` / `sa_pokey.dll` is loaded, on Windows too): the tracker driver
   runs, notes and instruments play inside the engine
 - ✅ playback with sound: the song timer (`timeSetEvent`, a thread; a timer
   re-created from its own tick keeps the deadline, so the tempo does not
@@ -285,8 +285,8 @@ operations go to an `IRmtHost`. `src/qt/` implements that host with Qt6:
 | `emu/PokeySound.cpp` | `apokeysnd.dll` | one or two POKEYs (`PutByte` 0x10.. = second chip), cycle based model (clocks, 16 bit, filters, polys, distortions), 44100 Hz, 2 interleaved channels |
 
 Derived from the emulation of `AT2019/ATARI-Driver/RmtSkeleton/tools/rmtplay`.
-`C6502.cpp` and `Pokey.cpp` load the DLLs first, as before, and fall back to
-these. Checked with `RmtCoreTest --play` on gemx.rmt against `rmtplay` (an
+`C6502.cpp` and `Pokey.cpp` call them directly (the DLLs of RMT are not loaded any more, on Windows too).
+Checked with `RmtCoreTest --play` on gemx.rmt against `rmtplay` (an
 independent player and 6502 core): over 800 frames AUDC and AUDCTL are
 identical and AUDF within 1 (RMT recomputes its frequency tables from the
 tuning, rmtplay has the original tables); the sound correlates 0.98 (chroma)

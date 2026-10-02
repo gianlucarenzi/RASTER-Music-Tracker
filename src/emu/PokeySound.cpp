@@ -213,5 +213,5 @@ void RmtBuiltin_APokeySound_About(const char** name, const char** author, const 
 {
     *name = "RITMO built-in POKEY";
     *author = "RITMO";
-    *description = "Cycle based POKEY sound, mono/stereo, 44100 Hz (replaces apokeysnd.dll)";
+    *description = "Cycle based POKEY sound, mono/stereo, 44100 Hz (the apokeysnd.dll of RMT is not needed)";
 }

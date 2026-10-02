@@ -38,7 +38,6 @@ extern int g_tracks4_8; // TODO Move out
 extern HWND g_hwnd;
 extern HWND g_viewhwnd;
 
-extern HINSTANCE g_c6502_dll;
 extern BOOL volatile g_is6502;
 extern CString g_about6502;
 extern CAtari g_Atari;

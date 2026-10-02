@@ -1,13 +1,11 @@
 /*
-    Wrapper for "sa_c6502.dll" by Avery Lee (phaeron).
-    See Altirra source code https://www.virtualdub.org/altirra.html in the folder "src/AltirraRMT6502".
+    The 6502 of the program: the built-in emulation of emu/Cpu6502.
 */
 
 #pragma once
 
 #include "PlatformTypes.h"
 
-extern HINSTANCE g_c6502_dll;
 extern BOOL volatile g_is6502;
 extern CString g_about6502;
 

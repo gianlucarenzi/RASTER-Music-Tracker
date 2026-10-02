@@ -620,7 +620,7 @@ void RmtBuiltin_C6502_About(char** name, char** author, char** description)
 {
     static char n[] = "RITMO built-in 6502";
     static char au[] = "RITMO";
-    static char d[] = "NMOS 6502, documented and stable undocumented opcodes, cycle counted (replaces sa_c6502.dll)";
+    static char d[] = "NMOS 6502, documented and stable undocumented opcodes, cycle counted (the sa_c6502.dll of RMT is not needed)";
     *name = n;
     *author = au;
     *description = d;

@@ -67,7 +67,6 @@ private:
     int GetChunkSize() const;
     int GetLatencySize() const;
 
-    CPokey::SoundDriver GetSoundDriver() const;
     bool IsSoundDriverLoaded() const;
 
     void CopyAtariMemoryToPokey();

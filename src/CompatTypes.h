@@ -59,7 +59,6 @@ struct HWND__;      typedef struct HWND__* HWND;
 struct HINSTANCE__; typedef struct HINSTANCE__* HINSTANCE;
 struct HICON__;     typedef struct HICON__* HICON;
 typedef HICON               HCURSOR;
-typedef HINSTANCE           HMODULE;
 typedef void*               HKEY;
 typedef void*               HMENU;
 typedef void*               HMIDIIN;
@@ -1273,9 +1272,6 @@ inline void GetWindowRect(HWND, CRect* rect)
     if (rect) *rect = CRect(0, 0, 0, 0);
 }
 
-inline HMODULE LoadLibrary(const char*) { return nullptr; }
-inline void* GetProcAddress(HMODULE, const char*) { return nullptr; }
-inline BOOL FreeLibrary(HMODULE) { return TRUE; }
 
 inline DWORD GetLastError() { return 0; }
 inline DWORD FormatMessage(DWORD, LPCVOID, DWORD, DWORD, LPTSTR, DWORD, void*) { return 0; }

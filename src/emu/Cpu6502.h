@@ -1,6 +1,7 @@
 // Cpu6502.h - built-in NMOS 6502 for the RMT tracker driver
 //
-// Replaces sa_c6502.dll (Altirra's AltirraRMT6502) where it is not available:
+// The 6502 of RITMO. It has the entry points of the sa_c6502.dll of RMT
+// (Altirra's AltirraRMT6502), which it replaced:
 // same entry points (C6502_Initialise / C6502_JSR / C6502_About), a flat 64 KB
 // memory with no I/O (the tracker driver writes the POKEY registers at $D200
 // in memory, the renderer copies them to the POKEY emulation), documented

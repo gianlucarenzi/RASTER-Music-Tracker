@@ -55,10 +55,10 @@ The Atari 8-bit emulation consists of two parts
 
 **In RITMO** the emulation is built in: the 6502 is `src/emu/Cpu6502.cpp` (NMOS 6502, documented and stable undocumented opcodes, cycle
 counted) and the POKEY is `src/emu/PokeySound.cpp` (one or two chips, 44100 Hz). Both are derived from the emulation of `rmtplay` and
-are used when the DLLs below are not there, which is the case on Linux and macOS. On Windows the DLLs, when present, are tried first, as in RMT.
+are the only ones: RITMO does not load the DLLs below on any platform, Windows included.
 The Atari binaries of the tracker drivers are the `.obx` files of `resources/drivers`.
 
-The Pokey sound emulation and Atari 6502 processor emulation aren't built-in components of RMT. If the sound output is needed, the external dynamic DLL libraries with the following functions are required.  If you run RMT without this way described DLLs ( `sa_c6502.dll`, `apokeysnd.dll` or `sa_pokey.dll`), RMT will work, but there won't be any Pokey sound output and Atari sound routines won't be executed.
+**In RMT** (the original program) the Pokey sound emulation and Atari 6502 processor emulation aren't built-in components. If the sound output is needed, the external dynamic DLL libraries with the following functions are required.  If you run RMT without this way described DLLs ( `sa_c6502.dll`, `apokeysnd.dll` or `sa_pokey.dll`), RMT will work, but there won't be any Pokey sound output and Atari sound routines won't be executed.
 
 #### CPU Emulation
 

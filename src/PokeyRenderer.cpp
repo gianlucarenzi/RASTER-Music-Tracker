@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include "PlatformTypes.h"
 #include "PokeyRenderer.h"
+#include "emu/PokeySound.h"
 #include "AtariTrackerDriver.h"
 #include "ChannelControl.h" // For IsChannelOn
 
@@ -173,11 +174,6 @@ bool CXPokey::IsSoundDriverLoaded() const
     return m_pokey.IsSoundDriverLoaded();
 }
 
-CPokey::SoundDriver CXPokey::GetSoundDriver() const
-{
-    return m_pokey.GetSoundDriver();
-}
-
 const WAVEFORMATEX* CXPokey::GetSoundFormat() const
 {
     return &m_SoundFormat;
@@ -260,30 +256,18 @@ BOOL CXPokey::RenderSound1_50(int instrspeed)
         CopyAtariMemoryToPokey();                            // transfer from Atari memory to POKEY (mono or stereo)
         renderpartsize = (rendersize / instrspeed) & 0xfffe; //just the numbers
 
-        switch (GetSoundDriver()) {
-            case CPokey::SoundDriver::APOKEYSND:
-                // FIXME: Mono POKEY sound generation is broken, currently the reason for this is unclear...
-                {
-                    int cycles = (unsigned short)((float)renderpartsize / GetChannels() * m_CyclesPerSample);
-                    while (cycles > 0 && renderpartsize > 0) {
-                        // The maximum number of cycles that can be generated is CYCLESPERSCREEN
-                        auto cyclesPerFrame = GetCyclesPerFrame(ntsc);
-                        int rencyc = (cycles > cyclesPerFrame ? cyclesPerFrame : cycles);
-                        renderpartsize = APokeySound_Generate(rencyc, (unsigned char*)&m_PlayBuffer + renderoffset, ASAP_FORMAT_U8);
-                        rendersize -= renderpartsize;
-                        renderoffset += renderpartsize;
-                        cycles -= rencyc;
-                    }
-                }
-                break;
-
-            case CPokey::SoundDriver::SA_POKEY:
-                Pokey_Process((unsigned char*)&m_PlayBuffer + renderoffset, (unsigned short)renderpartsize);
+        if (IsSoundDriverLoaded()) {
+            // FIXME: Mono POKEY sound generation is broken, currently the reason for this is unclear...
+            int cycles = (unsigned short)((float)renderpartsize / GetChannels() * m_CyclesPerSample);
+            while (cycles > 0 && renderpartsize > 0) {
+                // The maximum number of cycles that can be generated is CYCLESPERSCREEN
+                auto cyclesPerFrame = GetCyclesPerFrame(ntsc);
+                int rencyc = (cycles > cyclesPerFrame ? cyclesPerFrame : cycles);
+                renderpartsize = RmtBuiltin_APokeySound_Generate(rencyc, (unsigned char*)&m_PlayBuffer + renderoffset, ASAP_FORMAT_U8);
                 rendersize -= renderpartsize;
                 renderoffset += renderpartsize;
-                break;
-            default:
-                break;
+                cycles -= rencyc;
+            }
         }
     }
 
@@ -320,26 +304,16 @@ BOOL CXPokey::RenderSound1_50(int instrspeed)
 int CXPokey::RenderPartV2(int renderpartsize, BYTE* buffer)
 {
     int rendered = 0;
-    switch (GetSoundDriver()) {
-        case CPokey::SoundDriver::APOKEYSND: // apokeysnd.dll or the built-in POKEY (emu/PokeySound)
-        {
-            int cycles = (int)((float)renderpartsize / GetChannels() * m_CyclesPerSample);
-            while (cycles > 0 && renderpartsize > 0) {
-                // The maximum number of cycles that can be generated is CYCLESPERSCREEN
-                auto cyclesPerFrame = GetCyclesPerFrame(ntsc);
-                int rencyc = (cycles > cyclesPerFrame ? cyclesPerFrame : cycles);
-                renderpartsize = APokeySound_Generate(rencyc, buffer + rendered, ASAP_FORMAT_U8);
-                rendered += renderpartsize;
-                cycles -= rencyc;
-            }
-        } break;
-
-        case CPokey::SoundDriver::SA_POKEY:
-            Pokey_Process(buffer, (unsigned short)renderpartsize);
-            rendered = renderpartsize;
-            break;
-        default:
-            break;
+    if (IsSoundDriverLoaded()) {
+        int cycles = (int)((float)renderpartsize / GetChannels() * m_CyclesPerSample);
+        while (cycles > 0 && renderpartsize > 0) {
+            // The maximum number of cycles that can be generated is CYCLESPERSCREEN
+            auto cyclesPerFrame = GetCyclesPerFrame(ntsc);
+            int rencyc = (cycles > cyclesPerFrame ? cyclesPerFrame : cycles);
+            renderpartsize = RmtBuiltin_APokeySound_Generate(rencyc, buffer + rendered, ASAP_FORMAT_U8);
+            rendered += renderpartsize;
+            cycles -= rencyc;
+        }
     }
     return rendered;
 }

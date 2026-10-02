@@ -22,6 +22,9 @@ Technical (Linux/POSIX Qt frontend, Qt5 until 2.0, Qt6 from 2.1):
   and dialogs (Rmt.cpp, MainFrm.cpp, the *dlg.cpp files), the WASAP test cluster, the Visual
   Studio project and solution and the `RMT_USE_QT` option; the compatibility layer is now
   CompatTypes.h / CompatAudio.cpp / CompatDialogs.cpp (was Mfc*).
+- The DLLs of RMT (`sa_c6502.dll`, `apokeysnd.dll`, `sa_pokey.dll`) are not loaded any more, on Windows too: the 6502 and the
+  POKEY are always the built-in emulations (`src/emu`), and the `sa_pokey.dll` sound driver is gone. The WAV files the program exports
+  are byte for byte the same as before.
 - The program is renamed RITMO ("RITMO Is a Tracker for Music On Atari"): the executable
   is `ritmo` (`Ritmo.exe` on Windows), the packages are `Ritmo-*`, the configuration is
   `ritmo.ini` / `ritmo.conf` (registry key, plist). The settings of RMT (`rmt.conf`,

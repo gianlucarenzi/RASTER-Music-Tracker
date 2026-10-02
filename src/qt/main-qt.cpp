@@ -73,8 +73,7 @@ int main(int argc, char** argv)
 
     SetProgramFolderPath(CString((QDir::toNativeSeparators(QCoreApplication::applicationDirPath()) + QDir::separator()).toLocal8Bit().constData()));
 
-    // Without the 6502 emulation (sa_c6502.dll on Windows) RMT still edits
-    // songs; CRmtApp would exit here, the Qt frontend goes on.
+    // The 6502 and the POKEY are the built-in emulations (emu/): there are no libraries to load.
     g_Atari.Init();
     g_tuning.Initialize(g_Song.IsNTSC());
     g_tuningRatios.Initialize();

@@ -1,6 +1,7 @@
-// PokeySound.h - built-in POKEY sound (one or two chips) for RMT
+// PokeySound.h - built-in POKEY sound (one or two chips) for RITMO
 //
-// Replaces apokeysnd.dll where it is not available, with its entry points:
+// The POKEY of RITMO. It has the entry points of the apokeysnd.dll of RMT (ASAP),
+// which it replaced:
 // APokeySound_Initialize(stereo), APokeySound_PutByte(0..0x1F: 0x10.. is the
 // second POKEY), APokeySound_GetRandom, APokeySound_Generate(cycles, buffer,
 // format) and APokeySound_About. Generate() writes 44100 Hz samples, two
